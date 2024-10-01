@@ -4,7 +4,9 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from './screens/Home';
 import RegistroAuto from './screens/RegistroAuto';
 import Login from './screens/Login';
-
+import Reportes from './screens/Reportes'
+import Configuraciones from './screens/Configuraciones'
+import Perfil from './screens/Perfil'
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -12,7 +14,10 @@ const TabNavigator = () => {
   return (
     <Tab.Navigator screenOptions={{ headerShown: false }}>
       <Tab.Screen name="HOME" component={HomeScreen} />
-      <Tab.Screen name="REGISTRO" component={RegistroAuto} />
+      <Tab.Screen name="Perfil" component={Perfil} />
+      <Tab.Screen name="REPORTES" component={Reportes} />
+      <Tab.Screen name="CONFIGURACIONES" component={Configuraciones} />
+
     </Tab.Navigator>
   );
 };
