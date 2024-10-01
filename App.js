@@ -1,7 +1,7 @@
 // App.js
 import React from 'react';
-import Navigation from './Navigation'; // Importa el componente de navegación
+import Navigation from './Navigation'; 
 
 export default function App() {
-  return <Navigation />; // Renderiza el sistema de navegación
+  return <Navigation />; 
 }

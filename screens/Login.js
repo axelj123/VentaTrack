@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Alert, ImageBackground, Image } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import CustomInput from '../components/CustomInput'; // Verifica que la ruta sea correcta
+import CustomInput from '../components/CustomInput'; 
 import { useNavigation } from '@react-navigation/native'; 
 
 const Login = () => {
@@ -14,18 +14,18 @@ const Login = () => {
 
   const handleHome = () => {
     Alert.alert('Inicio de sesión', `Correo: ${email} \nContraseña: ${password}`);
-    navigation.navigate("HOME"); // Navega a la pantalla "HOME"
+    navigation.navigate('MAIN'); 
   };
 
   return (
     <ImageBackground
-      source={require('../assets/background-login.jpg')} // Reemplaza con la ruta a tu imagen
+      source={require('../assets/background-login.jpg')} 
       style={styles.background}
     >
       <View style={styles.containerLogo}>
         <View style={styles.blackRectangle}>
           <Image
-            source={require('../assets/logo.png')} // Asegúrate de que la ruta sea correcta
+            source={require('../assets/logo.png')} 
             style={styles.logo}
           />
         </View>
