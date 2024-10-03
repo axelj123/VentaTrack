@@ -13,11 +13,11 @@ import Perfil from './screens/Perfil';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// Componente personalizado para el botón central "Agregar"
+
 const AddButton = ({ children, onPress }) => (
   <TouchableOpacity
     style={{
-      top: -30, // Posición flotante
+      top: -30, 
       justifyContent: 'center',
       alignItems: 'center',
       shadowColor: '#000',
@@ -30,10 +30,10 @@ const AddButton = ({ children, onPress }) => (
   >
     <View
       style={{
-        width: 70,
-        height: 70,
+        width: 60,
+        height: 60,
         borderRadius: 35,
-        backgroundColor: 'tomato',
+        backgroundColor: '#2c64fc',
       }}
     >
       {children}
@@ -48,7 +48,6 @@ const TabNavigator = () => {
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
 
-          // Definir los iconos para cada pantalla
           if (route.name === 'HOME') {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'Perfil') {
@@ -59,7 +58,6 @@ const TabNavigator = () => {
             iconName = focused ? 'settings' : 'settings-outline';
           }
 
-          // Retornar el componente Ionicons con el nombre y tamaño del icono
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarShowLabel: false,
@@ -71,18 +69,20 @@ const TabNavigator = () => {
           elevation: 0,
           backgroundColor: '#fff',
           borderRadius: 15,
+
+          borderTopWidth: 0,
+
           height: 90,
         },
-        tabBarActiveTintColor: 'tomato', // Color cuando la pestaña está activa
-        tabBarInactiveTintColor: 'gray', // Color cuando la pestaña no está activa
+        tabBarActiveTintColor: '#2c64fc', 
       })}
     >
-      <Tab.Screen name="HOME" component={HomeScreen} />
+      <Tab.Screen    options={{ headerShown: false }} name="HOME" component={HomeScreen} />
     
-      <Tab.Screen name="Perfil" component={Perfil} />
+      <Tab.Screen   options={{ headerShown: false }} name="Perfil" component={Perfil} />
       <Tab.Screen
         name="ADD"
-        component={RegistroAuto} // Esta pantalla es la de agregar
+        component={RegistroAuto}
         options={{
           tabBarButton: (props) => <AddButton {...props} />,
           tabBarIcon: ({ focused }) => (
@@ -90,8 +90,8 @@ const TabNavigator = () => {
           ),
         }}
       />
-      <Tab.Screen name="REPORTES" component={Reportes} />
-      <Tab.Screen name="CONFIGURACIONES" component={Configuraciones} />
+      <Tab.Screen   options={{ headerShown: false }} name="REPORTES" component={Reportes} />
+      <Tab.Screen   options={{ headerShown: false }} name="CONFIGURACIONES" component={Configuraciones} />
     </Tab.Navigator>
   );
 };
