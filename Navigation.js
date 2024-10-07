@@ -2,6 +2,7 @@ import { View, TouchableOpacity, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import HomeScreen from './screens/Home';
 import RegistroAuto from './screens/RegistroAuto';
@@ -17,7 +18,7 @@ const Tab = createBottomTabNavigator();
 const AddButton = ({ children, onPress }) => (
   <TouchableOpacity
     style={{
-      top: -30, 
+      top: -30,
       justifyContent: 'center',
       alignItems: 'center',
       shadowColor: '#000',
@@ -33,7 +34,7 @@ const AddButton = ({ children, onPress }) => (
         width: 60,
         height: 60,
         borderRadius: 35,
-        backgroundColor: '#2c64fc',
+        backgroundColor: '#F59E0B',
       }}
     >
       {children}
@@ -45,7 +46,7 @@ const TabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
+        tabBarIcon: ({ focused, size }) => {
           let iconName;
 
           if (route.name === 'HOME') {
@@ -58,40 +59,37 @@ const TabNavigator = () => {
             iconName = focused ? 'settings' : 'settings-outline';
           }
 
-          return <Ionicons name={iconName} size={size} color={color} />;
+          return <Ionicons name={iconName} size={size} color={'white'} />;
         },
         tabBarShowLabel: false,
         tabBarStyle: {
-          position: 'absolute',
-          bottom: 25,
-          left: 20,
           right: 20,
           elevation: 0,
-          backgroundColor: '#fff',
+          backgroundColor: '#003366',
           borderRadius: 15,
-
+     
           borderTopWidth: 0,
-
-          height: 90,
+          margin:10,
+          height: 60,
         },
-        tabBarActiveTintColor: '#2c64fc', 
+        tabBarActiveTintColor: 'white',
       })}
     >
-      <Tab.Screen    options={{ headerShown: false }} name="HOME" component={HomeScreen} />
-    
-      <Tab.Screen   options={{ headerShown: false }} name="Perfil" component={Perfil} />
+      <Tab.Screen options={{ headerShown: false }} name="HOME" component={HomeScreen} />
+
+      <Tab.Screen options={{ headerShown: false }} name="Perfil" component={Perfil} />
       <Tab.Screen
         name="ADD"
         component={RegistroAuto}
         options={{
-          tabBarButton: (props) => <AddButton {...props} />,
-          tabBarIcon: ({ focused }) => (
+          headerShown: false, tabBarButton: (props) => <AddButton {...props} />,
+          tabBarStyle:{display:'none'},  tabBarIcon: ({ focused }) => (
             <Ionicons name="add" size={40} color="#fff" />
           ),
         }}
       />
-      <Tab.Screen   options={{ headerShown: false }} name="REPORTES" component={Reportes} />
-      <Tab.Screen   options={{ headerShown: false }} name="CONFIGURACIONES" component={Configuraciones} />
+      <Tab.Screen options={{ headerShown: false }} name="REPORTES" component={Reportes} />
+      <Tab.Screen options={{ headerShown: false }} name="CONFIGURACIONES" component={Configuraciones} />
     </Tab.Navigator>
   );
 };

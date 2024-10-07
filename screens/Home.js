@@ -16,14 +16,13 @@ const Home = () => {
 
 
       <View style={styles.dashboard}>
-        <Text style={styles.month}>January</Text>
-        <Text style={styles.amount}>$500</Text>
-        <View style={styles.progressBar}>
-          <View style={[styles.progress, { width: '70%' }]} />
-        </View>
-        <Text style={styles.target}>Daily spend target: $16.67</Text>
+        <Text style={styles.month}>Total de inspecciones</Text>
+        
       </View>
-
+      <View style={styles.dashboard}>
+        <Text style={styles.month}>January</Text>
+       
+      </View>
       
 
 
@@ -49,35 +48,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   dashboard: {
-    backgroundColor: '#007BFF',
+    backgroundColor: '#4a39ff',
     borderRadius: 25,
     padding: 20,
     marginBottom: 20,
+    width:200,
   },
  
   month: {
-    fontSize: 18,
-    color: '#fff',
-  },
-  amount: {
-    fontSize: 36,
-    color: '#fff',
+    fontSize: 15,
     fontWeight: 'bold',
-  },
-  progressBar: {
-    height: 8,
-    backgroundColor: '#fff',
-    borderRadius: 4,
-    marginVertical: 10,
-  },
-  progress: {
-    height: '100%',
-    backgroundColor: '#28A745', // Color del progreso
-    borderRadius: 4,
-  },
-  target: {
     color: '#fff',
+
   },
+  
+
 
 
 });
