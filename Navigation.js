@@ -5,12 +5,12 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import HomeScreen from './screens/Home';
-import RegistroAuto from './screens/RegistroAuto';
+import NuevoProducto from './screens/NuevoProducto';
 import Login from './screens/Login';
 import Reportes from './screens/Reportes';
 import Configuraciones from './screens/Configuraciones';
-import Perfil from './screens/Perfil';
-
+import Inventario from './screens/Inventario';
+import ViewItem  from './screens/ViewItem';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -34,7 +34,7 @@ const AddButton = ({ children, onPress }) => (
         width: 60,
         height: 60,
         borderRadius: 35,
-        backgroundColor: '#F59E0B',
+        backgroundColor: '#FFD700',
       }}
     >
       {children}
@@ -51,11 +51,11 @@ const TabNavigator = () => {
 
           if (route.name === 'HOME') {
             iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Perfil') {
-            iconName = focused ? 'person' : 'person-outline';
-          } else if (route.name === 'REPORTES') {
+          } else if (route.name === 'Inventario') {
+            iconName = focused ? 'cube' : 'cube-outline';
+          } else if (route.name === 'Reportes') {
             iconName = focused ? 'document' : 'document-outline';
-          } else if (route.name === 'CONFIGURACIONES') {
+          } else if (route.name === 'Configuraciones') {
             iconName = focused ? 'settings' : 'settings-outline';
           }
 
@@ -65,7 +65,7 @@ const TabNavigator = () => {
         tabBarStyle: {
           right: 20,
           elevation: 0,
-          backgroundColor: '#003366',
+          backgroundColor: '#800020',
           borderRadius: 15,
      
           borderTopWidth: 0,
@@ -77,19 +77,20 @@ const TabNavigator = () => {
     >
       <Tab.Screen options={{ headerShown: false }} name="HOME" component={HomeScreen} />
 
-      <Tab.Screen options={{ headerShown: false }} name="Perfil" component={Perfil} />
+      <Tab.Screen options={{ headerShown: false }} name="Inventario" component={Inventario} />
       <Tab.Screen
-        name="ADD"
-        component={RegistroAuto}
+        name="NuevoProducto"
+        component={NuevoProducto}
         options={{
           headerShown: false, tabBarButton: (props) => <AddButton {...props} />,
           tabBarStyle:{display:'none'},  tabBarIcon: ({ focused }) => (
-            <Ionicons name="add" size={40} color="#fff" />
+            <Ionicons name="cart" size={40} color="#fff" />
           ),
         }}
       />
-      <Tab.Screen options={{ headerShown: false }} name="REPORTES" component={Reportes} />
-      <Tab.Screen options={{ headerShown: false }} name="CONFIGURACIONES" component={Configuraciones} />
+
+      <Tab.Screen options={{ headerShown: false }} name="Reportes" component={Reportes} />
+      <Tab.Screen options={{ headerShown: false }} name="Configuraciones" component={Configuraciones} />
     </Tab.Navigator>
   );
 };
@@ -100,6 +101,9 @@ const Navigation = () => {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="LOGIN" component={Login} />
         <Stack.Screen name="MAIN" component={TabNavigator} />
+        <Stack.Screen name="RegistrarProducto" component={NuevoProducto} />
+        <Stack.Screen name="VerItem" component={ViewItem} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );
