@@ -34,7 +34,7 @@ const AddButton = ({ children, onPress }) => (
         width: 60,
         height: 60,
         borderRadius: 35,
-        backgroundColor: '#FFD700',
+        backgroundColor: '#EFB810',
       }}
     >
       {children}
@@ -65,7 +65,7 @@ const TabNavigator = () => {
         tabBarStyle: {
           right: 20,
           elevation: 0,
-          backgroundColor: '#800020',
+          backgroundColor: '#B90909',
           borderRadius: 15,
      
           borderTopWidth: 0,

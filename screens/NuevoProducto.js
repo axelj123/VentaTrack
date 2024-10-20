@@ -69,7 +69,7 @@ const RegistrarProducto = () => {
           style={styles.svgCurve}
         >
           <Path
-            fill="#800020"
+            fill="#B90909"
             d={`M0 0 
        L${width} 0 
        L${width} ${height * 0.25} 
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   modalCloseButton: {
-    backgroundColor: '#8B0000',
+    backgroundColor: '#B90909',
     padding: 10,
     borderRadius: 5,
     width: '100%',
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   label: {
-    color: '#8B0000',
+    color: '#B90909',
     marginBottom: 5,
     fontWeight: 'bold',
   },
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
   button: {
     width: 145, 
     height: 50,
-    backgroundColor: '#800020',
+    backgroundColor: '#B90909',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 25,

@@ -3,16 +3,49 @@ import { View, FlatList, StyleSheet, TextInput, Text, TouchableOpacity } from 'r
 import Card from '../components/CardsItems'; // Ensure this path is correct
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-const Inventario = ({ navigation }) =>  {
+const Inventario = ({ navigation }) => {
   // Sample data for inventory
   const [searchTerm, setSearchTerm] = useState(''); // State for the search term
   const items = [
-    { id: '1', title: 'Fido', descripcion: 'Labrador', price: 's/. 140', image: require('../assets/producto.png') },
-    { id: '2', title: 'Bella', descripcion: 'Beagle', price: 's/. 120', image: require('../assets/producto.png') },
-    { id: '3', title: 'Max', descripcion: 'Bulldog', price: 's/. 160', image: require('../assets/producto.png') },
-    { id: '4', title: 'Lucy', descripcion: 'Poodle', price: 's/. 150', image: require('../assets/producto.png') },
+    {
+      id: '1',
+      title: 'Aceite de Coco',
+      descripcion: 'Aceite virgen extra, 100% orgánico, prensado en frío, ideal para cocinar, hornear o usar como hidratante natural para piel y cabello. Rico en antioxidantes y con propiedades antimicrobianas.',
+      price: '45',
+      stock:'13',
+
+      image: require('../assets/producto.png'),
+    },
+    {
+      id: '2',
+      title: 'Miel de Abeja',
+      descripcion: 'Miel pura recolectada de flores silvestres, sin aditivos ni conservantes. Rica en antioxidantes, excelente para endulzar de manera natural y fortalecer el sistema inmunológico.',
+      price: '30',
+      stock:'93',
+
+      image: require('../assets/producto.png'),
+    },
+    {
+      id: '3',
+      title: 'Quinua Orgánica',
+      descripcion: 'Grano andino certificado, libre de pesticidas y alto en proteínas. Ideal para reemplazar el arroz o como base de ensaladas y guisos. Rico en fibra y minerales esenciales.',
+      price: '67',
+      stock:'23',
+
+      image: require('../assets/producto.png'),
+    },
+    {
+      id: '4',
+      title: 'Harina de Almendra',
+      descripcion: 'Harina fina y suave hecha de almendras 100% naturales. Libre de gluten, perfecta para recetas de repostería saludable, como panes y galletas. Rica en proteínas, fibra y grasas saludables.',
+      price: '50',
+      stock:'43',
+      image: require('../assets/producto.png'),
+    },
   ];
-  
+
+
+
 
 
   const filteredItems = items.filter(items =>
@@ -38,7 +71,7 @@ const Inventario = ({ navigation }) =>  {
         />
       </View>
       <View style={styles.containerButton}>
-        <TouchableOpacity style={styles.button}  onPress={() => navigation.navigate('RegistrarProducto')}
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('RegistrarProducto')}
         >
           <Text style={styles.buttonText}>Nuevo</Text>
           <Ionicons name="add" size={25} color="white" style={styles.iconAdd} />
@@ -46,40 +79,41 @@ const Inventario = ({ navigation }) =>  {
         </TouchableOpacity>
       </View>
       <View style={styles.contenedorFiltros}>
-      <TouchableOpacity
-        style={[
-          styles.bottonFilters,
-          activeFilter === 'todos' && styles.activeFilter, // Aplica estilos si este es el filtro activo
-        ]}
-        onPress={() => handleFilterChange('todos')}
-      >
-        <Text style={activeFilter === 'todos' ? styles.activeText : styles.inactiveText}>Todos</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.bottonFilters,
+            activeFilter === 'todos' && styles.activeFilter, // Aplica estilos si este es el filtro activo
+          ]}
+          onPress={() => handleFilterChange('todos')}
+        >
+          <Text style={activeFilter === 'todos' ? styles.activeText : styles.inactiveText}>Todos</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={[
-          styles.bottonFilters,
-          activeFilter === 'sinStock' && styles.activeFilter, // Aplica estilos si este es el filtro activo
-        ]}
-        onPress={() => handleFilterChange('sinStock')}
-      >
-        <Text style={activeFilter === 'sinStock' ? styles.activeText : styles.inactiveText}>Sin stock</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity
+          style={[
+            styles.bottonFilters,
+            activeFilter === 'sinStock' && styles.activeFilter, // Aplica estilos si este es el filtro activo
+          ]}
+          onPress={() => handleFilterChange('sinStock')}
+        >
+          <Text style={activeFilter === 'sinStock' ? styles.activeText : styles.inactiveText}>Sin stock</Text>
+        </TouchableOpacity>
+      </View>
 
-    <FlatList
-  data={filteredItems}
-  keyExtractor={(item) => item.id}
-  renderItem={({ item }) => (
-    <Card 
-      title={item.title} 
-      price={item.price} 
-      image={item.image} 
-      descripcion={item.descripcion} 
-      navigation={navigation} // Aquí se pasa navigation
-    />
-  )}
-/>
+      <FlatList
+        data={filteredItems}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <Card
+            title={item.title}
+            price={item.price}
+            image={item.image}
+            descripcion={item.descripcion}
+            stock={item.stock}
+            navigation={navigation} // Aquí se pasa navigation
+          />
+        )}
+      />
 
     </View>
   );
@@ -96,12 +130,12 @@ const styles = StyleSheet.create({
     fontSize: 44,
     fontWeight: 'bold',
     marginBottom: 14,
-    color: "#800020",
+    color: "#B90909",
   },
   p: {
     fontWeight: '400',
     marginBottom: 20,
-    color: "#800020",
+    color: "#B90909",
   },
   searchContainer: {
     flexDirection: 'row',
@@ -124,16 +158,16 @@ const styles = StyleSheet.create({
   },
   containerButton: {
     flex: 1,
-    alignItems: 'center', 
+    alignItems: 'center',
     justifyContent: 'center', // Centra el contenido verticalmente
     backgroundColor: '#F4F4F4',
-    marginBottom:50,
-    marginTop:50,
+    marginBottom: 50,
+    marginTop: 50,
   },
   button: {
-    width: 145, 
+    width: 145,
     height: 50,
-    backgroundColor: '#800020',
+    backgroundColor: '#B90909',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 25,
@@ -150,7 +184,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '800',
-    padding:2,
+    padding: 2,
   },
   iconAdd: {
   },
@@ -164,14 +198,14 @@ const styles = StyleSheet.create({
     borderRadius: 30, // Bordes redondeados
   },
   activeFilter: {
-    backgroundColor: '#800020', // Color de fondo cuando el filtro está activo
+    backgroundColor: '#B90909', // Color de fondo cuando el filtro está activo
   },
   inactiveText: {
     color: '#000', // Color de texto para filtros inactivos
   },
   activeText: {
     color: '#fff', // Color de texto para filtros activos
-    fontWeight:'bold',
+    fontWeight: 'bold',
   },
 });
 

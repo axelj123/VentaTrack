@@ -1,27 +1,30 @@
-/*CardsItems.js*/
+/* CardsItems.js */
 
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 
-const CardsItems = ({ title, price, image, descripcion, navigation }) => {
-  
+const CardsItems = ({ title, price, image, descripcion,stock, navigation }) => {
+
   return (
     <View style={styles.card}>
       <Image source={image} style={styles.image} />
+      
       <View style={styles.textContainer}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.descripcion}>{descripcion}</Text>
 
-        <Text style={styles.price}>{price}</Text>
-      </View>
-      
-      <TouchableOpacity 
-  style={styles.buttonContainer} 
-  onPress={() => navigation.navigate('VerItem',{ title, price, image, descripcion })}>
-  <Text style={styles.buttonText}>Ver</Text>
-</TouchableOpacity>
+        <View style={styles.priceStockContainer}>
+          <Text style={styles.price}>S/.{price}</Text>
+          <Text style={styles.stock}>Stock: {stock}</Text>
+        </View>
 
-   
+        <TouchableOpacity 
+          style={styles.buttonContainer} 
+          onPress={() => navigation.navigate('VerItem', { title, price, image, descripcion,stock })}
+        >
+          <Text style={styles.buttonText}>Ver</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -37,7 +40,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start', // Align items at the top
   },
   image: {
     width: 80,
@@ -47,35 +50,47 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
+    justifyContent: 'space-between', // Ensure even spacing between elements
   },
   title: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#8B0000', // Dark red color
+    color: '#B90909', // Dark red color
     marginBottom: 5,
   },
   descripcion: {
     fontSize: 12,
     fontWeight: '400',
-    color: '#8B0000', // Dark red color
-    marginBottom: 15,
+    color: '#B90909', // Dark red color
+    marginBottom: 10,
+  },
+  priceStockContainer: {
+    flexDirection: 'row', // Arrange price and stock horizontally
+    justifyContent: 'space-between', // Space them apart
+    alignItems: 'center', // Align items vertically in the center
+    marginBottom: 15, 
   },
   price: {
     fontSize: 20,
-    marginBottom: 15,
-    color: '#8B0000', // Dark red color
-
     fontWeight: '800',
+    color: '#B90909', // Dark red color
+  },
+  stock: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#B90909', // Dark red color
   },
   buttonContainer: {
-    backgroundColor: '#8B0000', // Dark red color
-    paddingVertical: 5,
-    paddingHorizontal: 15,
+    backgroundColor: '#B90909', // Dark red color
+    paddingVertical: 8,
+    paddingHorizontal: 20,
     borderRadius: 5,
+    alignSelf: 'flex-start', // Align the button to the left
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: 14,
   },
 });
 

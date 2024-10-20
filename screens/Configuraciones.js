@@ -11,8 +11,8 @@ const Configuraciones = () => {
           style={styles.profileImage}
           source={{ uri: 'https://www.elitesingles.co.uk/wp-content/uploads/sites/59/2019/11/2b_en_articleslide_sm2-350x264.jpg' }} // Imagen de usuario (coloca aquí la URL de la foto real del usuario)
         />
-        <Text style={styles.userName}>Nombre del Usuario</Text>
-        <Text style={styles.userEmail}>usuario@example.com</Text>
+        <Text style={styles.userName}>Melina Erika Muñoz Silva</Text>
+        <Text style={styles.userEmail}>axeljhosmell13@gmail.com</Text>
       </View>
 
       {/* Company Information Section */}
