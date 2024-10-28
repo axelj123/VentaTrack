@@ -9,21 +9,6 @@ const Home = () => {
     <View style={styles.container}>
  
 
-      <View style={styles.TitleSeccion}>
-        <Text style={styles.TextTitle}>Dashboard</Text>
-       
-      </View>
-
-
-      <View style={styles.dashboard}>
-        <Text style={styles.month}>Total de inspecciones</Text>
-        
-      </View>
-      <View style={styles.dashboard}>
-        <Text style={styles.month}>January</Text>
-       
-      </View>
-      
 
 
     </View>

@@ -10,7 +10,9 @@ import Login from './screens/Login';
 import Reportes from './screens/Reportes';
 import Configuraciones from './screens/Configuraciones';
 import Inventario from './screens/Inventario';
-import ViewItem  from './screens/ViewItem';
+import ViewItem from './screens/ViewItem';
+import VentaProducto from './screens/VentaProducto';
+import DetalleVenta from './screens/DetalleVenta';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -67,9 +69,9 @@ const TabNavigator = () => {
           elevation: 0,
           backgroundColor: '#B90909',
           borderRadius: 15,
-     
+
           borderTopWidth: 0,
-          margin:10,
+          margin: 10,
           height: 60,
         },
         tabBarActiveTintColor: 'white',
@@ -79,11 +81,11 @@ const TabNavigator = () => {
 
       <Tab.Screen options={{ headerShown: false }} name="Inventario" component={Inventario} />
       <Tab.Screen
-        name="NuevoProducto"
-        component={NuevoProducto}
+        name="VentaProducto"
+        component={VentaProducto}
         options={{
           headerShown: false, tabBarButton: (props) => <AddButton {...props} />,
-          tabBarStyle:{display:'none'},  tabBarIcon: ({ focused }) => (
+          tabBarStyle: { display: 'none' }, tabBarIcon: ({ focused }) => (
             <Ionicons name="cart" size={40} color="#fff" />
           ),
         }}
@@ -103,6 +105,7 @@ const Navigation = () => {
         <Stack.Screen name="MAIN" component={TabNavigator} />
         <Stack.Screen name="RegistrarProducto" component={NuevoProducto} />
         <Stack.Screen name="VerItem" component={ViewItem} />
+        <Stack.Screen name="DetalleVenta" component={DetalleVenta} />
 
       </Stack.Navigator>
     </NavigationContainer>

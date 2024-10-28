@@ -1,9 +1,23 @@
-// screens/Login.js
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Alert, ImageBackground, Image } from 'react-native';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  TouchableOpacity, 
+  Alert, 
+  Image, 
+  SafeAreaView, 
+  Dimensions, 
+  KeyboardAvoidingView, 
+  Platform, 
+  ScrollView
+} from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import CustomInput from '../components/CustomInput'; 
-import { useNavigation } from '@react-navigation/native'; 
+import CustomInput from '../components/CustomInput';
+import { useNavigation } from '@react-navigation/native';
+import { FontAwesome } from '@expo/vector-icons';
+
+const { width, height } = Dimensions.get('window');
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -12,108 +26,190 @@ const Login = () => {
 
   const navigation = useNavigation();
 
-  const handleHome = () => {
-    Alert.alert('Inicio de sesión', `Correo: ${email} \nContraseña: ${password}`);
-    navigation.navigate('MAIN'); 
+  const handleLogin = () => {
+  
+    navigation.navigate('MAIN');
   };
 
   return (
-    <ImageBackground
-      source={require('../assets/background-login.jpg')} 
-      style={styles.background}
-    >
-      <View style={styles.containerLogo}>
-        <View style={styles.blackRectangle}>
-          <Image
-            source={require('../assets/logo.png')} 
-            style={styles.logo}
-          />
-        </View>
-      </View>
+    <SafeAreaView style={styles.container}>
+      <StatusBar style="light" />
+      
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}
+                keyboardShouldPersistTaps="handled"
+>
 
-      <View style={styles.container}>
-        <StatusBar style="auto" />
+          <View style={styles.headerContainer}>
+            <View style={styles.logoContainer}>
+              <Image
+                source={require('../assets/logo.png')}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+            </View>
+            <Text style={styles.welcomeText}>¡Bienvenido!</Text>
+            <Text style={styles.subtitleText}>Sistema de Gestión de Inventario</Text>
+          </View>
 
-        <Text style={styles.title}>Login</Text>
-        <CustomInput  
-          containerStyle={{ marginHorizontal: 20 }}
-          placeholder={'Email'}
-          onChangeText={setEmail}
-        />
-        <CustomInput 
-          containerStyle={{ marginHorizontal: 20, marginTop: 10 }}
-          placeholder={'Password'}
-          onChangeText={setPassword}
-          error={passwordError}
-          secureTextEntry
-        />
-        <TouchableOpacity style={styles.button} onPress={handleHome}>
-          <Text style={styles.buttonText}>Ingresar</Text>
-        </TouchableOpacity>
-        <Text style={styles.textCopyRight}>@HeferApp S.A.C</Text>
-      </View>
-    </ImageBackground>
+          <View style={styles.formContainer}>
+            <View style={styles.inputContainer}>
+              <FontAwesome name="user" size={20} color="#666" style={styles.inputIcon} />
+              <CustomInput
+                containerStyle={styles.input}
+                placeholder="Correo electrónico"
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <FontAwesome name="lock" size={20} color="#666" style={styles.inputIcon} />
+              <CustomInput
+                containerStyle={styles.input}
+                placeholder="Contraseña"
+                onChangeText={setPassword}
+                error={passwordError}
+                secureTextEntry
+                autoCapitalize="none"
+                returnKeyType="done"
+                onSubmitEditing={handleLogin}
+              />
+            </View>
+
+            <TouchableOpacity style={styles.forgotPassword}>
+              <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.loginButton}
+              onPress={handleLogin}
+            >
+              <Text style={styles.loginButtonText}>INICIAR SESIÓN</Text>
+            </TouchableOpacity>
+
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>Sistema de Inventario v1.0</Text>
+              <Text style={styles.copyrightText}>Vida Divina S.A.C © 2024</Text>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  background: {
-    justifyContent: 'flex-end',
-    flex: 1,
-  },
-  containerLogo: {
-    alignItems: 'center',
-    marginBottom: 80, 
-  },
-  blackRectangle: {
-    backgroundColor: '#fff', 
-    width: 100, 
-    height: 100, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    borderTopLeftRadius: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    elevation: 5, 
-  },
-  logo: {
-    width: 120, 
-    height: 120, 
-  },
   container: {
-    width: '100%',
-    backgroundColor: '#fff',
-    height: '60%',
-    borderTopLeftRadius: 60,
-    padding: 20,
+    flex: 1,
+    backgroundColor: '#B90909', // Color principal amarillo
   },
-  title: {
-    fontSize: 34,
-    fontWeight: 'normal',
-    marginTop: 30,
-    marginBottom: 40,
-    textAlign: 'center',
-    color: '#333',
-  },
-  button: {
-    width: '100%',
-    height: 50,
-    backgroundColor: '#000',
+  headerContainer: {
+    flex: 0.4,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 5,
-    marginTop: 40,
-    elevation: 3,
+    paddingTop: 50,
   },
-  buttonText: {
+  logoContainer: {
+    width: 120,
+    height: 120,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  logo: {
+    width: '80%',
+    height: '80%',
+  },
+  welcomeText: {
+    fontSize: 28,
+    fontWeight: 'bold',
     color: '#fff',
-    fontSize: 18,
-    fontWeight: 'plain',
-  },
-  textCopyRight: {
+    marginTop: 20,
     textAlign: 'center',
-    marginTop: 50,
-    color: '#9d9d9f',
+  },
+  subtitleText: {
+    fontSize: 16,
+    color: '#fff',
+    marginTop: 5,
+    textAlign: 'center',
+  },
+  formContainer: {
+    flex: 0.6,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingHorizontal: 30,
+    paddingTop: 30,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+    borderRadius: 10,
+    paddingHorizontal: 15,
+  },
+  inputIcon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    height: 50,
+  },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginBottom: 20,
+  },
+  forgotPasswordText: {
+    color: '#666',
+    fontSize: 14,
+  },
+  loginButton: {
+    backgroundColor: '#B90909', // Color principal amarillo
+    height: 55,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  loginButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  footer: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  footerText: {
+    color: '#666',
+    fontSize: 14,
+    marginBottom: 5,
+  },
+  copyrightText: {
+    color: '#999',
+    fontSize: 12,
   },
 });
 

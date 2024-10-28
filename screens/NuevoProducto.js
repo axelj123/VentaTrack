@@ -1,62 +1,31 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, Dimensions, Alert, Image, Modal } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, Dimensions, Alert, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
-import * as ImagePicker from 'expo-image-picker';
+import ModalImagePicker from '../components/ModalImagePicker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const { width, height } = Dimensions.get('window');
 
 const RegistrarProducto = () => {
   const [selectedImage, setSelectedImage] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false); // Estado para controlar la visibilidad del menú
+  const [modalVisible, setModalVisible] = useState(false);
 
-  // Función para manejar la selección de imagen
-  const handleImagePick = async () => {
-    setModalVisible(false); // Cerrar el menú al seleccionar
+  const [dateIngreso, setDateIngreso] = useState(new Date());
+  const [dateVencimiento, setDateVencimiento] = useState(new Date());
+  const [showIngreso, setShowIngreso] = useState(false);
+  const [showVencimiento, setShowVencimiento] = useState(false);
 
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (permissionResult.granted === false) {
-      Alert.alert('¡Permiso denegado!', 'Necesitas permitir el acceso a la galería para seleccionar una imagen.');
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 4],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      console.log(result.assets[0].uri); // Verifica el URI de la imagen
-      setSelectedImage(result.assets[0].uri);
-
-    }
+  const onChangeIngreso = (event, selectedDate) => {
+    const currentDate = selectedDate || dateIngreso;
+    setShowIngreso(false);
+    setDateIngreso(currentDate);
   };
 
-  // Función para manejar la toma de foto
-  const handleTakePhoto = async () => {
-    setModalVisible(false); // Cerrar el menú al seleccionar
-
-    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-
-    if (permissionResult.granted === false) {
-      Alert.alert('¡Permiso denegado!', 'Necesitas permitir el acceso a la cámara para tomar una foto.');
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 4],
-
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      console.log(result.assets[0].uri); // Verifica el URI de la imagen
-      setSelectedImage(result.assets[0].uri);
-    }
+  const onChangeVencimiento = (event, selectedDate) => {
+    const currentDate = selectedDate || dateVencimiento;
+    setShowVencimiento(false);
+    setDateVencimiento(currentDate);
   };
 
   return (
@@ -65,21 +34,21 @@ const RegistrarProducto = () => {
         <Svg
           height={height * 0.35}
           width="100%"
-          viewBox={`0 0 ${width} ${height * 0.35}`} preserveAspectRatio="none"
+          viewBox={`0 0 ${width} ${height * 0.35}`}
+          preserveAspectRatio="none"
           style={styles.svgCurve}
         >
           <Path
             fill="#B90909"
             d={`M0 0 
-       L${width} 0 
-       L${width} ${height * 0.25} 
-       C${width * 0.85} ${height * 0.3}, ${width * 0.15} ${height * 0.35}, 0 ${height * 0.25} 
-       Z`}
+                 L${width} 0 
+                 L${width} ${height * 0.25} 
+                 C${width * 0.85} ${height * 0.3}, ${width * 0.15} ${height * 0.35}, 0 ${height * 0.25} 
+                 Z`}
           />
         </Svg>
-
-        <Text style={styles.headerText}>Agregar</Text>
       </View>
+
       <View style={styles.imageContainer}>
         <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.imagePlaceholder}>
           {selectedImage ? (
@@ -90,42 +59,66 @@ const RegistrarProducto = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Menú de selección de imagen */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Seleccionar Imagen</Text>
-            <TouchableOpacity onPress={handleImagePick} style={styles.modalButton}>
-              <Text style={styles.modalButtonText}>Seleccionar de Galería</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleTakePhoto} style={styles.modalButton}>
-              <Text style={styles.modalButtonText}>Tomar Foto</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.modalCloseButton}>
-              <Text style={styles.modalButtonText}>Cancelar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      <ModalImagePicker
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+        setSelectedImage={setSelectedImage}
+      />
 
       <View style={styles.form}>
-        <Text style={styles.label}>Nombre</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Nombre del producto"
-          placeholderTextColor="#999"
-        />
-        <Text style={styles.label}>Descripción</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Breve descripción"
-          placeholderTextColor="#999"
-        />
+        {/* Row 1: Nombre and Fecha de Ingreso */}
+        <View style={styles.row}>
+          <View style={styles.halfInput}>
+            <Text style={styles.label}>Nombre</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Nombre del producto"
+              placeholderTextColor="#999"
+            />
+          </View>
+          <View style={styles.halfInput}>
+            <Text style={styles.label}>Fecha de ingreso</Text>
+            <TouchableOpacity onPress={() => setShowIngreso(true)} style={styles.dateInput}>
+              <Text style={styles.dateText}>{dateIngreso.toLocaleDateString()}</Text>
+            </TouchableOpacity>
+            {showIngreso && (
+              <DateTimePicker
+                value={dateIngreso}
+                mode="date"
+                display="spinner"
+                onChange={onChangeIngreso}
+              />
+            )}
+          </View>
+        </View>
+
+        {/* Row 2: Fecha de Vencimiento and Descripción */}
+        <View style={styles.row}>
+          <View style={styles.halfInput}>
+            <Text style={styles.label}>Fecha de vencimiento</Text>
+            <TouchableOpacity onPress={() => setShowVencimiento(true)} style={styles.dateInput}>
+              <Text style={styles.dateText}>{dateVencimiento.toLocaleDateString()}</Text>
+            </TouchableOpacity>
+            {showVencimiento && (
+              <DateTimePicker
+                value={dateVencimiento}
+                mode="date"
+                display="spinner"
+                onChange={onChangeVencimiento}
+              />
+            )}
+          </View>
+          <View style={styles.halfInput}>
+            <Text style={styles.label}>Descripción</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Breve descripción"
+              placeholderTextColor="#999"
+            />
+          </View>
+        </View>
+
+        {/* Row 3: Precio and Stock */}
         <View style={styles.row}>
           <View style={styles.halfInput}>
             <Text style={styles.label}>Precio</Text>
@@ -144,6 +137,8 @@ const RegistrarProducto = () => {
             />
           </View>
         </View>
+
+        {/* Botón de registrar */}
         <View style={styles.containerButton}>
           <TouchableOpacity style={styles.button}>
             <Text style={styles.buttonText}>Registrar</Text>
@@ -162,19 +157,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
   },
-  headerText: {
-    color: '#FFFFFF',
-    fontSize: 34,
-    fontWeight: 'bold',
-    position: 'absolute',
-    top: 40,
-    left: 20,
-    zIndex: 1,
-  },
   imageContainer: {
     alignItems: 'center',
     marginTop: height * 0.2,
-    zIndex: 2,
   },
   imagePlaceholder: {
     width: 200,
@@ -184,58 +169,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo oscuro para el modal
-  },
-  modalContent: {
-    width: 300,
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    alignItems: 'center',
-    elevation: 5,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
-  },
-  modalButton: {
-    backgroundColor: '#800020',
-    padding: 10,
-    borderRadius: 5,
-    width: '100%', // Ajusta el ancho para que los botones ocupen el mismo espacio
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  modalButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-  },
-  modalCloseButton: {
-    backgroundColor: '#B90909',
-    padding: 10,
-    borderRadius: 5,
-    width: '100%',
-    alignItems: 'center',
   },
   form: {
     padding: 20,
     marginTop: 20,
   },
   label: {
-    color: '#B90909',
+    color: '#000',
     marginBottom: 5,
     fontWeight: 'bold',
   },
@@ -247,6 +191,18 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 15,
   },
+  dateInput: {
+    borderWidth: 1,
+    borderColor: 'white',
+    borderRadius: 25,
+    backgroundColor: 'white',
+    padding: 10,
+    marginBottom: 15,
+    justifyContent: 'center',
+  },
+  dateText: {
+    color: '#800EB',
+  },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -256,33 +212,27 @@ const styles = StyleSheet.create({
   },
   containerButton: {
     flex: 1,
-    alignItems: 'center', 
-    justifyContent: 'center', // Centra el contenido verticalmente
-    backgroundColor: '#F4F4F4',
-    marginBottom:50,
-    marginTop:50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 40,
+    marginBottom: 50,
   },
   button: {
-    width: 145, 
+    width: 145,
     height: 50,
     backgroundColor: '#B90909',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 25,
-    marginTop: 40,
-    elevation: 3, // Sombra en Android
-    shadowColor: '#000', // Sombra en iOS
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 2,
-    marginBottom: 30,
-    flexDirection: 'row',
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '800',
-    padding:2,
   },
   image: {
     width: '100%',

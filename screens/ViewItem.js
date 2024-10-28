@@ -4,10 +4,18 @@ import { Ionicons } from '@expo/vector-icons'; // Si usas Expo, puedes usar icon
 import { useNavigation } from '@react-navigation/native'; // Para manejar la navegación
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { useToast } from '../components/Toast'; // Ajusta la ruta según sea necesario
+import ModalImagePicker from '../components/ModalImagePicker';
 
 function ViewItem({ route }) {
   const navigation = useNavigation(); // Hook para obtener acceso a la navegación
   const { title, price, image, descripcion,stock } = route.params;
+
+  const { Toast, showToast } = useToast();
+
+  const manejarMostrarToast = () => {
+    showToast('¡Operación exitosa!', 'Se ha guardado correctamente','success');
+  };
 
   // Estados locales para manejar los valores editables
   const [editableTitle, setEditableTitle] = useState(title);
@@ -84,44 +92,31 @@ function ViewItem({ route }) {
 
   return (
     <View style={styles.container}>
+     {Toast} 
+
       {/* Flecha de retroceso */}
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back" size={24} color="black" />
       </TouchableOpacity>
-
       {/* Imagen del producto */}
       <View style={styles.imageContainer}>
   {/* Si hay una imagen seleccionada, mostrarla. Si no, mostrar la imagen pasada como parámetro */}
   <Image source={selectedImage ? { uri: selectedImage } : image} style={styles.image} />
 </View>
+
 <View style={styles.imageContainer}>
   <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.imagePlaceholder}>
-    <MaterialIcons name="camera-alt" size={24} color="#8B0000" />
+    <MaterialIcons name="camera-alt" size={24} color="#B90909" />
   </TouchableOpacity>
 </View>
 
       {/* Menú de selección de imagen */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Seleccionar Imagen</Text>
-            <TouchableOpacity onPress={handleImagePick} style={styles.modalButton}>
-              <Text style={styles.modalButtonText}>Seleccionar de Galería</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleTakePhoto} style={styles.modalButton}>
-              <Text style={styles.modalButtonText}>Tomar Foto</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.modalCloseButton}>
-              <Text style={styles.modalButtonText}>Cancelar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      <ModalImagePicker
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+        setSelectedImage={setSelectedImage}
+      />
+
 
       {/* Información del producto editable */}
       <View style={styles.infoContainer}>
@@ -158,7 +153,7 @@ function ViewItem({ route }) {
 
         {/* Precio editable y botón de guardar */}
         <View style={styles.footer}>
-          <TouchableOpacity onPress={() => setIsEditingPrice(true)}>
+          <TouchableOpacity onPress={() => setIsEditingPrice(true)} >
             {isEditingPrice ? (
               <TextInput
                 style={styles.priceInput}
@@ -192,9 +187,10 @@ function ViewItem({ route }) {
         <TouchableOpacity style={styles.saveButton}>
             <Text style={styles.saveButtonTextEliminar}>Eliminar</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-            <Text style={styles.saveButtonTextGuardar}>Guardar</Text>
+          <TouchableOpacity style={styles.saveButton}onPress={manejarMostrarToast} > 
+            <Text style={styles.saveButtonTextGuardar} >Guardar</Text>
           </TouchableOpacity>
+     
         </View>
       
 
@@ -240,20 +236,20 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#800020',
+    color: '#000',
     textAlign: 'center',
   },
   titleInput: {
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#800020',
+    color: '#B90909',
     textAlign: 'center',
     borderWidth: 0, // Sin bordes
   },
   descriptionText: {
     fontSize: 16,
-    color: '#7A7A7A',
+    color: '#000',
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -297,7 +293,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
   },
   saveButtonTextGuardar: {
-    backgroundColor:'#800020',
+    backgroundColor:'#B90909',
     padding:10,
     color: 'white',
     fontSize: 18,
@@ -313,12 +309,15 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+
     backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo oscuro para el modal
   },
   modalContent: {
-    width: 300,
+    width: '100%',
     padding: 20,
     backgroundColor: '#FFFFFF',
     borderRadius: 10,
@@ -331,20 +330,28 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   modalButton: {
-    backgroundColor: '#800020',
     padding: 10,
     borderRadius: 5,
     width: '100%', // Ajusta el ancho para que los botones ocupen el mismo espacio
     alignItems: 'center',
+    borderBottomColor: '#f1f1f0',
+    flexDirection: 'row',
+justifyContent:'center',
+    borderBottomWidth: 1,
     marginBottom: 10,
   },
+  modalIcon:{
+marginRight:5,
+  },
   modalButtonText: {
-    color: '#FFFFFF',
+    color: '#000',
     fontWeight: 'bold',
+    fontSize: 18,
   },
   modalCloseButton: {
-    backgroundColor: '#8B0000',
     padding: 10,
+    borderBottomColor: '#f1f1f0',
+    borderBottomWidth: 1,
     borderRadius: 5,
     width: '100%',
     alignItems: 'center',

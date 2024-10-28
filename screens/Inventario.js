@@ -10,36 +10,33 @@ const Inventario = ({ navigation }) => {
     {
       id: '1',
       title: 'Aceite de Coco',
-      descripcion: 'Aceite virgen extra, 100% orgánico, prensado en frío, ideal para cocinar, hornear o usar como hidratante natural para piel y cabello. Rico en antioxidantes y con propiedades antimicrobianas.',
+      descripcion: 'Aceite virgen extra',
       price: '45',
-      stock:'13',
-
+      stock: '13',
       image: require('../assets/producto.png'),
     },
     {
       id: '2',
       title: 'Miel de Abeja',
-      descripcion: 'Miel pura recolectada de flores silvestres, sin aditivos ni conservantes. Rica en antioxidantes, excelente para endulzar de manera natural y fortalecer el sistema inmunológico.',
+      descripcion: 'Miel pura recolectada de flores silvestres.',
       price: '30',
-      stock:'93',
-
+      stock: '93',
       image: require('../assets/producto.png'),
     },
     {
       id: '3',
       title: 'Quinua Orgánica',
-      descripcion: 'Grano andino certificado, libre de pesticidas y alto en proteínas. Ideal para reemplazar el arroz o como base de ensaladas y guisos. Rico en fibra y minerales esenciales.',
+      descripcion: 'Grano andino certificado.',
       price: '67',
-      stock:'23',
-
+      stock: '23',
       image: require('../assets/producto.png'),
     },
     {
       id: '4',
       title: 'Harina de Almendra',
-      descripcion: 'Harina fina y suave hecha de almendras 100% naturales. Libre de gluten, perfecta para recetas de repostería saludable, como panes y galletas. Rica en proteínas, fibra y grasas saludables.',
+      descripcion: 'Harina fina y suave hecha de almendras 100% naturales.',
       price: '50',
-      stock:'43',
+      stock: '43',
       image: require('../assets/producto.png'),
     },
   ];
@@ -113,6 +110,8 @@ const Inventario = ({ navigation }) => {
             navigation={navigation} // Aquí se pasa navigation
           />
         )}
+        numColumns={2} // Set 2 columns
+
       />
 
     </View>
@@ -130,12 +129,12 @@ const styles = StyleSheet.create({
     fontSize: 44,
     fontWeight: 'bold',
     marginBottom: 14,
-    color: "#B90909",
+    color: "#000",
   },
   p: {
     fontWeight: '400',
     marginBottom: 20,
-    color: "#B90909",
+    color: "#000",
   },
   searchContainer: {
     flexDirection: 'row',
@@ -144,8 +143,7 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     borderRadius: 15,
     paddingHorizontal: 10,
-    marginLeft: 20,
-    marginRight: 20,
+
     marginTop: 30,
     marginBottom: 10,
 

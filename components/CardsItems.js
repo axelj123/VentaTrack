@@ -34,13 +34,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 10,
-    marginVertical: 10,
+    margin: 10, // Add margin for spacing between cards
+    width: '45%', // Make the card occupy about half the screen width
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    flexDirection: 'row',
-    alignItems: 'flex-start', // Align items at the top
+    flexDirection: 'column', // Stack image and text vertically
+    alignItems: 'center', // Center items horizontally
   },
   image: {
     width: 80,
@@ -50,47 +51,50 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
-    justifyContent: 'space-between', // Ensure even spacing between elements
+    alignItems: 'center', // Center text in the middle of the card
   },
   title: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
-    color: '#B90909', // Dark red color
+    color: '#000',
     marginBottom: 5,
+    textAlign: 'center',
   },
   descripcion: {
     fontSize: 12,
     fontWeight: '400',
-    color: '#B90909', // Dark red color
+    color: '#000',
     marginBottom: 10,
+    textAlign: 'center',
   },
   priceStockContainer: {
-    flexDirection: 'row', // Arrange price and stock horizontally
-    justifyContent: 'space-between', // Space them apart
-    alignItems: 'center', // Align items vertically in the center
-    marginBottom: 15, 
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: 5,
+    marginBottom: 15,
   },
   price: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '800',
-    color: '#B90909', // Dark red color
+    color: '#000',
   },
   stock: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
-    color: '#B90909', // Dark red color
+    color: '#000',
   },
   buttonContainer: {
-    backgroundColor: '#B90909', // Dark red color
-    paddingVertical: 8,
-    paddingHorizontal: 20,
+    backgroundColor: '#B90909',
+    paddingVertical: 5,
+    paddingHorizontal: 15,
     borderRadius: 5,
-    alignSelf: 'flex-start', // Align the button to the left
+    marginTop: 10,
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 12,
   },
 });
 
