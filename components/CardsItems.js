@@ -31,7 +31,7 @@ const CardsItems = ({ title, price, image, descripcion,stock, navigation }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#fafafa',
     borderRadius: 10,
     padding: 10,
     margin: 10, // Add margin for spacing between cards

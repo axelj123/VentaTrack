@@ -4,27 +4,29 @@
     "slug": "herfer-app",
     "version": "1.0.0",
     "orientation": "portrait",
-
     "userInterfaceStyle": "light",
     "splash": {
-   
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.axeljhosmell123.herferapp"
     },
     "android": {
       "adaptiveIcon": {
-     
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.axeljhosmell123.herferapp"
     },
-    "web": {
-     
-    },
+    "web": {},
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "9194895c-a18c-42ce-90fe-2cd6d1d20945"
+      }
+    }
   }
 }

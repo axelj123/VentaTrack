@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     marginTop: 40,
-    backgroundColor: '#F4F4F4',
+    backgroundColor: 'white',
   },
   h1: {
     fontSize: 44,
@@ -158,7 +158,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center', // Centra el contenido verticalmente
-    backgroundColor: '#F4F4F4',
     marginBottom: 50,
     marginTop: 50,
   },
@@ -168,7 +167,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#B90909',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 25,
+    borderRadius: 15,
     marginTop: 40,
     elevation: 3, // Sombra en Android
     shadowColor: '#000', // Sombra en iOS

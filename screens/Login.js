@@ -1,23 +1,25 @@
-import React, { useState } from 'react';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  TouchableOpacity, 
-  Alert, 
-  Image, 
-  SafeAreaView, 
-  Dimensions, 
-  KeyboardAvoidingView, 
-  Platform, 
+import React, { useState, useEffect } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Alert,
+  Image,
+  SafeAreaView,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import CustomInput from '../components/CustomInput';
 import { useNavigation } from '@react-navigation/native';
 import { FontAwesome } from '@expo/vector-icons';
+import { initDatabase } from '../database'; // Importa la función de inicialización de la base de datos
 
-const { width, height } = Dimensions.get('window');
+
+
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -26,24 +28,39 @@ const Login = () => {
 
   const navigation = useNavigation();
 
+  useEffect(() => {
+    const initializeDB = async () => {
+      try {
+        const db = await initDatabase();
+      } catch (error) {
+        console.error("Error al inicializar la base de datos en Login:", error);
+      }
+    };
+
+    initializeDB();
+  }, []);
+
+
   const handleLogin = () => {
-  
+
     navigation.navigate('MAIN');
   };
 
   return (
+
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
-      
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}
-                keyboardShouldPersistTaps="handled"
->
+          keyboardShouldPersistTaps="handled"
+        >
 
           <View style={styles.headerContainer}>
+            <Text style={styles.welcomeText}> Log in</Text>
             <View style={styles.logoContainer}>
               <Image
                 source={require('../assets/logo.png')}
@@ -51,8 +68,6 @@ const Login = () => {
                 resizeMode="contain"
               />
             </View>
-            <Text style={styles.welcomeText}>¡Bienvenido!</Text>
-            <Text style={styles.subtitleText}>Sistema de Gestión de Inventario</Text>
           </View>
 
           <View style={styles.formContainer}>
@@ -60,7 +75,11 @@ const Login = () => {
               <FontAwesome name="user" size={20} color="#666" style={styles.inputIcon} />
               <CustomInput
                 containerStyle={styles.input}
-                placeholder="Correo electrónico"
+                placeholder="Usuario"
+                focusedBorderColor="#211132"           // Color del borde cuando está en foco
+                unfocusedBorderColor="#999"           // Color del borde cuando no está en foco
+                placeholderTextColor="#999"           // Color del texto del placeholder
+                errorMessage="Este campo es obligatorio" 
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -72,6 +91,10 @@ const Login = () => {
               <CustomInput
                 containerStyle={styles.input}
                 placeholder="Contraseña"
+                focusedBorderColor="#211132"           // Color del borde cuando está en foco
+                unfocusedBorderColor="#999"           // Color del borde cuando no está en foco
+                placeholderTextColor="#999"           // Color del texto del placeholder
+                errorMessage="Este campo es obligatorio"
                 onChangeText={setPassword}
                 error={passwordError}
                 secureTextEntry
@@ -85,7 +108,7 @@ const Login = () => {
               <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.loginButton}
               onPress={handleLogin}
             >
@@ -100,74 +123,62 @@ const Login = () => {
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
+
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#B90909', // Color principal amarillo
+    backgroundColor: '#fafafa', 
   },
   headerContainer: {
-    flex: 0.4,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 50,
+    paddingTop: 30,
   },
   logoContainer: {
-    width: 120,
-    height: 120,
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    justifyContent: 'center',
+    width: 250,
+    height: 250,
     alignItems: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    marginTop:30,
+  
   },
   logo: {
     width: '80%',
     height: '80%',
   },
   welcomeText: {
-    fontSize: 28,
+    fontSize: 48,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#000',
     marginTop: 20,
     textAlign: 'center',
   },
-  subtitleText: {
-    fontSize: 16,
-    color: '#fff',
-    marginTop: 5,
-    textAlign: 'center',
-  },
+
   formContainer: {
     flex: 0.6,
     backgroundColor: '#fff',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    paddingHorizontal: 30,
-    paddingTop: 30,
+    borderTopLeftRadius: 35,
+    borderTopRightRadius: 35,
+    paddingHorizontal: 25,
+    
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 15,
     borderRadius: 10,
-    paddingHorizontal: 15,
   },
   inputIcon: {
-    marginRight: 10,
+    marginRight: 15,
+    marginTop: 45,
+
   },
   input: {
     flex: 1,
     height: 50,
+    marginTop: 45,
   },
   forgotPassword: {
     alignSelf: 'flex-end',
@@ -178,20 +189,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   loginButton: {
-    backgroundColor: '#B90909', // Color principal amarillo
+    backgroundColor: '#B90909',
     height: 55,
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 20,
-    elevation: 3,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+  
   },
   loginButtonText: {
     color: '#fff',

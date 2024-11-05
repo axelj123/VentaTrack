@@ -69,9 +69,9 @@ const VentaProducto = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.containerHeader}>
         <Text style={styles.header}>Venta</Text>
-        <TouchableOpacity style={styles.carritoContent}>
+        <TouchableOpacity style={styles.carritoContent}onPress={() => navigation.navigate('DetalleVenta')} >
           <MaterialIcons name="add-shopping-cart" size={24} color={'white'} />
-          <Text style={styles.carritoText} onPress={() => navigation.navigate('DetalleVenta')}>Ir al carrito</Text>
+          <Text style={styles.carritoText} >Ir al carrito</Text>
         </TouchableOpacity>
       </View>
       
@@ -85,7 +85,7 @@ const VentaProducto = ({ navigation }) => {
           placeholder="Search"
           value={searchTerm}
           onChangeText={text => setSearchTerm(text)}
-          selectionColor="#003366" // Change cursor color here
+          selectionColor="#003366" 
         />
       </View>
       {/* Lista de productos */}
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     flex: 1,
-    backgroundColor: '#f0f0f0'
+    backgroundColor: 'white'
   },
   containerHeader: {
     flexDirection: 'row',

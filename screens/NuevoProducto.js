@@ -4,10 +4,14 @@ import { MaterialIcons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
 import ModalImagePicker from '../components/ModalImagePicker';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 const { width, height } = Dimensions.get('window');
 
 const RegistrarProducto = () => {
+  const [open, setOpen] = useState(false); // Estado para abrir/cerrar el menú desplegable
+  const [selectedCategory, setSelectedCategory] = useState(null); // Estado para la categoría seleccionada
+
   const [selectedImage, setSelectedImage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -28,13 +32,22 @@ const RegistrarProducto = () => {
     setDateVencimiento(currentDate);
   };
 
+
+  const [items, setItems] = useState([
+    { label: 'Alimentos', value: 'alimentos' },
+    { label: 'Bebidas', value: 'bebidas' },
+    { label: 'Ropa', value: 'ropa' },
+    { label: 'Electrónica', value: 'electronica' },
+    // Agrega más categorías según sea necesario
+  ]);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerContainer}>
         <Svg
           height={height * 0.35}
           width="100%"
-          viewBox={`0 0 ${width} ${height * 0.35}`}
+          viewBox={`0 0 ${width} ${height * 0.5}`}
           preserveAspectRatio="none"
           style={styles.svgCurve}
         >
@@ -67,6 +80,18 @@ const RegistrarProducto = () => {
 
       <View style={styles.form}>
         {/* Row 1: Nombre and Fecha de Ingreso */}
+        <DropDownPicker
+        open={open}
+        value={selectedCategory}
+        items={items}
+        setOpen={setOpen}
+        setValue={setSelectedCategory}
+        setItems={setItems}
+        placeholder="select Country"
+        style={styles.dropdown}
+        dropDownContainerStyle={styles.dropdownContainer}
+        zIndex={1000}
+      />
         <View style={styles.row}>
           <View style={styles.halfInput}>
             <Text style={styles.label}>Nombre</Text>
@@ -138,6 +163,7 @@ const RegistrarProducto = () => {
           </View>
         </View>
 
+
         {/* Botón de registrar */}
         <View style={styles.containerButton}>
           <TouchableOpacity style={styles.button}>
@@ -151,7 +177,8 @@ const RegistrarProducto = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#F4F4F4',
+    backgroundColor: 'white',
+    flex:1,
   },
   svgCurve: {
     position: 'absolute',
@@ -159,7 +186,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     alignItems: 'center',
-    marginTop: height * 0.2,
+    marginTop: height * 0.1,
   },
   imagePlaceholder: {
     width: 200,
@@ -185,24 +212,40 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: 'white',
-    borderRadius: 25,
+    borderColor: '#E0E0E0',
+    borderRadius: 15,
     backgroundColor: 'white',
     padding: 10,
     marginBottom: 15,
   },
+  dropdown: {
+    backgroundColor: 'white', // Color de fondo gris claro
+    borderRadius: 12,           // Bordes redondeados suaves
+    borderColor: '#E0E0E0',     // Color de borde gris claro
+    borderWidth: 1,             // Grosor del borde
+    height: 45,                 // Ajuste de altura similar a la imagen
+    paddingHorizontal: 10,      // Espacio interno horizontal
+    marginBottom:20,
+
+  },
+  dropdownContainer: {
+    borderColor: '#E0E0E0',     // Color de borde gris claro
+    borderRadius: 12,           // Bordes redondeados suaves
+  },
   dateInput: {
     borderWidth: 1,
-    borderColor: 'white',
-    borderRadius: 25,
+    borderColor: '#E0E0E0',
+    borderRadius: 15,
     backgroundColor: 'white',
     padding: 10,
+    height:50,
     marginBottom: 15,
     justifyContent: 'center',
   },
   dateText: {
     color: '#800EB',
   },
+  
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
