@@ -1,16 +1,69 @@
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import CustomInput from '../components/CustomInput';
-import DropDownPicker from 'react-native-dropdown-picker';
 import { Platform } from 'react-native';
+import { getDBConnection } from '../database';
+import DropDownPicker from 'react-native-dropdown-picker';
+
 
 const DetalleVenta = ({ navigation }) => {
-
     const [openCourier, setOpenCourier] = useState(false);
     const [openTipo, setOpenTipo] = useState(false);
     const [selectedCourier, setSelectedCourier] = useState(null);
     const [selectedTipo, setSelectedTipo] = useState(null);
+    const [courierItems, setCourierItems] = useState([]);
+    const [tipoItems, setTipoItems] = useState([]);
+
+    const fetchCouriers = async () => {
+        try {
+            const db = await getDBConnection(); // Obtiene la conexión de la base de datos existente
+            const result = await db.getAllAsync(`SELECT * FROM Courier`); // Obtiene todos los couriers
+
+            if (result && result.length > 0) {
+                const couriersList = result.map(courier => ({
+                    label: courier.nombre,
+                    value: courier.Courier_id
+                }));
+                setCourierItems(couriersList);
+            } else {
+                console.log("No se encontraron couriers en la base de datos.");
+                setCourierItems([]);
+            }
+        } catch (error) {
+            console.error("Error al obtener couriers:", error);
+        }
+    };
+
+    // Función para obtener los tipos de venta
+    const fetchTipos = async () => {
+        try {
+            const db = await getDBConnection(); // Obtiene la conexión de la base de datos existente
+            const result = await db.getAllAsync(`SELECT * FROM Tipo_Venta`);
+
+            if (result && result.length > 0) {
+                const tiposList = result.map(tipo => ({
+                    label: tipo.nombre,
+                    value: tipo.tipoVenta_id
+                }));
+                setTipoItems(tiposList);
+            } else {
+                console.log("No se encontraron tipos de venta en la base de datos.");
+                setTipoItems([]);
+            }
+        } catch (error) {
+            console.error("Error al obtener tipos de venta:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchCouriers();
+        fetchTipos();
+    }, []);
+
+
+
+
     const handleCourierOpen = () => {
         setOpenTipo(false);  // Cierra el otro dropdown
     };
@@ -18,12 +71,7 @@ const DetalleVenta = ({ navigation }) => {
     const handleTipoOpen = () => {
         setOpenCourier(false);  // Cierra el otro dropdown
     };
-    const [items, setItems] = useState([
-        { label: 'Olva Courier', value: 'alimentos' },
-        { label: 'Shalom', value: 'bebidas' },
-        { label: 'Agencia', value: 'ropa' },
-        // Agrega más categorías según sea necesario
-    ]);
+
     const [productos, setProductos] = useState([
         {
             id: 1,
@@ -92,55 +140,47 @@ const DetalleVenta = ({ navigation }) => {
                     placeholderTextColor="#999"           // Color del texto del placeholder
                     errorMessage="Este campo es obligatorio"
                 />
+<View style={styles.row}>
+    <View style={styles.halfWidth}>
+        <DropDownPicker
+            open={openCourier}
+            value={selectedCourier}
+            items={courierItems}
+            setOpen={setOpenCourier}
+            setValue={setSelectedCourier}
+            setItems={setCourierItems}
+            placeholder="Courier"
+            onOpen={handleCourierOpen}
+            zIndex={1000} // Ajuste de zIndex para evitar conflictos
+            style={[styles.dropdown, styles.customDropdown]}
+            dropDownContainerStyle={styles.customDropDownContainer}
+            placeholderStyle={styles.placeholderStyle}
+            selectedItemLabelStyle={styles.selectedItemLabel}
+            listItemLabelStyle={styles.listItemLabel}
+        />
+    </View>
 
-                <View style={styles.row}>
-                    <View style={styles.dropdownWrapper}>
-                        <DropDownPicker
-                            open={openCourier}
-                            value={selectedCourier}
-                            items={items}
-                            setOpen={setOpenCourier}
-                            setValue={setSelectedCourier}
-                            setItems={setItems}
-                            placeholder="Courier"
-                            onOpen={handleCourierOpen} // Cambiado a una función
-                            style={styles.dropdown}
-                            containerStyle={styles.dropdownContainer}
-                            textStyle={styles.dropdownText}
-                            labelStyle={styles.dropdownLabel}
-                            placeholderStyle={styles.placeholderStyle}
-                            listItemLabelStyle={styles.listItemLabel}
-                            dropDownContainerStyle={styles.dropDownContainerStyle}
-                            selectedItemLabelStyle={styles.selectedItemLabel}
-                            listItemContainerStyle={styles.listItemContainer}
-                            zIndex={3000}
-                            zIndexInverse={1000}
-                        />
-                    </View>
-                    <View style={styles.dropdownWrapper}>
-                        <DropDownPicker
-                            open={openTipo}
-                            value={selectedTipo}
-                            items={items}
-                            setOpen={setOpenTipo}
-                            setValue={setSelectedTipo}
-                            setItems={setItems}
-                            placeholder="Tipo"
-                            onOpen={handleTipoOpen} // Cambiado a una función
-                            style={styles.dropdown}
-                            containerStyle={styles.dropdownContainer}
-                            textStyle={styles.dropdownText}
-                            labelStyle={styles.dropdownLabel}
-                            placeholderStyle={styles.placeholderStyle}
-                            listItemLabelStyle={styles.listItemLabel}
-                            dropDownContainerStyle={styles.dropDownContainerStyle}
-                            selectedItemLabelStyle={styles.selectedItemLabel}
-                            listItemContainerStyle={styles.listItemContainer}
-                            zIndex={2000}
-                            zIndexInverse={2000}
-                        />
-                    </View>
-                </View>
+    <View style={styles.halfWidth}>
+        <DropDownPicker
+            open={openTipo}
+            value={selectedTipo}
+            items={tipoItems}
+            setOpen={setOpenTipo}
+            setValue={setSelectedTipo}
+            setItems={setTipoItems}
+            placeholder="Tipo"
+            onOpen={handleTipoOpen}
+            zIndex={900} // Un zIndex menor para que no interfiera con el primer dropdown
+            style={[styles.dropdown, styles.customDropdown]}
+            dropDownContainerStyle={styles.customDropDownContainer}
+            placeholderStyle={styles.placeholderStyle}
+            selectedItemLabelStyle={styles.selectedItemLabel}
+            listItemLabelStyle={styles.listItemLabel}
+        />
+    </View>
+</View>
+
+
                 <View style={styles.inputDescuento}>
 
                     <CustomInput
@@ -249,76 +289,40 @@ const styles = StyleSheet.create({
     row: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginVertical: 15,
-        zIndex: 1000,
-        gap: 10,
-    },
-    dropdownWrapper: {
-        flex: 1,
-        justifyContent: 'center',
-
+        marginBottom: 10,
+        marginTop: 20,
 
     },
-    dropdown: {
-        borderWidth: 1.5,
-        borderColor: '#E8E8E8',
-        borderRadius: 12,
-
-        backgroundColor: '#FFFFFF',
-        minHeight: 45,
-        ...Platform.select({
-            ios: {
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.1,
-                shadowRadius: 2,
-            },
-            android: {
-                elevation: 2,
-            },
-        }),
+    halfWidth: {
+        width: '48%', // Cada dropdown ocupará el 48% del ancho para dejar espacio entre ellos
     },
-    dropdownContainer: {
-        paddingVertical: 2,
-
+    customDropdown: {
+        backgroundColor: '#FFF',
+        borderRadius: 8,
+        borderColor: '#999',
+        paddingHorizontal: 10,
+        height: 45,
+        marginBottom: 15,
+        
     },
-    dropdownText: {
-        fontSize: 14,
-
-    },
-    dropdownLabel: {
-        fontSize: 14,
-
+    customDropDownContainer: {
+        borderRadius: 8,
+        backgroundColor: '#FFF',
+        borderColor: '#999',
+        maxHeight: 150,
+     
     },
     placeholderStyle: {
-        color: '#000',
+        color: '#A9A9A9',
         fontSize: 14,
-        fontWeight: '400',
-    },
-    listItemLabel: {
-        color: '#333',
-        fontSize: 14,
-        fontWeight: '400',
-    },
-    dropDownContainerStyle: {
-        borderWidth: 1,
-        borderColor: '#E8E8E8',
-        borderRadius: 12,
-        backgroundColor: '#FFFFFF',
-        ...Platform.select({
-            ios: {
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.15,
-                shadowRadius: 3,
-            },
-            android: {
-                elevation: 3,
-            },
-        }),
     },
     selectedItemLabel: {
-
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    listItemLabel: {
+        color: '#666',
+        fontSize: 14,
     },
     listItemContainer: {
         height: 45,

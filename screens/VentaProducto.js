@@ -100,6 +100,8 @@ const VentaProducto = ({ navigation }) => {
             descripcion={item.descripcion}
             stock={item.stock}
             navigation={navigation} // Aquí se pasa navigation
+            buttonText="Agregar"
+
           />
         )}
         numColumns={2} // Set 2 columns
@@ -133,19 +135,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'white',
-    borderWidth: 0,
+    borderWidth: 1,
+    borderColor: '#999', // Agregar color de borde
     borderRadius: 15,
     paddingHorizontal: 10,
-
-    marginTop: 30,
-    marginBottom: 20,
-
+    marginVertical: 10, // Agregar margen superior e inferior
   },
   searchInput: {
     height: 40,
     flex: 1,
     paddingHorizontal: 10,
     fontSize: 16,
+  },
+  icon: {
+    marginRight: 10, // Agregar espacio entre el icono y el campo de entrada
   },
   carritoContent: {
     flexDirection: 'row',

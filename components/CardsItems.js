@@ -3,7 +3,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 
-const CardsItems = ({ title, price, image, descripcion,stock, navigation }) => {
+const CardsItems = ({ title, price, image, descripcion,stock, navigation,buttonText }) => {
 
   return (
     <View style={styles.card}>
@@ -22,8 +22,8 @@ const CardsItems = ({ title, price, image, descripcion,stock, navigation }) => {
           style={styles.buttonContainer} 
           onPress={() => navigation.navigate('VerItem', { title, price, image, descripcion,stock })}
         >
-          <Text style={styles.buttonText}>Ver</Text>
-        </TouchableOpacity>
+          <Text style={[styles.buttonText, buttonText && { color: '#fff' }]}>{buttonText || 'Ver'}</Text>
+          </TouchableOpacity>
       </View>
     </View>
   );

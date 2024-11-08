@@ -1,67 +1,48 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, Dimensions, Alert, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import Svg, { Path } from 'react-native-svg';
 import ModalImagePicker from '../components/ModalImagePicker';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import DropDownPicker from 'react-native-dropdown-picker';
+import { getDBConnection } from '../database';
+import CustomInput from '../components/CustomInput';
+import CustomDatePicker from '../components/CustomDatePicker';
 
 const { width, height } = Dimensions.get('window');
 
 const RegistrarProducto = () => {
-  const [open, setOpen] = useState(false); // Estado para abrir/cerrar el menú desplegable
-  const [selectedCategory, setSelectedCategory] = useState(null); // Estado para la categoría seleccionada
-
+  const [openCategoria, setOpenCategoria] = useState(false);
+  const [selectedCategoria, setSelectedCategoria] = useState(null);
+  const [categoriaItems, setCategoriaItems] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
-  const [dateIngreso, setDateIngreso] = useState(new Date());
-  const [dateVencimiento, setDateVencimiento] = useState(new Date());
-  const [showIngreso, setShowIngreso] = useState(false);
-  const [showVencimiento, setShowVencimiento] = useState(false);
-
-  const onChangeIngreso = (event, selectedDate) => {
-    const currentDate = selectedDate || dateIngreso;
-    setShowIngreso(false);
-    setDateIngreso(currentDate);
+  const fetchCategorias = async () => {
+    try {
+      const db = await getDBConnection();
+      const result = await db.getAllAsync(`SELECT * FROM Categoria_Producto`);
+      if (result && result.length > 0) {
+        const categoriasList = result.map(categoria => ({
+          label: categoria.nombre,
+          value: categoria.categoria_id
+        }));
+        setCategoriaItems(categoriasList);
+      } else {
+        console.log("No se encontraron categorias en la base de datos.");
+        setCategoriaItems([]);
+      }
+    } catch (error) {
+      console.error("Error al obtener categorias:", error);
+    }
   };
 
-  const onChangeVencimiento = (event, selectedDate) => {
-    const currentDate = selectedDate || dateVencimiento;
-    setShowVencimiento(false);
-    setDateVencimiento(currentDate);
-  };
-
-
-  const [items, setItems] = useState([
-    { label: 'Alimentos', value: 'alimentos' },
-    { label: 'Bebidas', value: 'bebidas' },
-    { label: 'Ropa', value: 'ropa' },
-    { label: 'Electrónica', value: 'electronica' },
-    // Agrega más categorías según sea necesario
-  ]);
+  useEffect(() => {
+    fetchCategorias();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Svg
-          height={height * 0.35}
-          width="100%"
-          viewBox={`0 0 ${width} ${height * 0.5}`}
-          preserveAspectRatio="none"
-          style={styles.svgCurve}
-        >
-          <Path
-            fill="#B90909"
-            d={`M0 0 
-                 L${width} 0 
-                 L${width} ${height * 0.25} 
-                 C${width * 0.85} ${height * 0.3}, ${width * 0.15} ${height * 0.35}, 0 ${height * 0.25} 
-                 Z`}
-          />
-        </Svg>
-      </View>
 
+      <Text style={styles.title}>Agregar</Text>
       <View style={styles.imageContainer}>
         <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.imagePlaceholder}>
           {selectedImage ? (
@@ -79,92 +60,96 @@ const RegistrarProducto = () => {
       />
 
       <View style={styles.form}>
-        {/* Row 1: Nombre and Fecha de Ingreso */}
+        {/* Nombre y Descripción */}
+        <CustomInput
+          placeholder="Nombre del producto"
+          focusedBorderColor="#000"
+          unfocusedBorderColor="#E0E0E0"
+          placeholderTextColor="#999"
+          containerStyle={styles.fullWidthInput}
+        />
+        <CustomInput
+          placeholder="Descripción"
+          focusedBorderColor="#000"
+          unfocusedBorderColor="#E0E0E0"
+          placeholderTextColor="#999"
+          containerStyle={styles.fullWidthInput}
+        />
+
+        {/* Fecha de Ingreso y Fecha de Vencimiento */}
+        <View style={styles.row}>
+          <CustomDatePicker
+            placeholder="Fecha de ingreso"
+            focusedBorderColor="#000"
+
+            onDateChange={(selectedDate) => {}}
+            containerStyle={styles.halfInput}
+            errorMessage="Este campo es obligatorio"
+          />
+          <CustomDatePicker
+            placeholder="Fecha de vencimiento"
+            focusedBorderColor="#000"
+            onDateChange={(selectedDate) => {}}
+            containerStyle={styles.halfInput}
+            errorMessage="Este campo es obligatorio"
+          />
+        </View>
+
+        {/* Precio y Comisión */}
+        <View style={styles.row}>
+          <CustomInput
+            placeholder="Precio (Soles)"
+            focusedBorderColor="#000"
+            unfocusedBorderColor="#E0E0E0"
+            placeholderTextColor="#999"
+            keyboardType="numeric"
+            containerStyle={styles.halfInput}
+          />
+          <CustomInput
+            placeholder="Comision (%)"
+            focusedBorderColor="#000"
+            unfocusedBorderColor="#E0E0E0"
+            placeholderTextColor="#999"
+            keyboardType="numeric"
+            containerStyle={styles.halfInput}
+          />
+        </View>
+
+        {/* Comisión y Stock */}
+        <View style={styles.row}>
+          <CustomInput
+            placeholder="Comision (%)"
+            focusedBorderColor="#000"
+            unfocusedBorderColor="#E0E0E0"
+            placeholderTextColor="#999"
+            keyboardType="numeric"
+            containerStyle={styles.halfInput}
+          />
+          <CustomInput
+            placeholder="Stock"
+            focusedBorderColor="#000"
+            unfocusedBorderColor="#E0E0E0"
+            placeholderTextColor="#999"
+            keyboardType="numeric"
+            containerStyle={styles.halfInput}
+          />
+        </View>
+
+        {/* Categoría */}
         <DropDownPicker
-        open={open}
-        value={selectedCategory}
-        items={items}
-        setOpen={setOpen}
-        setValue={setSelectedCategory}
-        setItems={setItems}
-        placeholder="select Country"
-        style={styles.dropdown}
-        dropDownContainerStyle={styles.dropdownContainer}
-        zIndex={1000}
-      />
-        <View style={styles.row}>
-          <View style={styles.halfInput}>
-            <Text style={styles.label}>Nombre</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Nombre del producto"
-              placeholderTextColor="#999"
-            />
-          </View>
-          <View style={styles.halfInput}>
-            <Text style={styles.label}>Fecha de ingreso</Text>
-            <TouchableOpacity onPress={() => setShowIngreso(true)} style={styles.dateInput}>
-              <Text style={styles.dateText}>{dateIngreso.toLocaleDateString()}</Text>
-            </TouchableOpacity>
-            {showIngreso && (
-              <DateTimePicker
-                value={dateIngreso}
-                mode="date"
-                display="spinner"
-                onChange={onChangeIngreso}
-              />
-            )}
-          </View>
-        </View>
+          open={openCategoria}
+          value={selectedCategoria}
+          items={categoriaItems}
+          setOpen={setOpenCategoria}
+          setValue={setSelectedCategoria}
+          setItems={setCategoriaItems}
+          placeholder="Categoría"
+          style={styles.dropdown}
+          dropDownContainerStyle={styles.dropdownContainer}
+          zIndex={1000}
+        />
 
-        {/* Row 2: Fecha de Vencimiento and Descripción */}
-        <View style={styles.row}>
-          <View style={styles.halfInput}>
-            <Text style={styles.label}>Fecha de vencimiento</Text>
-            <TouchableOpacity onPress={() => setShowVencimiento(true)} style={styles.dateInput}>
-              <Text style={styles.dateText}>{dateVencimiento.toLocaleDateString()}</Text>
-            </TouchableOpacity>
-            {showVencimiento && (
-              <DateTimePicker
-                value={dateVencimiento}
-                mode="date"
-                display="spinner"
-                onChange={onChangeVencimiento}
-              />
-            )}
-          </View>
-          <View style={styles.halfInput}>
-            <Text style={styles.label}>Descripción</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Breve descripción"
-              placeholderTextColor="#999"
-            />
-          </View>
-        </View>
-
-        {/* Row 3: Precio and Stock */}
-        <View style={styles.row}>
-          <View style={styles.halfInput}>
-            <Text style={styles.label}>Precio</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Soles"
-              placeholderTextColor="#999"
-            />
-          </View>
-          <View style={styles.halfInput}>
-            <Text style={styles.label}>Stock</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="ejm: 12"
-              placeholderTextColor="#999"
-            />
-          </View>
-        </View>
-
-
-        {/* Botón de registrar */}
+        {/* Botón de Registrar */}
         <View style={styles.containerButton}>
           <TouchableOpacity style={styles.button}>
             <Text style={styles.buttonText}>Registrar</Text>
@@ -178,19 +163,23 @@ const RegistrarProducto = () => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: 'white',
-    flex:1,
+    flex: 1,
+    padding: 10,
   },
-  svgCurve: {
-    position: 'absolute',
-    top: 0,
+  title:{
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: 14,
+    color: "#000",
+    marginTop:30,
   },
   imageContainer: {
     alignItems: 'center',
-    marginTop: height * 0.1,
+    marginBottom: 20,
   },
   imagePlaceholder: {
-    width: 200,
-    height: 200,
+    width: 150,
+    height: 150,
     backgroundColor: '#FFFFFF',
     borderRadius: 10,
     justifyContent: 'center',
@@ -202,62 +191,39 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   form: {
-    padding: 20,
-    marginTop: 20,
-  },
-  label: {
-    color: '#000',
-    marginBottom: 5,
-    fontWeight: 'bold',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 15,
-    backgroundColor: 'white',
-    padding: 10,
-    marginBottom: 15,
+    paddingHorizontal: 20,
   },
   dropdown: {
-    backgroundColor: 'white', // Color de fondo gris claro
-    borderRadius: 12,           // Bordes redondeados suaves
-    borderColor: '#E0E0E0',     // Color de borde gris claro
-    borderWidth: 1,             // Grosor del borde
-    height: 45,                 // Ajuste de altura similar a la imagen
-    paddingHorizontal: 10,      // Espacio interno horizontal
-    marginBottom:20,
-
+    backgroundColor: 'white',
+    borderRadius: 12,
+    borderColor: '#E0E0E0',
+    borderWidth: 1,
+    height: 45,
+    paddingHorizontal: 10,
+    marginBottom: 20,
+    width: '60%', // Ajusta el ancho del dropdown para hacerlo más pequeño
+    alignSelf: 'center', // Centra el dropdown en el contenedor
   },
   dropdownContainer: {
-    borderColor: '#E0E0E0',     // Color de borde gris claro
-    borderRadius: 12,           // Bordes redondeados suaves
-  },
-  dateInput: {
-    borderWidth: 1,
     borderColor: '#E0E0E0',
-    borderRadius: 15,
-    backgroundColor: 'white',
-    padding: 10,
-    height:50,
-    marginBottom: 15,
-    justifyContent: 'center',
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
   },
-  dateText: {
-    color: '#800EB',
-  },
-  
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 15,
   },
   halfInput: {
     width: '48%',
   },
+  fullWidthInput: {
+    width: '100%',
+    marginBottom: 15,
+  },
   containerButton: {
-    flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 40,
+    marginTop: 20,
     marginBottom: 50,
   },
   button: {

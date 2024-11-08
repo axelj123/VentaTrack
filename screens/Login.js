@@ -16,7 +16,8 @@ import { StatusBar } from 'expo-status-bar';
 import CustomInput from '../components/CustomInput';
 import { useNavigation } from '@react-navigation/native';
 import { FontAwesome } from '@expo/vector-icons';
-import { initDatabase } from '../database'; // Importa la función de inicialización de la base de datos
+import { initDatabase,dropTables } from '../database'; // Importa la función de inicialización de la base de datos
+import * as FileSystem from 'expo-file-system';
 
 
 
@@ -27,19 +28,28 @@ const Login = () => {
   const [passwordError, setPasswordError] = useState('');
 
   const navigation = useNavigation();
+  const dbUri = `${FileSystem.documentDirectory}SQLite/VentasDB.db`; // Ruta de la base de datos
 
   useEffect(() => {
     const initializeDB = async () => {
       try {
-        const db = await initDatabase();
+        // Verifica si la base de datos ya existe
+        const dbExists = await FileSystem.getInfoAsync(dbUri);
+  
+        if (!dbExists.exists) {
+          console.log("Inicializando la base de datos por primera vez...");
+          await initDatabase();
+        } else {
+          console.log("La base de datos ya existe, se omite la inicialización.");
+        }
       } catch (error) {
         console.error("Error al inicializar la base de datos en Login:", error);
       }
     };
-
+  
     initializeDB();
   }, []);
-
+  
 
   const handleLogin = () => {
 
@@ -76,9 +86,9 @@ const Login = () => {
               <CustomInput
                 containerStyle={styles.input}
                 placeholder="Usuario"
-                focusedBorderColor="#211132"           // Color del borde cuando está en foco
-                unfocusedBorderColor="#999"           // Color del borde cuando no está en foco
-                placeholderTextColor="#999"           // Color del texto del placeholder
+                focusedBorderColor="#211132"         
+                unfocusedBorderColor="#999"       
+                placeholderTextColor="#999"          
                 errorMessage="Este campo es obligatorio" 
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -91,9 +101,9 @@ const Login = () => {
               <CustomInput
                 containerStyle={styles.input}
                 placeholder="Contraseña"
-                focusedBorderColor="#211132"           // Color del borde cuando está en foco
-                unfocusedBorderColor="#999"           // Color del borde cuando no está en foco
-                placeholderTextColor="#999"           // Color del texto del placeholder
+                focusedBorderColor="#211132"          
+                unfocusedBorderColor="#999"       
+                placeholderTextColor="#999"         
                 errorMessage="Este campo es obligatorio"
                 onChangeText={setPassword}
                 error={passwordError}

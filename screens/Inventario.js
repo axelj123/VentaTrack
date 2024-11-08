@@ -58,15 +58,15 @@ const Inventario = ({ navigation }) => {
       <Text style={styles.p}>¡Gestiona tus productos!</Text>
 
       <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="gray" style={styles.icon} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search"
-          value={searchTerm}
-          onChangeText={text => setSearchTerm(text)}
-          selectionColor="#003366" // Change cursor color here
-        />
-      </View>
+    <Ionicons name="search" size={20} color="gray" style={styles.icon} />
+    <TextInput
+      style={styles.searchInput}
+      placeholder="Search"
+      value={searchTerm}
+      onChangeText={(text) => setSearchTerm(text)}
+      selectionColor="#003366" // Change cursor color here
+    />
+  </View>
       <View style={styles.containerButton}>
         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('RegistrarProducto')}
         >
@@ -122,14 +122,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    marginTop: 40,
     backgroundColor: 'white',
   },
   h1: {
-    fontSize: 44,
+    fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 14,
     color: "#000",
+    marginTop:20,
   },
   p: {
     fontWeight: '400',
@@ -140,19 +140,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'white',
-    borderWidth: 0,
+    borderWidth: 1,
+    borderColor: '#999', // Agregar color de borde
     borderRadius: 15,
     paddingHorizontal: 10,
-
-    marginTop: 30,
-    marginBottom: 10,
-
+    marginVertical: 20, // Agregar margen superior e inferior
   },
   searchInput: {
     height: 40,
     flex: 1,
     paddingHorizontal: 10,
     fontSize: 16,
+  },
+  icon: {
+    marginRight: 10, // Agregar espacio entre el icono y el campo de entrada
   },
   containerButton: {
     flex: 1,
