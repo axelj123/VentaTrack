@@ -1,7 +1,12 @@
 // App.js
 import React from 'react';
-import Navigation from './Navigation'; 
+import { ToastProvider } from './components/ToastContext';
+import Navigation from './Navigation'; // Suponiendo que tienes un archivo de navegación
 
 export default function App() {
-  return <Navigation />; 
+  return (
+    <ToastProvider>
+      <Navigation />
+    </ToastProvider>
+  );
 }

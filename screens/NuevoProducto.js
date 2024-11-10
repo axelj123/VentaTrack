@@ -1,21 +1,52 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions, Image } from 'react-native';
+import React, { useRef, useState, useEffect } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  SafeAreaView,
+  Image,
+  Keyboard
+} from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import ModalImagePicker from '../components/ModalImagePicker';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { getDBConnection } from '../database';
+import { getDBConnection, createProducto } from '../database';
 import CustomInput from '../components/CustomInput';
 import CustomDatePicker from '../components/CustomDatePicker';
+import { useToast } from '../components/ToastContext'; // Importar el contexto
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
-const { width, height } = Dimensions.get('window');
+const FORM_DATA_KEY = 'form_data_key';  // Clave de almacenamiento
 
 const RegistrarProducto = () => {
+  const navigation = useNavigation();
+
+  const { showToast } = useToast(); // Usamos el hook para acceder al showToast
+  
+  // Definir estados para cada campo del formulario
+  const [nombre, setNombre] = useState('');
+  const [descripcion, setDescripcion] = useState('');
+  const [precioCompra, setPrecioCompra] = useState('');
+  const [precioVenta, setPrecioVenta] = useState('');
+  const [cantidad, setCantidad] = useState('');
+  const [fechaIngreso, setFechaIngreso] = useState('');
+  const [fechaVencimiento, setFechaVencimiento] = useState('');
   const [openCategoria, setOpenCategoria] = useState(false);
   const [selectedCategoria, setSelectedCategoria] = useState(null);
   const [categoriaItems, setCategoriaItems] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
+  // Cargar los datos del formulario al montar el componente
+  useEffect(() => {
+    fetchCategorias();
+    loadFormData();
+  }, []);
+
+  // Función para obtener categorías de la base de datos
   const fetchCategorias = async () => {
     try {
       const db = await getDBConnection();
@@ -27,7 +58,6 @@ const RegistrarProducto = () => {
         }));
         setCategoriaItems(categoriasList);
       } else {
-        console.log("No se encontraron categorias en la base de datos.");
         setCategoriaItems([]);
       }
     } catch (error) {
@@ -35,14 +65,123 @@ const RegistrarProducto = () => {
     }
   };
 
-  useEffect(() => {
-    fetchCategorias();
-  }, []);
+  // Función para cargar datos guardados en AsyncStorage
+  const loadFormData = async () => {
+    try {
+      const savedData = await AsyncStorage.getItem(FORM_DATA_KEY);
+      if (savedData) {
+        const formData = JSON.parse(savedData);
+        setNombre(formData.nombre || '');
+        setDescripcion(formData.descripcion || '');
+        setPrecioCompra(formData.precioCompra || '');
+        setPrecioVenta(formData.precioVenta || '');
+        setCantidad(formData.cantidad || '');
+        setFechaIngreso(formData.fechaIngreso || '');
+        setFechaVencimiento(formData.fechaVencimiento || '');
+        setSelectedCategoria(formData.selectedCategoria || null);
+        setSelectedImage(formData.selectedImage || null);
+      }
+    } catch (error) {
+      console.error("Error al cargar los datos del formulario:", error);
+    }
+  };
 
+  // Guardar los datos del formulario en AsyncStorage cada vez que cambie algún campo
+  const saveFormData = async () => {
+    try {
+      const formData = {
+        nombre,
+        descripcion,
+        precioCompra,
+        precioVenta,
+        cantidad,
+        fechaIngreso,
+        fechaVencimiento,
+        selectedCategoria,
+        selectedImage,
+      };
+      await AsyncStorage.setItem(FORM_DATA_KEY, JSON.stringify(formData));
+    } catch (error) {
+      console.error("Error al guardar los datos del formulario:", error);
+    }
+  };
+
+  // Llamar a saveFormData cuando cambie cualquier campo del formulario
+  useEffect(() => {
+    saveFormData();
+  }, [nombre, descripcion, precioCompra, precioVenta, cantidad, fechaIngreso, fechaVencimiento, selectedCategoria, selectedImage]);
+
+  // Función para formatear las fechas
+  const formatDate = (date) => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const day = d.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Función para registrar el producto
+  const handleRegistrarProducto = async () => {
+    if (!nombre || !descripcion || !precioCompra || !precioVenta || !cantidad || !fechaIngreso || !fechaVencimiento || !selectedCategoria) {
+      showToast('Error', 'Por favor, complete todos los campos.', 'warning');
+      return;
+    }
+
+    const fechaIngresoFormateada = formatDate(fechaIngreso);
+    const fechaVencimientoFormateada = formatDate(fechaVencimiento);
+
+    const producto = {
+      nombre,
+      descripcion,
+      precio_compra: parseFloat(precioCompra),
+      precio_venta: parseFloat(precioVenta),
+      cantidad: parseInt(cantidad),
+      imagen: selectedImage,
+      fecha_ingreso: fechaIngresoFormateada,
+      fecha_vencimiento: fechaVencimientoFormateada,
+      categoria_id: selectedCategoria
+    };
+
+    try {
+      const db = await getDBConnection();
+      await createProducto(db, producto);
+
+      // Limpia los campos después de registrar y elimina el almacenamiento
+      setNombre('');
+      setDescripcion('');
+      setPrecioCompra('');
+      setPrecioVenta('');
+      setCantidad('');
+      setFechaIngreso('');
+      setFechaVencimiento('');
+      setSelectedCategoria(null);
+      setSelectedImage(null);
+      setOpenCategoria(false);
+
+      // Elimina el formulario guardado en AsyncStorage
+      await AsyncStorage.removeItem(FORM_DATA_KEY);
+
+      Keyboard.dismiss();
+      showToast('Éxito', 'Producto registrado correctamente.', 'success');
+    } catch (error) {
+      console.error("Error al registrar el producto:", error);
+      showToast('Error', 'Hubo un problema al registrar el producto.', 'warning');
+    }
+  };
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+  };
   return (
     <SafeAreaView style={styles.container}>
-
-      <Text style={styles.title}>Agregar</Text>
+     <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.backButton} 
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color="#333" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Registrar Producto</Text>
+      </View>
       <View style={styles.imageContainer}>
         <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.imagePlaceholder}>
           {selectedImage ? (
@@ -60,8 +199,9 @@ const RegistrarProducto = () => {
       />
 
       <View style={styles.form}>
-        {/* Nombre y Descripción */}
         <CustomInput
+          value={nombre}
+          onChangeText={setNombre}
           placeholder="Nombre del producto"
           focusedBorderColor="#000"
           unfocusedBorderColor="#E0E0E0"
@@ -69,6 +209,10 @@ const RegistrarProducto = () => {
           containerStyle={styles.fullWidthInput}
         />
         <CustomInput
+          value={descripcion}
+          onChangeText={setDescripcion}
+          isTextArea={true}
+
           placeholder="Descripción"
           focusedBorderColor="#000"
           unfocusedBorderColor="#E0E0E0"
@@ -76,29 +220,30 @@ const RegistrarProducto = () => {
           containerStyle={styles.fullWidthInput}
         />
 
-        {/* Fecha de Ingreso y Fecha de Vencimiento */}
         <View style={styles.row}>
           <CustomDatePicker
+            value={fechaIngreso}
+            onDateChange={setFechaIngreso}
             placeholder="Fecha de ingreso"
             focusedBorderColor="#000"
-
-            onDateChange={(selectedDate) => {}}
             containerStyle={styles.halfInput}
             errorMessage="Este campo es obligatorio"
           />
           <CustomDatePicker
+            value={fechaVencimiento}
+            onDateChange={setFechaVencimiento}
             placeholder="Fecha de vencimiento"
             focusedBorderColor="#000"
-            onDateChange={(selectedDate) => {}}
             containerStyle={styles.halfInput}
             errorMessage="Este campo es obligatorio"
           />
         </View>
 
-        {/* Precio y Comisión */}
         <View style={styles.row}>
           <CustomInput
-            placeholder="Precio (Soles)"
+            value={precioCompra}
+            onChangeText={setPrecioCompra}
+            placeholder="Precio original (Soles)"
             focusedBorderColor="#000"
             unfocusedBorderColor="#E0E0E0"
             placeholderTextColor="#999"
@@ -106,7 +251,9 @@ const RegistrarProducto = () => {
             containerStyle={styles.halfInput}
           />
           <CustomInput
-            placeholder="Comision (%)"
+            value={precioVenta}
+            onChangeText={setPrecioVenta}
+            placeholder="Precio Venta (Soles)"
             focusedBorderColor="#000"
             unfocusedBorderColor="#E0E0E0"
             placeholderTextColor="#999"
@@ -115,17 +262,10 @@ const RegistrarProducto = () => {
           />
         </View>
 
-        {/* Comisión y Stock */}
         <View style={styles.row}>
           <CustomInput
-            placeholder="Comision (%)"
-            focusedBorderColor="#000"
-            unfocusedBorderColor="#E0E0E0"
-            placeholderTextColor="#999"
-            keyboardType="numeric"
-            containerStyle={styles.halfInput}
-          />
-          <CustomInput
+            value={cantidad}
+            onChangeText={setCantidad}
             placeholder="Stock"
             focusedBorderColor="#000"
             unfocusedBorderColor="#E0E0E0"
@@ -135,7 +275,6 @@ const RegistrarProducto = () => {
           />
         </View>
 
-        {/* Categoría */}
         <DropDownPicker
           open={openCategoria}
           value={selectedCategoria}
@@ -149,9 +288,8 @@ const RegistrarProducto = () => {
           zIndex={1000}
         />
 
-        {/* Botón de Registrar */}
         <View style={styles.containerButton}>
-          <TouchableOpacity style={styles.button}>
+          <TouchableOpacity style={styles.button} onPress={handleRegistrarProducto}>
             <Text style={styles.buttonText}>Registrar</Text>
           </TouchableOpacity>
         </View>
@@ -166,16 +304,36 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
   },
-  title:{
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    paddingTop: 50,
+    paddingBottom: 15,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EAEAEA',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    marginLeft: 15,
+  },
+  backButton: {
+    padding: 5,
+  },
+  title: {
     fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 14,
     color: "#000",
-    marginTop:30,
+    marginTop: 40,
   },
   imageContainer: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 30,
+    marginTop: 30,
   },
   imagePlaceholder: {
     width: 150,
@@ -201,8 +359,8 @@ const styles = StyleSheet.create({
     height: 45,
     paddingHorizontal: 10,
     marginBottom: 20,
-    width: '60%', // Ajusta el ancho del dropdown para hacerlo más pequeño
-    alignSelf: 'center', // Centra el dropdown en el contenedor
+    width: '60%',
+    alignSelf: 'center',
   },
   dropdownContainer: {
     borderColor: '#E0E0E0',

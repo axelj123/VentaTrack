@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View, Easing } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -6,49 +6,64 @@ const CustomDatePicker = ({
   containerStyle,
   placeholder = "Seleccione fecha",
   onDateChange,
+  value,
   errorMessage = "Este campo es obligatorio",
   focusedBorderColor = '#6200EE',
   unfocusedBorderColor = '#ccc',
   placeholderTextColor = '#aaa',
 }) => {
   const [isFocused, setIsFocused] = useState(false);
-  const [date, setDate] = useState(null);
   const [showPicker, setShowPicker] = useState(false);
   const [error, setError] = useState(false);
-  const labelPosition = useRef(new Animated.Value(0)).current;
+  const labelPosition = useRef(new Animated.Value(value ? 1 : 0)).current;
+
+  useEffect(() => {
+    if (value) {
+      // Si `value` es una cadena (por ejemplo, al cargar de AsyncStorage), conviértelo a un objeto `Date`
+      if (typeof value === 'string' || !(value instanceof Date)) {
+        onDateChange(new Date(value)); // Actualiza `value` para que sea un objeto `Date`
+      } else {
+        animatedLabel(1); // Mueve la etiqueta hacia arriba si hay un valor inicial
+      }
+    } else {
+      animatedLabel(0);
+      setIsFocused(false);
+      setError(false);
+    }
+  }, [value]);
 
   const handleFocus = () => {
     setIsFocused(true);
     setError(false);
-    animatedLabel(1); // Mueve la etiqueta inmediatamente al enfocar
-    setShowPicker(true); // Muestra el DatePicker al enfocar
+    animatedLabel(1);
+    setShowPicker(true);
   };
 
   const handleBlur = () => {
     setIsFocused(false);
-    if (!date) {
+    if (!value) {
       setError(true);
-      animatedLabel(0); // Vuelve la etiqueta a la posición inicial si no hay fecha
+      animatedLabel(0);
     }
   };
 
   const handleDateChange = (event, selectedDate) => {
     setShowPicker(false);
     if (selectedDate) {
-      setDate(selectedDate);
       setError(false);
       onDateChange && onDateChange(selectedDate);
-    } else if (!date) {
+    } else if (!value) {
       animatedLabel(0);
     }
+    setIsFocused(false);
   };
 
   const animatedLabel = (toValue) => {
     Animated.timing(labelPosition, {
       toValue,
-      duration: 300, // Aumenta la duración para una animación más suave
+      duration: 300,
       useNativeDriver: false,
-      easing: Easing.inOut(Easing.ease), // Suaviza la transición usando Easing correctamente
+      easing: Easing.inOut(Easing.ease),
     }).start();
   };
 
@@ -58,13 +73,13 @@ const CustomDatePicker = ({
     backgroundColor: 'white',
     top: labelPosition.interpolate({
       inputRange: [0, 1],
-      outputRange: [14, -8], // Ajusta la posición de la etiqueta
+      outputRange: [14, -8],
     }),
     fontSize: labelPosition.interpolate({
       inputRange: [0, 1],
-      outputRange: [14, 12], // Tamaño de la fuente
+      outputRange: [14, 12],
     }),
-    color: isFocused || date ? focusedBorderColor : placeholderTextColor,
+    color: isFocused || value ? focusedBorderColor : placeholderTextColor,
   };
 
   return (
@@ -77,26 +92,26 @@ const CustomDatePicker = ({
           },
         ]}
       >
-        {!date && !isFocused && ( // Muestra el placeholder solo si no hay fecha y no está enfocado
+        {!value && !isFocused && ( // Muestra el placeholder solo si no hay fecha y no está enfocado
           <Text style={[styles.placeholderText, { color: placeholderTextColor }]}>
             {placeholder}
           </Text>
         )}
         <TouchableOpacity onPress={handleFocus} style={styles.dateInput}>
-          <Text style={{ color: date ? '#000' : 'transparent' }}>
-            {date ? date.toLocaleDateString() : placeholder}
+          <Text style={{ color: value ? '#000' : 'transparent' }}>
+            {value instanceof Date ? value.toLocaleDateString() : placeholder}
           </Text>
         </TouchableOpacity>
         {showPicker && (
           <DateTimePicker
-            value={date || new Date()}
+            value={value || new Date()}
             mode="date"
             display="spinner"
             onChange={handleDateChange}
             onBlur={handleBlur}
           />
         )}
-        {isFocused || date ? ( // Solo muestra la etiqueta animada si está enfocado o hay una fecha seleccionada
+        {isFocused || value ? (
           <Animated.Text style={[styles.label, labelStyle]}>{placeholder}</Animated.Text>
         ) : null}
       </View>

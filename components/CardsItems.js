@@ -3,7 +3,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 
-const CardsItems = ({ title, price, image, descripcion,stock, navigation,buttonText }) => {
+const CardsItems = ({productoId, title, price, image, descripcion,stock, navigation,buttonText }) => {
 
   return (
     <View style={styles.card}>
@@ -20,7 +20,7 @@ const CardsItems = ({ title, price, image, descripcion,stock, navigation,buttonT
 
         <TouchableOpacity 
           style={styles.buttonContainer} 
-          onPress={() => navigation.navigate('VerItem', { title, price, image, descripcion,stock })}
+          onPress={() => navigation.navigate('VerItem', {  Producto_id: productoId, title, price, image, descripcion,stock })}
         >
           <Text style={[styles.buttonText, buttonText && { color: '#fff' }]}>{buttonText || 'Ver'}</Text>
           </TouchableOpacity>
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#000',
-    marginBottom: 5,
+    margin: 5,
     textAlign: 'center',
   },
   descripcion: {

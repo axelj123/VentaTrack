@@ -1,69 +1,61 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect} from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Image,searchTerm} from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import Card from '../components/CardsItems'; // Ensure this path is correct
+import { useFocusEffect } from '@react-navigation/native';
 
+import { getDBConnection,listaProducto } from '../database';
 const VentaProducto = ({ navigation }) => {
-  const [search, setSearch] = useState('');
-  const items = [
-    {
-      id: '1',
-      title: 'Aceite de Coco',
-      descripcion: 'Aceite virgen extra',
-      price: '45',
-      stock: '13',
-      image: require('../assets/producto.png'),
-    },
-    {
-      id: '2',
-      title: 'Miel de Abeja',
-      descripcion: 'Miel pura recolectada de flores silvestres.',
-      price: '30',
-      stock: '93',
-      image: require('../assets/producto.png'),
-    },
-    {
-      id: '3',
-      title: 'Quinua Orgánica',
-      descripcion: 'Grano andino certificado.',
-      price: '67',
-      stock: '23',
-      image: require('../assets/producto.png'),
-    },
-    {
-      id: '4',
-      title: 'Harina de Almendra',
-      descripcion: 'Harina fina y suave hecha de almendras 100% naturales.',
-      price: '50',
-      stock: '43',
-      image: require('../assets/producto.png'),
-    },
-    {
-      id: '4',
-      title: 'Harina de Almendra',
-      descripcion: 'Harina fina y suave hecha de almendras 100% naturales.',
-      price: '50',
-      stock: '43',
-      image: require('../assets/producto.png'),
-    },
-    {
-      id: '4',
-      title: 'Harina de Almendra',
-      descripcion: 'Harina fina y suave hecha de almendras 100% naturales.',
-      price: '50',
-      stock: '43',
-      image: require('../assets/producto.png'),
-    },
-  ];
 
-  const filteredItems = items.filter(item =>
-    item.title.toLowerCase().includes(search.toLowerCase())
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [activeFilter, setActiveFilter] = useState('todos');
+
+  const [productos, setProductos] = useState([]);
+  const fetchProductos = async () => {
+    try {
+      const db = await getDBConnection();
+      const productosData = await listaProducto(db); // Llama a la función que consulta la base de datos
+      setProductos(productosData);  // Guarda los productos obtenidos en el estado
+    } catch (error) {
+      console.error('Error al obtener productos:', error);
+    }
+  };
+
+
+// Filtra los productos según el término de búsqueda y el filtro activo
+  const filterProducts = () => {
+    let filtered = productos;
+
+    // Filtrar por nombre o descripción si hay un término de búsqueda
+    if (searchTerm) {
+      filtered = filtered.filter(producto =>
+        producto.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        producto.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Aplicar filtro de "sin stock" si se selecciona
+    if (activeFilter === 'sinStock') {
+      filtered = filtered.filter(producto => producto.cantidad === 0);
+    }
+
+    setFilteredItems(filtered);  // Actualiza el estado con los productos filtrados
+  };
+
+ // Llamar a fetchProductos cuando se monte el componente
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchProductos();
+    }, [])
   );
 
-  const [activeFilter, setActiveFilter] = useState('todos');
-  const handleFilterChange = (filter) => {
-    setActiveFilter(filter);
-  };
+  // Se ejecuta cada vez que cambia el término de búsqueda o el filtro
+  useEffect(() => {
+    filterProducts();
+  }, [searchTerm, activeFilter, productos]);
+
 
   return (
     <View style={styles.container}>
@@ -91,15 +83,16 @@ const VentaProducto = ({ navigation }) => {
       {/* Lista de productos */}
       <FlatList
         data={filteredItems}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.Producto_id.toString()}  // Usa Producto_id como clave única
         renderItem={({ item }) => (
           <Card
-            title={item.title}
-            price={item.price}
-            image={item.image}
-            descripcion={item.descripcion}
-            stock={item.stock}
-            navigation={navigation} // Aquí se pasa navigation
+          productoId={item.Producto_id}
+          title={item.nombre}
+          price={item.precio_venta}
+          image={{ uri: item.imagen }}  // Asume que 'imagen' es una URL o un path
+          descripcion={item.descripcion}
+          stock={item.cantidad}
+          navigation={navigation} // Pasamos la navegación al Card
             buttonText="Agregar"
 
           />

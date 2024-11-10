@@ -32,12 +32,14 @@ const Login = () => {
 
   useEffect(() => {
     const initializeDB = async () => {
+
       try {
         // Verifica si la base de datos ya existe
         const dbExists = await FileSystem.getInfoAsync(dbUri);
-  
+
         if (!dbExists.exists) {
           console.log("Inicializando la base de datos por primera vez...");
+
           await initDatabase();
         } else {
           console.log("La base de datos ya existe, se omite la inicialización.");

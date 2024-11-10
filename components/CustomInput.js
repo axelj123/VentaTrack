@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Animated, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -7,34 +7,50 @@ const CustomInput = ({
   placeholder,
   onChangeText,
   errorMessage = "Este campo es obligatorio",
-  focusedBorderColor = '#6200EE',       // Color del borde en foco
-  unfocusedBorderColor = '#ccc',        // Color del borde sin foco
-  placeholderTextColor = '#aaa',        // Color del texto del placeholder
+  focusedBorderColor = '#6200EE',
+  unfocusedBorderColor = '#ccc',
+  placeholderTextColor = '#aaa',
+  value,
+  reset,
+  isTextArea = false,
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
-  const [text, setText] = useState('');
   const [showPassword, setShowPassword] = useState(props.secureTextEntry);
   const [error, setError] = useState(false);
-  const labelPosition = useRef(new Animated.Value(text ? 1 : 0)).current;
+  const labelPosition = useRef(new Animated.Value(value ? 1 : 0)).current;
+
+  useEffect(() => {
+    if (reset) {
+      setError(false);
+      animatedLabel(value ? 1 : 0);
+    }
+  }, [reset]);
+
+  useEffect(() => {
+    if (value) {
+      animatedLabel(1);
+    } else {
+      animatedLabel(0);
+    }
+  }, [value]);
 
   const handleFocus = () => {
     setIsFocused(true);
-    setError(false); // Oculta el error al enfocar
+    setError(false);
     animatedLabel(1);
   };
 
   const handleBlur = () => {
     setIsFocused(false);
-    if (!text) {
-      setError(true); // Muestra el error si el campo está vacío
+    if (!value) {
+      setError(true);
       animatedLabel(0);
     }
   };
 
   const handleTextChange = (inputText) => {
-    setText(inputText);
-    setError(false); // Oculta el error mientras se escribe
+    setError(false);
     if (onChangeText) {
       onChangeText(inputText);
     }
@@ -55,13 +71,13 @@ const CustomInput = ({
     backgroundColor: 'white',
     top: labelPosition.interpolate({
       inputRange: [0, 1],
-      outputRange: [12, -10],
+      outputRange: [isTextArea ? 12 : 12, -10],
     }),
     fontSize: labelPosition.interpolate({
       inputRange: [0, 1],
       outputRange: [14, 12],
     }),
-    color: isFocused ? focusedBorderColor : placeholderTextColor,  // Usa el color del texto del placeholder
+    color: isFocused ? focusedBorderColor : placeholderTextColor,
   };
 
   return (
@@ -69,26 +85,29 @@ const CustomInput = ({
       <View
         style={[
           styles.innerContainer,
+          isTextArea && styles.textAreaContainer,
           {
             borderColor: error ? 'red' : (isFocused ? focusedBorderColor : unfocusedBorderColor),
           },
         ]}
       >
         <Animated.Text style={[styles.label, labelStyle]}>{placeholder}</Animated.Text>
-        <View style={styles.inputContainer}>
+        <View style={[styles.inputContainer, isTextArea && styles.textAreaInputContainer]}>
           <TextInput
             {...props}
-            style={styles.input}
+            style={[styles.input, isTextArea && styles.textAreaInput]}
             onFocus={handleFocus}
             onBlur={handleBlur}
             onChangeText={handleTextChange}
-            value={text}
-            placeholderTextColor={placeholderTextColor} // Aplica el color del texto del placeholder
-            textAlignVertical="center"
+            value={value}
+            placeholderTextColor={placeholderTextColor}
+            textAlignVertical={isTextArea ? "top" : "center"}
+            multiline={isTextArea}
+            numberOfLines={isTextArea ? 4 : 1}
             textContentType={props.secureTextEntry ? 'newPassword' : props.secureTextEntry}
             secureTextEntry={showPassword}
           />
-          {props.secureTextEntry && !!text && (
+          {props.secureTextEntry && !!value && (
             <View>
               <TouchableOpacity
                 style={{ width: 24 }}
@@ -112,6 +131,11 @@ const styles = StyleSheet.create({
     height: 50,
     justifyContent: 'center',
   },
+  textAreaContainer: {
+    height: 100,
+    justifyContent: 'flex-start',
+    paddingTop: 12,
+  },
   label: {
     position: 'absolute',
     paddingHorizontal: 1,
@@ -122,10 +146,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingRight: 10,
   },
+  textAreaInputContainer: {
+    alignItems: 'flex-start',
+    flex: 1,
+  },
   input: {
     flex: 1,
     fontSize: 14,
     paddingLeft: 10,
+  },
+  textAreaInput: {
+    height: 80,
+    textAlignVertical: 'top',
+    paddingTop: 0,
   },
   errorText: {
     marginTop: 5,

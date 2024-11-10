@@ -11,32 +11,31 @@ const Toast = ({ title, message, type, onHide }) => {
     Animated.sequence([
       Animated.parallel([
         Animated.timing(slideAnim, {
-          toValue: 60,
-          duration: 250, // Más lento para una transición más suave
+          toValue: 0, // Cambiado a 0 para que aparezca desde arriba
+          duration: 250,
           useNativeDriver: true,
         }),
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 350, // Aparición más suave
+          duration: 350,
           useNativeDriver: true,
         }),
       ]),
-      Animated.delay(1200), // Reducido para no molestar al usuario
+      Animated.delay(1200),
       Animated.parallel([
         Animated.timing(slideAnim, {
-          toValue: -100,
-          duration: 600, // Salida más rápida pero aún suave
+          toValue: -100, // Se mantiene para que desaparezca hacia arriba
+          duration: 600,
           useNativeDriver: true,
         }),
         Animated.timing(fadeAnim, {
           toValue: 0,
-          duration: 250, // Desvanecimiento suave
+          duration: 250,
           useNativeDriver: true,
         }),
       ]),
     ]).start(() => onHide());
   }, [fadeAnim, onHide, slideAnim]);
-  
 
   const getToastStyle = () => {
     switch (type) {
@@ -131,8 +130,10 @@ export const useToast = () => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
+    top: 0, // Cambiado para posicionar en la parte superior
     alignSelf: 'center',
-    width: 280,
+    height: 80,
+    width: 380,
     borderRadius: 10,
     padding: 15,
     flexDirection: 'row',
@@ -145,6 +146,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    zIndex: 1000,
+    marginTop: 35, // Añadido un pequeño margen superior
   },
   infoToast: {
     backgroundColor: 'white',

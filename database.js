@@ -45,7 +45,8 @@ export const createTables = async (db) => {
       Producto_id INTEGER PRIMARY KEY AUTOINCREMENT,
       nombre TEXT NOT NULL,
       descripcion TEXT,
-      precio DECIMAL(10,2) NOT NULL,
+       precio_compra DECIMAL(10,2) NOT NULL,
+       precio_venta DECIMAL(10,2) NOT NULL,
       cantidad INTEGER DEFAULT 0,
       imagen TEXT,
       fecha_ingreso DATE,
@@ -100,13 +101,7 @@ export const createTables = async (db) => {
       FOREIGN KEY (Producto_id) REFERENCES Productos(Producto_id)
     )`,
 
-    // Tabla Comision_Producto
-    `CREATE TABLE IF NOT EXISTS Comision_Producto (
-      Comision_id INTEGER PRIMARY KEY AUTOINCREMENT,
-      Producto_id INTEGER NOT NULL,
-      porcentaje_comision DECIMAL(5,2) NOT NULL,
-      FOREIGN KEY (Producto_id) REFERENCES Productos(Producto_id)
-    )`
+
   ];
 
   try {
@@ -144,7 +139,89 @@ export const createTables = async (db) => {
     throw error;
   }
 };
+export const handleSave = async (formData, selectedImage, Producto_id, currentImage) => {
+  try {
+    console.log("Guardando producto con los siguientes datos:", {
+      formData,
+      selectedImage,
+      Producto_id,
+      currentImage
+    });
 
+    const db = await getDBConnection();
+
+    // Determinar qué imagen usar
+    let imageToSave;
+    if (selectedImage) {
+      // Si hay una nueva imagen seleccionada, usar esa
+      imageToSave = selectedImage;
+    } else if (currentImage && typeof currentImage === 'object' && currentImage.uri) {
+      // Si currentImage es un objeto con uri (formato React Native Image source)
+      imageToSave = currentImage.uri;
+    } else if (currentImage) {
+      // Si currentImage es directamente un string con la URI
+      imageToSave = currentImage;
+    } else {
+      // Si no hay ninguna imagen
+      imageToSave = '';
+    }
+
+    console.log("Imagen que se guardará:", imageToSave);
+
+    // Realizar la actualización en la base de datos
+    const result = await db.runAsync(
+      `UPDATE Productos SET 
+        nombre = ?, 
+        descripcion = ?, 
+        precio_venta = ?, 
+        cantidad = ?, 
+        imagen = ? 
+      WHERE Producto_id = ?`,
+      [
+        formData.title,
+        formData.description,
+        parseFloat(formData.price),
+        parseInt(formData.stock),
+        imageToSave,
+        Producto_id
+      ]
+    );
+
+    console.log("Resultado de la actualización:", result);
+
+    if (result.changes === 0) {
+      console.log("No se encontró el producto con el id especificado");
+      return false;
+    }
+
+    console.log("Producto guardado con éxito");
+    return true;
+  } catch (error) {
+    console.error("Error al guardar el producto:", error);
+    return false;
+  }
+};
+export const eliminarProducto = async (Producto_id) => {
+  try {
+    const db = await getDBConnection();
+
+    const result = await db.runAsync(
+      `DELETE FROM Productos WHERE Producto_id = ?`,
+      [Producto_id]
+    );
+
+    if (result.changes === 0) {
+      console.log("No se encontró el producto con el id especificado.");
+      return false; // No se encontró el producto o no hubo cambios
+    }
+
+    console.log("Producto eliminado con éxito.");
+    return true; // Devuelve true si la operación fue exitosa
+  } catch (error) {
+    console.error("Error al eliminar el producto:", error);
+    return false; // Devuelve false si ocurrió un error
+  }
+};
 // Función para consultar datos
 export const consultarDatos = async (db, tableName) => {
   try {
@@ -182,19 +259,20 @@ export const getUsuarios = async (db) => {
   }
 };
 
-// Funciones CRUD para Productos
+// Función para crear un producto
 export const createProducto = async (db, producto) => {
   try {
     const result = await db.runAsync(
       `INSERT INTO Productos (
-        nombre, descripcion, precio, cantidad, imagen, 
+        nombre, descripcion, precio_compra, precio_venta, cantidad, imagen, 
         fecha_ingreso, fecha_vencimiento, categoria_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         producto.nombre,
         producto.descripcion,
-        producto.precio,
-        producto.cantidad,
+        parseFloat(producto.precio_compra),  // Convertir a número decimal
+        parseFloat(producto.precio_venta),   // Convertir a número decimal
+        parseInt(producto.cantidad),         // Convertir a número entero
         producto.imagen,
         producto.fecha_ingreso,
         producto.fecha_vencimiento,
@@ -207,6 +285,19 @@ export const createProducto = async (db, producto) => {
     throw error;
   }
 };
+
+export const listaProducto = async (db) => {
+  try {
+    const result = await db.getAllAsync(`SELECT * FROM Productos`);
+    console.log("Productos obtenidos:", result); // Verifica que los productos se obtienen
+    return result; 
+  } catch (error) {
+    console.error("Error al obtener productos:", error);
+    throw error;
+  }
+};
+
+
 
 export const getProductos = async (db) => {
   try {
