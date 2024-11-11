@@ -1,110 +1,129 @@
-import React, { useState,useEffect} from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Image,searchTerm} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import Card from '../components/CardsItems'; // Ensure this path is correct
-import { useFocusEffect } from '@react-navigation/native';
+import Card from '../components/CardsItems';
+import ProductModal from '../components/ProductModal';
+import { getDBConnection, listaProducto } from '../database';
 
-import { getDBConnection,listaProducto } from '../database';
 const VentaProducto = ({ navigation }) => {
-
   const [searchTerm, setSearchTerm] = useState('');
-
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [filteredItems, setFilteredItems] = useState([]);
-  const [activeFilter, setActiveFilter] = useState('todos');
-
   const [productos, setProductos] = useState([]);
+  const [cartItems, setCartItems] = useState([]);
+
   const fetchProductos = async () => {
     try {
       const db = await getDBConnection();
-      const productosData = await listaProducto(db); // Llama a la función que consulta la base de datos
-      setProductos(productosData);  // Guarda los productos obtenidos en el estado
+      const productosData = await listaProducto(db);
+      setProductos(productosData);
     } catch (error) {
       console.error('Error al obtener productos:', error);
     }
   };
 
-
-// Filtra los productos según el término de búsqueda y el filtro activo
   const filterProducts = () => {
     let filtered = productos;
-
-    // Filtrar por nombre o descripción si hay un término de búsqueda
     if (searchTerm) {
       filtered = filtered.filter(producto =>
         producto.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
         producto.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-
-    // Aplicar filtro de "sin stock" si se selecciona
-    if (activeFilter === 'sinStock') {
-      filtered = filtered.filter(producto => producto.cantidad === 0);
-    }
-
-    setFilteredItems(filtered);  // Actualiza el estado con los productos filtrados
+    setFilteredItems(filtered);
   };
 
- // Llamar a fetchProductos cuando se monte el componente
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchProductos();
-    }, [])
-  );
+  useEffect(() => {
+    fetchProductos();
+  }, []);
 
-  // Se ejecuta cada vez que cambia el término de búsqueda o el filtro
   useEffect(() => {
     filterProducts();
-  }, [searchTerm, activeFilter, productos]);
+  }, [searchTerm, productos]);
 
+  const handleProductPress = (product) => {
+    setSelectedProduct({
+      title: product.nombre,
+      price: product.precio_venta,
+      stock: product.cantidad,
+      id: product.Producto_id,
+      imagen: product.imagen,
+      descripcion: product.descripcion
+    });
+    setModalVisible(true);
+  };
+
+  const handleAddToCart = (productToAdd) => {
+    setCartItems(prevItems => {
+      const existingItem = prevItems.find(item => item.id === productToAdd.id);
+      if (existingItem) {
+        return prevItems.map(item =>
+          item.id === productToAdd.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+      return [...prevItems, { ...productToAdd, quantity: 1 }];
+    });
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.containerHeader}>
         <Text style={styles.header}>Venta</Text>
-        <TouchableOpacity style={styles.carritoContent}onPress={() => navigation.navigate('DetalleVenta')} >
+        <TouchableOpacity
+          style={styles.carritoContent}
+          onPress={() => navigation.navigate('DetalleVenta', { cartItems })}
+        >
           <MaterialIcons name="add-shopping-cart" size={24} color={'white'} />
-          <Text style={styles.carritoText} >Ir al carrito</Text>
+          <Text style={styles.carritoText}>Ir al carrito</Text>
         </TouchableOpacity>
       </View>
-      
-      <Text style={styles.subHeader}>Busca los productos y agrégalos!</Text>
 
-      {/* Input de búsqueda */}
+      <Text style={styles.subHeader}>Busca los productos y agrégales al carrito</Text>
+
       <View style={styles.searchContainer}>
         <Ionicons name="search" size={20} color="gray" style={styles.icon} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search"
+          placeholder="Buscar"
           value={searchTerm}
           onChangeText={text => setSearchTerm(text)}
-          selectionColor="#003366" 
+          selectionColor="#003366"
         />
       </View>
-      {/* Lista de productos */}
+
       <FlatList
         data={filteredItems}
-        keyExtractor={(item) => item.Producto_id.toString()}  // Usa Producto_id como clave única
+        keyExtractor={item => item.Producto_id.toString()}
         renderItem={({ item }) => (
           <Card
-          productoId={item.Producto_id}
-          title={item.nombre}
-          price={item.precio_venta}
-          image={{ uri: item.imagen }}  // Asume que 'imagen' es una URL o un path
-          descripcion={item.descripcion}
-          stock={item.cantidad}
-          navigation={navigation} // Pasamos la navegación al Card
+            key={item.Producto_id}
+            productoId={item.Producto_id}
+            title={item.nombre}
+            price={item.precio_venta}
+            image={{ uri: item.imagen }}
+            descripcion={item.descripcion}
+            stock={item.cantidad}
+            navigation={navigation}
             buttonText="Agregar"
-
+            onPress={() => handleProductPress(item)}
           />
         )}
-        numColumns={2} // Set 2 columns
-
+        numColumns={2}
       />
 
- 
+      <ProductModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        product={selectedProduct}
+        onAddToCart={handleAddToCart}
+      />
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

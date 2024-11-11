@@ -3,7 +3,16 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 
-const CardsItems = ({productoId, title, price, image, descripcion,stock, navigation,buttonText }) => {
+const CardsItems = ({ productoId, title, price, image, descripcion, stock, navigation, buttonText, onPress }) => {
+
+  const handlePress = () => {
+    if (onPress) {
+      onPress();  // Si se pasa una función onPress, se ejecuta
+    } else {
+      // Si no se pasa, ejecutamos la navegación predeterminada
+      navigation.navigate('VerItem', { Producto_id: productoId, title, price, image, descripcion, stock });
+    }
+  };
 
   return (
     <View style={styles.card}>
@@ -20,10 +29,10 @@ const CardsItems = ({productoId, title, price, image, descripcion,stock, navigat
 
         <TouchableOpacity 
           style={styles.buttonContainer} 
-          onPress={() => navigation.navigate('VerItem', {  Producto_id: productoId, title, price, image, descripcion,stock })}
+          onPress={handlePress} // Llamamos a handlePress
         >
           <Text style={[styles.buttonText, buttonText && { color: '#fff' }]}>{buttonText || 'Ver'}</Text>
-          </TouchableOpacity>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -31,70 +40,56 @@ const CardsItems = ({productoId, title, price, image, descripcion,stock, navigat
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fafafa',
+    width: '45%',
+    margin: 10,
+    backgroundColor: '#fff',
     borderRadius: 10,
-    padding: 10,
-    margin: 10, // Add margin for spacing between cards
-    width: '45%', // Make the card occupy about half the screen width
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    flexDirection: 'column', // Stack image and text vertically
-    alignItems: 'center', // Center items horizontally
+    overflow: 'hidden',
+    elevation: 5,
   },
   image: {
-    width: 80,
-    height: 100,
-    borderRadius: 5,
-    marginRight: 15,
+    width: '100%',
+    height: 150,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
   },
   textContainer: {
-    flex: 1,
-    alignItems: 'center', // Center text in the middle of the card
+    padding: 10,
   },
   title: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#000',
-    margin: 5,
-    textAlign: 'center',
   },
   descripcion: {
-    fontSize: 12,
-    fontWeight: '400',
-    color: '#000',
-    marginBottom: 10,
-    textAlign: 'center',
+    fontSize: 14,
+    color: '#555',
+    marginVertical: 5,
   },
   priceStockContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '100%',
-    paddingHorizontal: 5,
-    marginBottom: 15,
+    alignItems: 'center',
   },
   price: {
     fontSize: 16,
-    fontWeight: '800',
-    color: '#000',
+    fontWeight: 'bold',
+    color: '#B90909',
   },
   stock: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#000',
+    fontSize: 14,
+    color: '#555',
   },
   buttonContainer: {
     backgroundColor: '#B90909',
-    paddingVertical: 5,
-    paddingHorizontal: 15,
+    paddingVertical: 10,
     borderRadius: 5,
+    alignItems: 'center',
     marginTop: 10,
   },
   buttonText: {
     color: '#fff',
+    fontSize: 14,
     fontWeight: 'bold',
-    fontSize: 12,
   },
 });
 
