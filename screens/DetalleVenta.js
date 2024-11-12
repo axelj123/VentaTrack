@@ -5,12 +5,13 @@ import CustomInput from '../components/CustomInput';
 import { getDBConnection } from '../database';
 import DropDownPicker from 'react-native-dropdown-picker';
 import ProductoCarritoCard from '../components/ProductoCarritoCard ';  // Importamos el nuevo componente
+import EmptyState from '../components/EmptyState';
 
 
 const DetalleVenta = ({ route, navigation }) => {
-    const { cartItems: initialCartItems } = route.params;
-    const [cartItems, setCartItems] = useState(initialCartItems);
-    
+    const { cartItems: initialCartItems, onCartUpdate } = route.params;
+    const [cartItems, setCartItems] = useState(initialCartItems || []);
+
     const [openCourier, setOpenCourier] = useState(false);
     const [openTipo, setOpenTipo] = useState(false);
     const [selectedCourier, setSelectedCourier] = useState(null);
@@ -20,8 +21,8 @@ const DetalleVenta = ({ route, navigation }) => {
 
     const fetchCouriers = async () => {
         try {
-            const db = await getDBConnection(); 
-            const result = await db.getAllAsync(`SELECT * FROM Courier`); 
+            const db = await getDBConnection();
+            const result = await db.getAllAsync(`SELECT * FROM Courier`);
 
             if (result && result.length > 0) {
                 const couriersList = result.map(courier => ({
@@ -54,7 +55,11 @@ const DetalleVenta = ({ route, navigation }) => {
             console.error("Error al obtener tipos de venta:", error);
         }
     };
-
+    useEffect(() => {
+        if (onCartUpdate) {
+          onCartUpdate(cartItems);
+        }
+      }, [cartItems]);
     useEffect(() => {
         fetchCouriers();
         fetchTipos();
@@ -62,24 +67,24 @@ const DetalleVenta = ({ route, navigation }) => {
 
     const incrementarCantidad = (index) => {
         const nuevosProductos = [...cartItems];
-        nuevosProductos[index].quantity += 1; 
-        setCartItems(nuevosProductos); 
+        nuevosProductos[index].quantity += 1;
+        setCartItems(nuevosProductos);
     };
 
     const decrementarCantidad = (index) => {
         const nuevosProductos = [...cartItems];
-        if (nuevosProductos[index].quantity > 1) { 
+        if (nuevosProductos[index].quantity > 1) {
             nuevosProductos[index].quantity -= 1;
             setCartItems(nuevosProductos);
         }
     };
-
     const eliminarProducto = (index) => {
         const nuevosProductos = [...cartItems];
-        nuevosProductos.splice(index, 1); 
-        setCartItems(nuevosProductos);
-    };
-
+        nuevosProductos.splice(index, 1);  // Elimina el producto del carrito
+        setCartItems(nuevosProductos);  // Actualiza el estado del carrito
+        navigation.setParams({ cartItems: nuevosProductos }); // También actualiza los parámetros en la navegación
+      };
+      
     const total = cartItems.reduce((sum, producto) => sum + producto.price * producto.quantity, 0);
 
     return (
@@ -154,6 +159,12 @@ const DetalleVenta = ({ route, navigation }) => {
                         incrementarCantidad={() => incrementarCantidad(index)}
                         decrementarCantidad={() => decrementarCantidad(index)}
                         onDelete={() => eliminarProducto(index)}
+
+                        ListEmptyComponent={
+                            <EmptyState
+
+                            />
+                        }
                     />
                 ))}
             </ScrollView>
@@ -332,11 +343,11 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     totalText: {
-        borderColor:'white',
-        borderWidth:1,
-        borderRadius:5,
-        padding:10,
-        marginBottom:8,
+        borderColor: 'white',
+        borderWidth: 1,
+        borderRadius: 5,
+        padding: 10,
+        marginBottom: 8,
         color: 'white',
         fontSize: 18,
         fontWeight: 'bold',

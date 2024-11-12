@@ -6,13 +6,15 @@ import ProductModal from '../components/ProductModal';
 import { getDBConnection, listaProducto } from '../database';
 import EmptyState from '../components/EmptyState';
 
-const VentaProducto = ({ navigation }) => {
+const VentaProducto = ({ route,navigation }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [filteredItems, setFilteredItems] = useState([]);
   const [productos, setProductos] = useState([]);
   const [cartItems, setCartItems] = useState([]);
+
+
 
   const fetchProductos = async () => {
     try {
@@ -28,7 +30,7 @@ const VentaProducto = ({ navigation }) => {
     let filtered = productos;
     if (searchTerm) {
       filtered = filtered.filter(producto =>
-        producto.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        producto.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
         producto.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -43,6 +45,7 @@ const VentaProducto = ({ navigation }) => {
     filterProducts();
   }, [searchTerm, productos]);
 
+
   const handleProductPress = (product) => {
     setSelectedProduct({
       title: product.nombre,
@@ -54,6 +57,22 @@ const VentaProducto = ({ navigation }) => {
     });
     setModalVisible(true);
   };
+  // Actualizar el manejo del carrito
+  useEffect(() => {
+    if (route.params?.updatedCart) {
+      setCartItems(route.params.updatedCart);
+    }
+  }, [route.params?.updatedCart]);
+
+
+  const navigateToCart = () => {
+    navigation.navigate('DetalleVenta', {
+      cartItems,
+      onCartUpdate: (updatedCart) => {
+        navigation.setParams({ updatedCart }); // Esto actualizará el carrito cuando volvamos
+      }
+    });
+  };
 
   const handleAddToCart = (productToAdd) => {
     setCartItems(prevItems => {
@@ -61,13 +80,17 @@ const VentaProducto = ({ navigation }) => {
       if (existingItem) {
         return prevItems.map(item =>
           item.id === productToAdd.id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + productToAdd.quantity }
             : item
         );
       }
-      return [...prevItems, { ...productToAdd, quantity: 1 }];
+      return [...prevItems, { ...productToAdd, quantity: productToAdd.quantity }];
     });
+    
+    // Después de agregar al carrito, actualiza los parámetros de la navegación
+    navigation.setParams({ cartItems: [...cartItems, productToAdd] });
   };
+  
 
   return (
     <View style={styles.container}>
@@ -75,11 +98,12 @@ const VentaProducto = ({ navigation }) => {
         <Text style={styles.header}>Venta</Text>
         <TouchableOpacity
           style={styles.carritoContent}
-          onPress={() => navigation.navigate('DetalleVenta', { cartItems })}
+          onPress={navigateToCart}
         >
           <MaterialIcons name="add-shopping-cart" size={24} color={'white'} />
-          <Text style={styles.carritoText}>Ir al carrito</Text>
+          <Text style={styles.carritoText}>Ir al carrito ({cartItems.length})</Text>
         </TouchableOpacity>
+
       </View>
 
       <Text style={styles.subHeader}>Busca los productos y agrégales al carrito</Text>
@@ -115,7 +139,7 @@ const VentaProducto = ({ navigation }) => {
         numColumns={2}
         ListEmptyComponent={
           <EmptyState
-       onRefresh={fetchProductos} 
+            onRefresh={fetchProductos}
           />
         }
       />
