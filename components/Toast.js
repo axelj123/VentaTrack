@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-// Componente Toast
 const Toast = ({ title, message, type, onHide }) => {
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(-100));
@@ -11,7 +10,7 @@ const Toast = ({ title, message, type, onHide }) => {
     Animated.sequence([
       Animated.parallel([
         Animated.timing(slideAnim, {
-          toValue: 0, // Cambiado a 0 para que aparezca desde arriba
+          toValue: 0,
           duration: 250,
           useNativeDriver: true,
         }),
@@ -21,10 +20,10 @@ const Toast = ({ title, message, type, onHide }) => {
           useNativeDriver: true,
         }),
       ]),
-      Animated.delay(1200),
+      Animated.delay(3000), // Aumentado el tiempo de visualización
       Animated.parallel([
         Animated.timing(slideAnim, {
-          toValue: -100, // Se mantiene para que desaparezca hacia arriba
+          toValue: -100,
           duration: 600,
           useNativeDriver: true,
         }),
@@ -43,19 +42,12 @@ const Toast = ({ title, message, type, onHide }) => {
         return styles.successToast;
       case 'warning':
         return styles.warningToast;
-      default:
+      case 'error':
+        return styles.errorToast;
+      case 'info':
         return styles.infoToast;
-    }
-  };
-
-  const getTextStyle = () => {
-    switch (type) {
-      case 'success':
-        return styles.successText;
-      case 'warning':
-        return styles.warningText;
       default:
-        return styles.infoText;
+        return styles.defaultToast;
     }
   };
 
@@ -65,19 +57,27 @@ const Toast = ({ title, message, type, onHide }) => {
         return 'checkmark-circle';
       case 'warning':
         return 'warning';
-      default:
+      case 'error':
+        return 'alert-circle';
+      case 'info':
         return 'information-circle';
+      default:
+        return 'checkmark-circle';
     }
   };
 
-  const getIconColor = () => {
+  const getActionButton = () => {
     switch (type) {
       case 'success':
-        return styles.successIcon;
+        return 'Undo';
+      case 'info':
+        return 'Update';
       case 'warning':
-        return styles.warningIcon;
+        return 'Show';
+      case 'error':
+        return 'View';
       default:
-        return styles.infoIcon;
+        return '';
     }
   };
 
@@ -89,25 +89,42 @@ const Toast = ({ title, message, type, onHide }) => {
         { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
       ]}
     >
-      <Ionicons
-        name={getIcon()}
-        size={24}
-        style={[styles.icon, getIconColor()]}
-      />
-      <View style={styles.textContainer}>
-        <Text style={[styles.title, getTextStyle()]}>{title}</Text>
-        <Text style={[styles.message, getTextStyle()]}>{message}</Text>
+      <View style={styles.contentContainer}>
+        <View style={styles.iconContainer}>
+          <Ionicons
+            name={getIcon()}
+            size={24}
+            color="white"
+          />
+        </View>
+        <View style={styles.textContainer}>
+          <Text style={styles.message}>{message}</Text>
+        </View>
+        {getActionButton() && (
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={onHide}
+          >
+            <Text style={styles.actionButtonText}>{getActionButton()}</Text>
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity 
+          style={styles.closeButton} 
+          onPress={onHide}
+        >
+          <Ionicons name="close" size={20} color="white" />
+        </TouchableOpacity>
       </View>
     </Animated.View>
   );
 };
 
-// Hook personalizado para usar el Toast
+// Hook personalizado para usar el Toast (sin cambios)
 export const useToast = () => {
   const [toastConfig, setToastConfig] = useState(null);
 
-  const showToast = useCallback((title, message, type = 'info') => {
-    setToastConfig({ title, message, type });
+  const showToast = useCallback((message, type = 'info') => {
+    setToastConfig({ message, type });
   }, []);
 
   const hideToast = useCallback(() => {
@@ -117,7 +134,6 @@ export const useToast = () => {
   return {
     Toast: toastConfig ? (
       <Toast
-        title={toastConfig.title}
         message={toastConfig.message}
         type={toastConfig.type}
         onHide={hideToast}
@@ -130,14 +146,13 @@ export const useToast = () => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: 0, // Cambiado para posicionar en la parte superior
+    top: 0,
     alignSelf: 'center',
-    height: 80,
-    width: 380,
-    borderRadius: 10,
-    padding: 15,
-    flexDirection: 'row',
-    alignItems: 'center',
+    width: '95%',
+    maxWidth: 400,
+    borderRadius: 8,
+    marginTop: 35,
+    elevation: 5,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -145,56 +160,55 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    elevation: 5,
     zIndex: 1000,
-    marginTop: 35, // Añadido un pequeño margen superior
   },
-  infoToast: {
-    backgroundColor: 'white',
-    borderLeftWidth: 5,
-    borderLeftColor: '#0066cc',
+  contentContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
   },
-  successToast: {
-    backgroundColor: 'white',
-    borderLeftWidth: 5,
-    borderLeftColor: '#18aa6f',
-  },
-  warningToast: {
-    backgroundColor: 'white',
-    borderLeftWidth: 5,
-    borderLeftColor: '#cc6600',
-  },
-  icon: {
-    marginRight: 15,
+  iconContainer: {
+    marginRight: 12,
   },
   textContainer: {
     flex: 1,
   },
-  title: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 2,
-  },
   message: {
+    color: 'white',
     fontSize: 14,
+    fontWeight: '500',
   },
-  infoText: {
-    color: '#0066cc',
+  actionButton: {
+    marginLeft: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
-  successText: {
-    color: '#18aa6f',
+  actionButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
   },
-  warningText: {
-    color: '#cc6600',
+  closeButton: {
+    marginLeft: 8,
+    padding: 4,
   },
-  infoIcon: {
-    color: '#0066cc',
+  // Estilos para diferentes tipos de toast
+  successToast: {
+    backgroundColor: '#2E7D32', // Verde
   },
-  successIcon: {
-    color: '#18aa6f',
+  warningToast: {
+    backgroundColor: '#ED6C02', // Naranja
   },
-  warningIcon: {
-    color: '#cc6600',
+  errorToast: {
+    backgroundColor: '#D32F2F', // Rojo
+  },
+  infoToast: {
+    backgroundColor: '#0288D1', // Azul
+  },
+  defaultToast: {
+    backgroundColor: '#424242', // Gris oscuro
   },
 });
 

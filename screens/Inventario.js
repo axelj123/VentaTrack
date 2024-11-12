@@ -4,6 +4,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getDBConnection, listaProducto } from '../database';  // Asegúrate de importar correctamente
 import Card from '../components/CardsItems'; // Asegúrate de que el componente esté bien importado
 import { useFocusEffect } from '@react-navigation/native';
+import EmptyState from '../components/EmptyState';
 
 const Inventario = ({ navigation }) => {
   // Estado para el término de búsqueda, productos y filtro activo
@@ -30,7 +31,7 @@ const Inventario = ({ navigation }) => {
     // Filtrar por nombre o descripción si hay un término de búsqueda
     if (searchTerm) {
       filtered = filtered.filter(producto =>
-        producto.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        producto.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
         producto.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -43,7 +44,7 @@ const Inventario = ({ navigation }) => {
     setFilteredItems(filtered);  // Actualiza el estado con los productos filtrados
   };
 
- // Llamar a fetchProductos cuando se monte el componente
+  // Llamar a fetchProductos cuando se monte el componente
   useFocusEffect(
     React.useCallback(() => {
       fetchProductos();
@@ -57,7 +58,7 @@ const Inventario = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-    
+
 
       <Text style={styles.h1}>Productos</Text>
       <Text style={styles.p}>¡Gestiona tus productos!</Text>
@@ -114,10 +115,19 @@ const Inventario = ({ navigation }) => {
             navigation={navigation} // Pasamos la navegación al Card
           />
         )}
-        numColumns={2}  // Establecer en 2 columnas
-        ListEmptyComponent={<Text>No se encontraron productos.</Text>}
+        numColumns={2}
+        ListEmptyComponent={
+          <EmptyState
+            onRefresh={fetchProductos}
+            description='Registra un producto nuevo para visualizar tu inventario'
+            buttonText='Agregar Producto'
+            onPress={() => navigation.navigate('RegistrarProducto')}
+
+
+          />
+        }
       />
-      
+
     </View>
   );
 };
@@ -132,7 +142,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 14,
     color: "#000",
-    marginTop:20,
+    marginTop: 20,
   },
   p: {
     fontWeight: '400',
@@ -207,6 +217,18 @@ const styles = StyleSheet.create({
   activeText: {
     color: '#fff', // Color de texto para filtros activos
     fontWeight: 'bold',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 50, // Ajusta según sea necesario
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginTop: 20, // Espacio entre el icono y el texto
   },
 });
 

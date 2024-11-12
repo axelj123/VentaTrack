@@ -2,15 +2,38 @@ import * as SQLite from 'expo-sqlite';
 
 const DATABASE_NAME = 'VentasDB.db';
 
+
+// Función para obtener la ruta de la base de datos
+const getDatabasePath = () => {
+  if (!FileSystem || !FileSystem.documentDirectory) {
+    throw new Error('FileSystem no está disponible');
+  }
+  return `${FileSystem.documentDirectory}SQLite/${DATABASE_NAME}`;
+};
 // Función para abrir la base de datos
 export const getDBConnection = async () => {
   return await SQLite.openDatabaseAsync(DATABASE_NAME); // Usar openDatabaseAsync
 };
 // Función para eliminar la base de datos
 export const deleteDatabase = async () => {
-  const path = `${FileSystem.documentDirectory}${DATABASE_NAME}`;
-  await FileSystem.deleteAsync(path, { idempotent: true });
+  try {
+    const dbPath = getDatabasePath();
+    const { exists } = await FileSystem.getInfoAsync(dbPath);
+    
+    if (exists) {
+      await FileSystem.deleteAsync(dbPath, { idempotent: true });
+      console.log('Base de datos eliminada con éxito');
+      return true;
+    } else {
+      console.log('La base de datos no existe');
+      return false;
+    }
+  } catch (error) {
+    console.error('Error al eliminar la base de datos:', error);
+    throw error;
+  }
 };
+
 
 // Función para crear las tablas
 export const createTables = async (db) => {
@@ -69,6 +92,8 @@ export const createTables = async (db) => {
     // Tabla Cliente
     `CREATE TABLE IF NOT EXISTS Cliente (
     Cliente_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    dni INTEGER NOT NULL UNIQUE,
+    pais TEXT,
     nombre_completo TEXT NOT NULL,
     email TEXT UNIQUE,
     telefono INTEGER,
@@ -111,11 +136,7 @@ export const createTables = async (db) => {
       console.log(`Tabla creada: ${table.split(' ')[2]}`); // Muestra el nombre de la tabla creada
     }
 
-    // Eliminar datos existentes
-    await db.execAsync(`DELETE FROM Tipo_Venta`);
-    await db.execAsync(`DELETE FROM Categoria_Producto`);
-    await db.execAsync(`DELETE FROM Courier`);
-
+   
     // Insertar datos iniciales
     await db.runAsync(
       `INSERT OR IGNORE INTO Tipo_Venta (nombre) VALUES ('Nacional'), ('Internacional')`
@@ -134,6 +155,23 @@ export const createTables = async (db) => {
     );
     console.log("Datos insertados en Courier");
 
+    await db.runAsync(
+      `INSERT OR IGNORE INTO Cliente (dni, pais, nombre_completo, email, telefono, direccion)
+      VALUES
+      (123456789, 'Chile', 'Maria García', 'maria.garcia@example.com', 999999999, 'Calle Primavera 25, Santiago, Chile'),
+      (987654321, 'México', 'John Doe', 'john.doe@example.com', 123123123, '123 Elm Street, Ciudad de México, México'),
+      (112233445, 'Argentina', 'Marta López', 'marta.lopez@example.com', 555555555, 'Av. de Mayo 1000, Buenos Aires, Argentina'),
+      (998877666, 'Colombia', 'David Smith', 'david.smith@example.com', 222222222, '456 Maple Ave, Bogotá, Colombia'),
+      (556677890, 'Perú', 'Isabella Rossi', 'isabella.rossi@example.com', 777777777, 'Via Roma 10, Lima, Perú'),
+      (667788991, 'Brasil', 'Carlos Silva', 'carlos.silva@example.com', 333333333, 'Rua das Flores 123, São Paulo, Brasil'),
+      (998877667, 'Venezuela', 'José Pérez', 'jose.perez@example.com', 444444444, 'Avenida Bolívar 400, Caracas, Venezuela'),
+      (223344557, 'Ecuador', 'Ana Martínez', 'ana.martinez@example.com', 555666777, 'Calle Sucre 45, Quito, Ecuador'),
+      (123443212, 'Uruguay', 'Luis Gómez', 'luis.gomez@example.com', 111222333, 'Calle 18 de Julio 500, Montevideo, Uruguay'),
+      (334455668, 'Paraguay', 'Raúl Fernández', 'raul.fernandez@example.com', 888999000, 'Avenida España 15, Asunción, Paraguay');
+    `
+    );
+
+    console.log("Datos insertados en Cliente");
   } catch (error) {
     console.error("Error al crear tablas o insertar datos:", error);
     throw error;
@@ -296,6 +334,16 @@ export const listaProducto = async (db) => {
     throw error;
   }
 };
+export const listClientes = async (db)=>{
+  try {
+    const result = await db.getAllAsync(`SELECT * FROM Cliente`)
+    console.log ("Clientes obtenidos", result);
+    return result;
+  } catch (error) {
+    console.error("Error al obtener clientes:", error);
+    throw error;
+  }
+}
 
 
 
@@ -324,6 +372,7 @@ export const initDatabase = async () => {
     await consultarDatos(db, 'Tipo_Venta');
     await consultarDatos(db, 'Categoria_Producto');
     await consultarDatos(db, 'Courier');
+    await consultarDatos(db,'Cliente');
 
     console.log("Base de datos inicializada correctamente");
     return db;

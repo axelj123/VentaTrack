@@ -4,6 +4,7 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import Card from '../components/CardsItems';
 import ProductModal from '../components/ProductModal';
 import { getDBConnection, listaProducto } from '../database';
+import EmptyState from '../components/EmptyState';
 
 const VentaProducto = ({ navigation }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -112,6 +113,11 @@ const VentaProducto = ({ navigation }) => {
           />
         )}
         numColumns={2}
+        ListEmptyComponent={
+          <EmptyState
+       onRefresh={fetchProductos} 
+          />
+        }
       />
 
       <ProductModal
@@ -189,6 +195,18 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 18,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 50, // Ajusta según sea necesario
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginTop: 20, // Espacio entre el icono y el texto
   },
 });
 

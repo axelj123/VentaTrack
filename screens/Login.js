@@ -16,7 +16,7 @@ import { StatusBar } from 'expo-status-bar';
 import CustomInput from '../components/CustomInput';
 import { useNavigation } from '@react-navigation/native';
 import { FontAwesome } from '@expo/vector-icons';
-import { initDatabase,dropTables } from '../database'; // Importa la función de inicialización de la base de datos
+import { initDatabase,deleteDatabase } from '../database'; // Importa la función de inicialización de la base de datos
 import * as FileSystem from 'expo-file-system';
 
 
@@ -31,33 +31,49 @@ const Login = () => {
   const dbUri = `${FileSystem.documentDirectory}SQLite/VentasDB.db`; // Ruta de la base de datos
 
   useEffect(() => {
-    const initializeDB = async () => {
-
-      try {
-        // Verifica si la base de datos ya existe
-        const dbExists = await FileSystem.getInfoAsync(dbUri);
-
-        if (!dbExists.exists) {
-          console.log("Inicializando la base de datos por primera vez...");
-
-          await initDatabase();
-        } else {
-          console.log("La base de datos ya existe, se omite la inicialización.");
-        }
-      } catch (error) {
-        console.error("Error al inicializar la base de datos en Login:", error);
-      }
-    };
+  
   
     initializeDB();
   }, []);
-  
+  const initializeDB = async () => {
 
+    try {
+      // Verifica si la base de datos ya existe
+      const dbExists = await FileSystem.getInfoAsync(dbUri);
+
+      if (!dbExists.exists) {
+        console.log("Inicializando la base de datos por primera vez...");
+
+        await initDatabase();
+      } else {
+        console.log("La base de datos ya existe, se omite la inicialización.");
+      }
+    } catch (error) {
+      console.error("Error al inicializar la base de datos en Login:", error);
+    }
+  };
+ // Función para eliminar la base de datos
+ const handleDeleteDatabase = async () => {
+  try {
+    const result = await deleteDatabase();
+    if (result) {
+      Alert.alert('Éxito', 'Base de datos eliminada correctamente');
+      return true;
+    } else {
+      Alert.alert('Info', 'No existe base de datos para eliminar');
+      return false;
+    }
+  } catch (error) {
+    console.error('Error al eliminar la base de datos:', error);
+    Alert.alert('Error', 'No se pudo eliminar la base de datos');
+    return false;
+  }
+};
   const handleLogin = () => {
 
     navigation.navigate('MAIN');
   };
-
+ 
   return (
 
     <SafeAreaView style={styles.container}>
