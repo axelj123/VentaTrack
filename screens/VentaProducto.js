@@ -5,14 +5,15 @@ import Card from '../components/CardsItems';
 import ProductModal from '../components/ProductModal';
 import { getDBConnection, listaProducto } from '../database';
 import EmptyState from '../components/EmptyState';
+import { useCart } from '../components/CartContext'; // Usamos el contexto para el carrito
 
-const VentaProducto = ({ route,navigation }) => {
+const VentaProducto = ({navigation }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [filteredItems, setFilteredItems] = useState([]);
   const [productos, setProductos] = useState([]);
-  const [cartItems, setCartItems] = useState([]);
+  const { cartItems, addToCart } = useCart(); // Obtener cartItems y la función addToCart
 
 
 
@@ -59,38 +60,20 @@ const VentaProducto = ({ route,navigation }) => {
   };
   // Actualizar el manejo del carrito
   useEffect(() => {
-    if (route.params?.updatedCart) {
-      setCartItems(route.params.updatedCart);
-    }
-  }, [route.params?.updatedCart]);
-
+    navigation.setOptions({
+      onCartUpdate: (updatedCart) => {
+        setCartItems(updatedCart);  // Actualiza el carrito con el nuevo valor
+      }
+    });
+  }, [navigation]);
 
   const navigateToCart = () => {
-    navigation.navigate('DetalleVenta', {
-      cartItems,
-      onCartUpdate: (updatedCart) => {
-        navigation.setParams({ updatedCart }); // Esto actualizará el carrito cuando volvamos
-      }
-    });
+    navigation.navigate('DetalleVenta');
   };
-
   const handleAddToCart = (productToAdd) => {
-    setCartItems(prevItems => {
-      const existingItem = prevItems.find(item => item.id === productToAdd.id);
-      if (existingItem) {
-        return prevItems.map(item =>
-          item.id === productToAdd.id
-            ? { ...item, quantity: item.quantity + productToAdd.quantity }
-            : item
-        );
-      }
-      return [...prevItems, { ...productToAdd, quantity: productToAdd.quantity }];
-    });
-    
-    // Después de agregar al carrito, actualiza los parámetros de la navegación
-    navigation.setParams({ cartItems: [...cartItems, productToAdd] });
+    addToCart(productToAdd);  // Usamos la función addToCart del contexto
+    setModalVisible(false);
   };
-  
 
   return (
     <View style={styles.container}>

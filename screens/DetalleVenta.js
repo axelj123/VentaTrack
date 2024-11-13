@@ -6,11 +6,13 @@ import { getDBConnection } from '../database';
 import DropDownPicker from 'react-native-dropdown-picker';
 import ProductoCarritoCard from '../components/ProductoCarritoCard ';  // Importamos el nuevo componente
 import EmptyState from '../components/EmptyState';
+import { useCart } from '../components/CartContext'; // Usamos el contexto para el carrito
+import ClientSearchInput from '../components/ClientSearchInput ';
 
-
-const DetalleVenta = ({ route, navigation }) => {
-    const { cartItems: initialCartItems, onCartUpdate } = route.params;
-    const [cartItems, setCartItems] = useState(initialCartItems || []);
+const DetalleVenta = ({ navigation }) => {
+    const { cartItems, removeFromCart, updateQuantity } = useCart();  // Obtener cartItems y removeFromCart
+    const [total, setTotal] = useState(0);
+    const [selectedClient, setSelectedClient] = useState(null);
 
     const [openCourier, setOpenCourier] = useState(false);
     const [openTipo, setOpenTipo] = useState(false);
@@ -56,37 +58,34 @@ const DetalleVenta = ({ route, navigation }) => {
         }
     };
     useEffect(() => {
-        if (onCartUpdate) {
-          onCartUpdate(cartItems);
-        }
-      }, [cartItems]);
+        // Calcular el total cada vez que cambian los productos en el carrito
+        const totalAmount = cartItems.reduce((sum, producto) => sum + producto.price * producto.quantity, 0);
+        setTotal(totalAmount);  // Actualizamos el estado de total
+    }, [cartItems]);
+
     useEffect(() => {
         fetchCouriers();
         fetchTipos();
     }, []);
 
     const incrementarCantidad = (index) => {
-        const nuevosProductos = [...cartItems];
-        nuevosProductos[index].quantity += 1;
-        setCartItems(nuevosProductos);
+        const producto = cartItems[index];
+        updateQuantity(producto.id, producto.quantity + 1); // Usamos updateQuantity para incrementar la cantidad
     };
 
     const decrementarCantidad = (index) => {
-        const nuevosProductos = [...cartItems];
-        if (nuevosProductos[index].quantity > 1) {
-            nuevosProductos[index].quantity -= 1;
-            setCartItems(nuevosProductos);
+        const producto = cartItems[index];
+        if (producto.quantity > 1) {
+            updateQuantity(producto.id, producto.quantity - 1); // Usamos updateQuantity para decrementar la cantidad
         }
     };
     const eliminarProducto = (index) => {
-        const nuevosProductos = [...cartItems];
-        nuevosProductos.splice(index, 1);  // Elimina el producto del carrito
-        setCartItems(nuevosProductos);  // Actualiza el estado del carrito
-        navigation.setParams({ cartItems: nuevosProductos }); // También actualiza los parámetros en la navegación
-      };
-      
-    const total = cartItems.reduce((sum, producto) => sum + producto.price * producto.quantity, 0);
+        removeFromCart(cartItems[index].id);  // Usamos la función removeFromCart del contexto
+    };
 
+    const handleClientSelect = (client) => {
+        setSelectedClient(client); // Asigna el cliente seleccionado
+      };
     return (
         <View style={styles.container}>
             {/* Header */}
@@ -99,13 +98,9 @@ const DetalleVenta = ({ route, navigation }) => {
 
             {/* Formulario */}
             <View style={styles.form}>
-                <CustomInput
-                    placeholder="Nombre del cliente"
-                    focusedBorderColor="#211132"
-                    unfocusedBorderColor="#999"
-                    placeholderTextColor="#999"
-                    errorMessage="Este campo es obligatorio"
-                />
+            <ClientSearchInput
+                onClientSelect={handleClientSelect}
+            />
                 <View style={styles.row}>
                     <View style={styles.halfWidth}>
                         <DropDownPicker
