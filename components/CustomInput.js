@@ -13,16 +13,15 @@ const CustomInput = ({
   value,
   reset,
   isTextArea = false,
+  showError = false, // Nueva propiedad para controlar el mensaje de error
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(props.secureTextEntry);
-  const [error, setError] = useState(false);
   const labelPosition = useRef(new Animated.Value(value ? 1 : 0)).current;
 
   useEffect(() => {
     if (reset) {
-      setError(false);
       animatedLabel(value ? 1 : 0);
     }
   }, [reset]);
@@ -37,20 +36,17 @@ const CustomInput = ({
 
   const handleFocus = () => {
     setIsFocused(true);
-    setError(false);
     animatedLabel(1);
   };
 
   const handleBlur = () => {
     setIsFocused(false);
     if (!value) {
-      setError(true);
       animatedLabel(0);
     }
   };
 
   const handleTextChange = (inputText) => {
-    setError(false);
     if (onChangeText) {
       onChangeText(inputText);
     }
@@ -87,7 +83,7 @@ const CustomInput = ({
           styles.innerContainer,
           isTextArea && styles.textAreaContainer,
           {
-            borderColor: error ? 'red' : (isFocused ? focusedBorderColor : unfocusedBorderColor),
+            borderColor: showError ? 'red' : (isFocused ? focusedBorderColor : unfocusedBorderColor),
           },
         ]}
       >
@@ -119,11 +115,10 @@ const CustomInput = ({
           )}
         </View>
       </View>
-      {error && <Text style={styles.errorText}>{errorMessage}</Text>}
+      {showError && <Text style={styles.errorText}>{errorMessage}</Text>}
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   innerContainer: {
     borderWidth: 1,

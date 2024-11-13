@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, FlatList, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { getDBConnection } from '../database';
-
+import CountrySelector from './CountrySelector';
 const ClientSearchInput = ({ onClientSelect, style }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [clients, setClients] = useState([]);
@@ -16,7 +16,7 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
   const [newClientEmail, setNewClientEmail] = useState('');
   const [newClientPhone, setNewClientPhone] = useState('');
   const [newClientAddress, setNewClientAddress] = useState('');
-  
+
   const [selectedClient, setSelectedClient] = useState(null);
   useEffect(() => {
     if (searchTerm.length > 0) {
@@ -30,7 +30,7 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
     try {
       const db = await getDBConnection();
       const result = await db.getAllAsync(
-        'SELECT * FROM Cliente WHERE dni LIKE ?', 
+        'SELECT * FROM Cliente WHERE dni LIKE ?',
         [`%${dni}%`]
       );
       setClients(result);
@@ -62,7 +62,7 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
       }
 
       const db = await getDBConnection();
-      
+
       // Check if client already exists
       const existingClient = await db.getAllAsync(
         'SELECT * FROM Cliente WHERE dni = ?',
@@ -75,15 +75,15 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
       }
 
       await db.runAsync(
-        'INSERT INTO Cliente (nombre_completo, dni) VALUES (?, ?)', 
+        'INSERT INTO Cliente (nombre_completo, dni) VALUES (?, ?)',
         [newClientName, newClientDNI]
       );
-      
+
       const newClient = await db.getAllAsync(
         'SELECT * FROM Cliente WHERE dni = ?',
         [newClientDNI]
       );
-      
+
       if (newClient && newClient.length > 0) {
         handleClientSelect(newClient[0]);
       }
@@ -92,7 +92,7 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
       setNewClientDNI('');
       setIsModalVisible(false);
       alert('Cliente agregado correctamente');
-      
+
     } catch (error) {
       console.error("Error adding client:", error);
       alert('Error al agregar cliente');
@@ -111,7 +111,7 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
           keyboardType="numeric"
         />
         {selectedClient && (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.clearButton}
             onPress={() => {
               setSearchTerm('');
@@ -145,7 +145,7 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
                 <Text style={styles.clientDNI}>DNI: {item.dni}</Text>
               </TouchableOpacity>
             )}
-            scrollEnabled={true} 
+            scrollEnabled={true}
             keyboardShouldPersistTaps="handled"
           />
         </View>
@@ -166,7 +166,7 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
         </TouchableOpacity>
       )}
 
-<Modal
+      <Modal
         visible={isModalVisible}
         animationType="slide"
         transparent={true}
@@ -176,11 +176,11 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Registrar Nuevo Cliente</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.modalCloseButton}
                 onPress={() => setIsModalVisible(false)}
               >
-                <Icon name="close" size={24} color="#fff" />
+                <Icon name="close" size={24} color="#000" />
               </TouchableOpacity>
             </View>
 
@@ -192,11 +192,9 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
               keyboardType="numeric"
             />
 
-            <TextInput
-              style={styles.modalInput}
-              placeholder="País"
-              value={newClientCountry}
-              onChangeText={setNewClientCountry}
+            <CountrySelector style={styles.modalInput}
+
+              onSelectCountry={(country) => setNewClientCountry(country)}
             />
 
             <TextInput
@@ -214,14 +212,21 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
               onChangeText={setNewClientEmail}
               keyboardType="email-address"
             />
-
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Teléfono"
-              value={newClientPhone}
-              onChangeText={setNewClientPhone}
-              keyboardType="numeric"
-            />
+            {/* Contenedor de Teléfono con Código de País y Bandera */}
+            <View style={styles.phoneContainer}>
+              {newClientCountry && (
+                <Text style={styles.callingCode}>
+                  {newClientCountry.flag} {newClientCountry.callingCode}
+                </Text>
+              )}
+              <TextInput
+                style={styles.phoneInput}
+                placeholder="Teléfono"
+                value={newClientPhone}
+                onChangeText={setNewClientPhone}
+                keyboardType="numeric"
+              />
+            </View>
 
             <TextInput
               style={styles.modalInput}
@@ -308,7 +313,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    height:200,
+    height: 200,
   },
   suggestionItem: {
     padding: 12,
@@ -349,7 +354,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#211132',
+    backgroundColor: 'white',
     borderRadius: 20, // Bordes redondeados más marcados
     padding: 25,
     shadowColor: '#000',
@@ -367,7 +372,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 24, // Aumenté el tamaño de la fuente
     fontWeight: 'bold',
-    color: '#fff', // Color oscuro
+    color: '#000', // Color oscuro
   },
   modalCloseButton: {
     padding: 5,
@@ -375,12 +380,12 @@ const styles = StyleSheet.create({
   modalInput: {
     height: 50,
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 12, // Bordes redondeados
+    borderColor: '#ccc',
+    borderRadius: 8,
     paddingHorizontal: 15,
     marginBottom: 20, // Aumenté el margen
     fontSize: 16,
-    backgroundColor: '#f9f9f9', // Fondo claro para el input
+    backgroundColor: 'white', // Fondo claro para el input
   },
   modalButtons: {
     flexDirection: 'row',
@@ -404,6 +409,29 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '600',
     fontSize: 16,
+  },
+  //phone
+  phoneContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    marginBottom:20,
+
+    borderRadius: 8,
+    marginVertical: 8,
+    paddingHorizontal: 10,
+  },
+  callingCode: {
+    fontSize: 16,
+    color: '#333',
+    marginRight: 10,
+  },
+  phoneInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+    height:50,
   },
 });
 

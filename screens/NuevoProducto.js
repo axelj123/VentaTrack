@@ -202,6 +202,7 @@ const RegistrarProducto = () => {
         <CustomInput
           value={nombre}
           onChangeText={setNombre}
+          
           placeholder="Nombre del producto"
           focusedBorderColor="#000"
           unfocusedBorderColor="#E0E0E0"

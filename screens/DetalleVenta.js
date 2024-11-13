@@ -85,7 +85,7 @@ const DetalleVenta = ({ navigation }) => {
 
     const handleClientSelect = (client) => {
         setSelectedClient(client); // Asigna el cliente seleccionado
-      };
+    };
     return (
         <View style={styles.container}>
             {/* Header */}
@@ -98,9 +98,9 @@ const DetalleVenta = ({ navigation }) => {
 
             {/* Formulario */}
             <View style={styles.form}>
-            <ClientSearchInput
-                onClientSelect={handleClientSelect}
-            />
+                <ClientSearchInput
+                    onClientSelect={handleClientSelect}
+                />
                 <View style={styles.row}>
                     <View style={styles.halfWidth}>
                         <DropDownPicker
@@ -113,7 +113,12 @@ const DetalleVenta = ({ navigation }) => {
                             placeholder="Courier"
                             onOpen={() => setOpenTipo(false)}
                             zIndex={1000}
-                            style={styles.dropdown}
+                            style={{
+                                borderColor: '#dddddd', // Color de borde
+                            }}
+                            dropDownContainerStyle={{
+                                borderColor: '#dddddd', // Color de borde del contenedor desplegable
+                            }}
                         />
                     </View>
 
@@ -128,19 +133,26 @@ const DetalleVenta = ({ navigation }) => {
                             placeholder="Tipo"
                             onOpen={() => setOpenCourier(false)}
                             zIndex={900}
-                            style={styles.dropdown}
+                            style={{
+                                borderColor: '#dddddd', // Color de borde
+                            }}
+                            dropDownContainerStyle={{
+                                borderColor: '#dddddd', // Color de borde del contenedor desplegable
+                            }}
                         />
                     </View>
                 </View>
+                <View style={styles.descuentoInput}>
 
-                <CustomInput
-                    placeholder="Descuento"
-                    focusedBorderColor="#211132"
-                    unfocusedBorderColor="#999"
-                    placeholderTextColor="#999"
-                    errorMessage="Este campo es obligatorio"
-                    keyboardType="numeric"
-                />
+                    <CustomInput
+                        placeholder="Descuento"
+                        focusedBorderColor="#211132"
+                        unfocusedBorderColor="#dddddd"
+                        placeholderTextColor="#999"
+                        keyboardType="numeric"
+                        errorMessage='false'
+                    />
+                </View>
             </View>
 
             {/* Carrito */}
@@ -364,6 +376,10 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontWeight: 'bold',
     },
+    descuentoInput: {
+        width: 100,
+        marginTop: 10,
+    }
 });
 
 export default DetalleVenta;
