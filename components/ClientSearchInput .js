@@ -7,10 +7,17 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [clients, setClients] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [newClientName, setNewClientName] = useState('');
-  const [newClientDNI, setNewClientDNI] = useState('');
-  const [selectedClient, setSelectedClient] = useState(null);
 
+
+  // Estados para los campos del nuevo cliente
+  const [newClientDNI, setNewClientDNI] = useState('');
+  const [newClientCountry, setNewClientCountry] = useState('');
+  const [newClientName, setNewClientName] = useState('');
+  const [newClientEmail, setNewClientEmail] = useState('');
+  const [newClientPhone, setNewClientPhone] = useState('');
+  const [newClientAddress, setNewClientAddress] = useState('');
+  
+  const [selectedClient, setSelectedClient] = useState(null);
   useEffect(() => {
     if (searchTerm.length > 0) {
       fetchClients(searchTerm);
@@ -125,7 +132,7 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
       )}
 
       {clients.length > 0 && !selectedClient && (
-        <View style={[styles.suggestionsContainer, { height: Math.min(200, clients.length * 65) }]}>
+        <View style={styles.suggestionsContainer}>
           <FlatList
             data={clients}
             keyExtractor={item => item.dni.toString()}
@@ -138,8 +145,7 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
                 <Text style={styles.clientDNI}>DNI: {item.dni}</Text>
               </TouchableOpacity>
             )}
-            scrollEnabled={true}
-            nestedScrollEnabled={true}
+            scrollEnabled={true} 
             keyboardShouldPersistTaps="handled"
           />
         </View>
@@ -160,7 +166,7 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
         </TouchableOpacity>
       )}
 
-      <Modal
+<Modal
         visible={isModalVisible}
         animationType="slide"
         transparent={true}
@@ -174,17 +180,9 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
                 style={styles.modalCloseButton}
                 onPress={() => setIsModalVisible(false)}
               >
-                <Icon name="close" size={24} color="#666" />
+                <Icon name="close" size={24} color="#fff" />
               </TouchableOpacity>
             </View>
-
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Nombre completo del cliente"
-              value={newClientName}
-              onChangeText={setNewClientName}
-              autoCapitalize="words"
-            />
 
             <TextInput
               style={styles.modalInput}
@@ -192,6 +190,44 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
               value={newClientDNI}
               onChangeText={setNewClientDNI}
               keyboardType="numeric"
+            />
+
+            <TextInput
+              style={styles.modalInput}
+              placeholder="País"
+              value={newClientCountry}
+              onChangeText={setNewClientCountry}
+            />
+
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Nombre Completo"
+              value={newClientName}
+              onChangeText={setNewClientName}
+              autoCapitalize="words"
+            />
+
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Email"
+              value={newClientEmail}
+              onChangeText={setNewClientEmail}
+              keyboardType="email-address"
+            />
+
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Teléfono"
+              value={newClientPhone}
+              onChangeText={setNewClientPhone}
+              keyboardType="numeric"
+            />
+
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Dirección"
+              value={newClientAddress}
+              onChangeText={setNewClientAddress}
             />
 
             <View style={styles.modalButtons}>
@@ -260,20 +296,19 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   suggestionsContainer: {
-    position: 'absolute',
-    top: 45,
+    top: 0,
     left: 0,
     right: 0,
     backgroundColor: '#fff',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ddd',
-    overflow: 'hidden',
     elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+    height:200,
   },
   suggestionItem: {
     padding: 12,
@@ -309,19 +344,19 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo difuso
     justifyContent: 'center',
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
+    backgroundColor: '#211132',
+    borderRadius: 20, // Bordes redondeados más marcados
+    padding: 25,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 10, // Sombra suave
   },
   modalHeader: {
     flexDirection: 'row',
@@ -330,20 +365,22 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 24, // Aumenté el tamaño de la fuente
     fontWeight: 'bold',
+    color: '#fff', // Color oscuro
   },
   modalCloseButton: {
-    padding: 4,
+    padding: 5,
   },
   modalInput: {
-    height: 40,
+    height: 50,
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    marginBottom: 12,
+    borderRadius: 12, // Bordes redondeados
+    paddingHorizontal: 15,
+    marginBottom: 20, // Aumenté el margen
     fontSize: 16,
+    backgroundColor: '#f9f9f9', // Fondo claro para el input
   },
   modalButtons: {
     flexDirection: 'row',
@@ -352,15 +389,15 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
-    padding: 12,
-    borderRadius: 8,
+    padding: 15,
+    borderRadius: 12, // Bordes suaves
     marginHorizontal: 5,
   },
   cancelButton: {
-    backgroundColor: '#ff3b30',
+    backgroundColor: '#B90909', // Rojo (como el de tu paleta)
   },
   saveButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#EFB810', // Amarillo (como el de tu paleta)
   },
   buttonText: {
     color: '#fff',
