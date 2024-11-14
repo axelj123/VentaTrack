@@ -272,6 +272,46 @@ export const consultarDatos = async (db, tableName) => {
     throw error;
   }
 };
+export const obtenerDetallesVenta = async (ventaId) => {
+  try {
+    const db = await getDBConnection();
+    const query = `SELECT * FROM detalle_venta WHERE Venta_id = ?`;
+    const result = await db.getAllAsync(query, [ventaId]);
+
+    if (result && result.length > 0) {
+      const detallesVenta = result.map((row) => row); // Acceder a los resultados
+      console.log(`Detalles de venta (ID ${ventaId}):`, detallesVenta);
+      return detallesVenta;
+    } else {
+      console.log("No se encontraron detalles para la venta ID:", ventaId);
+      return [];
+    }
+  } catch (error) {
+    console.error("Error al obtener detalles de la venta:", error);
+    throw error;
+  }
+};
+
+// Función para obtener información de un producto por su ID
+export const obtenerProductoPorId = async (productoId) => {
+  try {
+    const db = await getDBConnection();
+    const query = `SELECT * FROM Productos WHERE Producto_id = ?`;
+    const result = await db.getAllAsync(query, [productoId]);
+
+    if (result && result.length > 0) {
+      const producto = result[0]; // Acceder al primer resultado
+      console.log(`Producto (ID ${productoId}):`, producto);
+      return producto;
+    } else {
+      console.log("No se encontró el producto con ID:", productoId);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error al obtener producto:", error);
+    throw error;
+  }
+};
 
 // Funciones CRUD para Usuario
 export const createUsuario = async (db, usuario) => {

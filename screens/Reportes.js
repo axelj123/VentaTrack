@@ -6,15 +6,16 @@ import { useFocusEffect } from '@react-navigation/native';
 import VentaCard from '../components/VentaCard';
 import EmptyState from '../components/EmptyState';
 import FilterTabs from '../components/FilterTabs';
-
+import { obtenerDetallesVenta, obtenerProductoPorId } from '../database';
 const Reportes = () => {
   const { showToast } = useToast();
   const [ventas, setVentas] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [filterInterval, setFilterInterval] = useState('Día');
-  const [filteredSalesCount, setFilteredSalesCount] = useState(0); // Nuevo estado para contar ventas filtradas
-
+  const [totalSalesAmount, setTotalSalesAmount] = useState(0);
   const [filteredVentas, setFilteredVentas] = useState([]);
+  const [totalProfits, setTotalProfits] = useState(0);
+
   const calcularFechaInicio = (intervalo, fechaPersonalizada = null) => {
     if (fechaPersonalizada) {
       return new Date(fechaPersonalizada);
@@ -48,14 +49,42 @@ const Reportes = () => {
         ? new Date(rangoPersonalizado.endDate)
         : new Date();
 
+      // Filtrar ventas dentro del rango de fechas
       const ventasFiltradas = ventasObtenidas.filter(venta => {
         const fechaVenta = new Date(venta.Fecha_venta);
         return fechaVenta >= fechaInicio && fechaVenta <= fechaFin;
       });
 
+      // Calcular el total de ventas y ganancias
+      let totalVentas = 0;
+      let totalGanancias = 0;
+
+      for (let venta of ventasFiltradas) {
+        const detallesVenta = await obtenerDetallesVenta(venta.Venta_id);
+        let gananciaVenta = 0;
+
+        for (let detalle of detallesVenta) {
+          const producto = await obtenerProductoPorId(detalle.Producto_id); // Obtener información del producto
+          const precioCompra = parseFloat(producto.precio_compra) || 0;
+          const precioVenta = parseFloat(detalle.precio_unitario) || 0;
+          const cantidad = parseInt(detalle.cantidad) || 0;
+
+          const gananciaProducto = (precioVenta - precioCompra) * cantidad;
+          gananciaVenta += gananciaProducto;
+        }
+
+        // Sumar total y ganancias por cada venta
+        totalVentas += parseFloat(venta.Total) || 0;
+        totalGanancias += gananciaVenta;
+      }
+
       ventasFiltradas.sort((a, b) => new Date(b.Fecha_venta) - new Date(a.Fecha_venta));
+
+      // Actualizar los estados con las ventas filtradas, total y ganancias
       setVentas(ventasFiltradas);
       setFilteredVentas(ventasFiltradas);
+      setTotalSalesAmount(totalVentas);
+      setTotalProfits(totalGanancias); // Nuevo estado para ganancias
     } catch (error) {
       console.error('Error al cargar ventas:', error);
       showToast('Error al cargar las ventas', 'error');
@@ -63,6 +92,8 @@ const Reportes = () => {
       setIsLoading(false);
     }
   };
+
+
 
   const handleFilterChange = (filtro, rangoFechas = null) => {
     setFilterInterval(filtro);
@@ -86,7 +117,7 @@ const Reportes = () => {
     <View style={styles.container}>
       <Text style={styles.headerText}>Reportes de Ventas</Text>
 
-      <FilterTabs 
+      <FilterTabs
         onFilterChange={handleFilterChange}
         filteredSalesCount={filteredVentas.length}  // Pasar el conteo de ventas filtradas
 
@@ -97,19 +128,30 @@ const Reportes = () => {
           <Text>Cargando ventas...</Text>
         </View>
       ) : ventas.length === 0 ? (
-        <EmptyState 
-          title="No hay ventas disponibles" 
-          description="No hay ventas registradas en este momento. Intenta cambiar el filtro o verifica más tarde." 
-          buttonText="Actualizar" 
-          onRefresh={() => cargarVentas(filterInterval)} 
+        <EmptyState
+          title="No hay ventas disponibles"
+          description="No hay ventas registradas en este momento. Intenta cambiar el filtro o verifica más tarde."
+          buttonText="Actualizar"
+          onRefresh={() => cargarVentas(filterInterval)}
         />
       ) : (
         <ScrollView>
+          <View style={styles.totalsContainer}>
+            <View style={styles.totalAmountContainer}>
+              <Text style={styles.totalAmountLabel}>TOTAL:</Text>
+              <Text style={styles.totalAmountValue}>S/ {totalSalesAmount.toFixed(2)}</Text>
+            </View>
+            <View style={styles.profitsContainer}>
+              <Text style={styles.profitsLabel}>GANANCIAS:</Text>
+              <Text style={styles.profitsValue}>S/ {totalProfits.toFixed(2)}</Text>
+            </View>
+          </View>
+
           {ventas.map((venta) => (
-            <VentaCard 
-              key={venta.Venta_id} 
-              venta={venta} 
-              onReimprimir={handleReimprimirBoleta} 
+            <VentaCard
+              key={venta.Venta_id}
+              venta={venta}
+              onReimprimir={handleReimprimirBoleta}
             />
           ))}
         </ScrollView>
@@ -151,6 +193,52 @@ const styles = StyleSheet.create({
   },
   activeFilterButtonText: {
     color: '#FFF',
+  },
+  totalText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginVertical: 10,
+    textAlign: 'center',
+    color: '#6200EE',
+  },
+  totalsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 16,
+  },
+  totalAmountContainer: {
+    backgroundColor: '#480d87',
+    padding: 12,
+    borderRadius: 8,
+    flex: 1,
+    marginRight: 8,
+  },
+  totalAmountLabel: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  totalAmountValue: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 20,
+  },
+  profitsContainer: {
+    backgroundColor: '#4CAF50',
+    padding: 12,
+    borderRadius: 8,
+    flex: 1,
+    marginLeft: 8,
+  },
+  profitsLabel: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  profitsValue: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 20,
   },
 });
 

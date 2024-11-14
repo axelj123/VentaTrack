@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   button: {
     width: 145,
     height: 50,
-    backgroundColor: '#B90909',
+    backgroundColor: '#211132',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 15,
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     borderRadius: 30, // Bordes redondeados
   },
   activeFilter: {
-    backgroundColor: '#B90909', // Color de fondo cuando el filtro está activo
+    backgroundColor: '#6200EE', // Color de fondo cuando el filtro está activo
   },
   inactiveText: {
     color: '#000', // Color de texto para filtros inactivos

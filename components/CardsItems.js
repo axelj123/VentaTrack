@@ -73,14 +73,14 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#B90909',
+    color: '#6200EE',
   },
   stock: {
     fontSize: 14,
     color: '#555',
   },
   buttonContainer: {
-    backgroundColor: '#B90909',
+    backgroundColor: '#6200EE',
     paddingVertical: 10,
     borderRadius: 5,
     alignItems: 'center',

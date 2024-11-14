@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, Animated, Dimensions, TouchableOpacity, Modal, 
 import React, { useState, useRef } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-const FilterTabs = ({ onFilterChange }) => {
+const FilterTabs = ({ onFilterChange,filteredSalesCount,totalSalesAmount }) => {
   const [selectedFilter, setSelectedFilter] = useState('Día');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dateRange, setDateRange] = useState({ start: null, end: null });
@@ -139,7 +139,7 @@ const FilterTabs = ({ onFilterChange }) => {
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <Text style={styles.title}>Período</Text>
-        <Text style={styles.salesCount}>24 ventas</Text>
+        <Text style={styles.salesCount}>{filteredSalesCount}</Text>
       </View>
 
       <View style={styles.filterContainer}>

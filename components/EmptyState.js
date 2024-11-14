@@ -9,8 +9,8 @@ const EmptyState = ({
   buttonText = 'Actualizar página',
   iconName = 'cube-outline',
   iconSize = 40,
-  iconColor = '#B90909',
-  buttonColor = '#B90909',
+  iconColor = '#6200EE',
+  buttonColor = '#6200EE',
   // Acciones del botón
   onRefresh,
   onPress,
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#FFF5F5',
+    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#6200EE',
     marginBottom: 8,
     textAlign: 'center',
   },
