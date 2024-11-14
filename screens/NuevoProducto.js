@@ -187,7 +187,7 @@ const RegistrarProducto = () => {
           {selectedImage ? (
             <Image source={{ uri: selectedImage }} style={styles.image} resizeMode="contain" />
           ) : (
-            <MaterialIcons name="camera-alt" size={24} color="#8B0000" />
+            <MaterialIcons name="camera-alt" size={24} color="#6200EE" />
           )}
         </TouchableOpacity>
       </View>
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
   button: {
     width: 145,
     height: 50,
-    backgroundColor: '#B90909',
+    backgroundColor: '#6200EE',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 25,

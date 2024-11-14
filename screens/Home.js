@@ -6,7 +6,7 @@ import { Feather } from '@expo/vector-icons';
 
 const screenWidth = Dimensions.get('window').width;
 
-const Home = () => {
+const Home = ({ navigation }) => {
   const [dateFilter, setDateFilter] = useState("Hoy");
 
   const chartConfig = {
@@ -23,7 +23,7 @@ const Home = () => {
       <View style={styles.headerSection}>
         <Text style={styles.greetingText}>¡Hola, Usuario!</Text>
         <Text style={styles.dateText}>{new Date().toLocaleDateString()}</Text>
-        <TouchableOpacity style={styles.notificationIcon}>
+        <TouchableOpacity style={styles.notificationIcon}  onPress={() => navigation.navigate('Notificaciones')}>
           <Feather name="bell" size={24} color="#333" />
         </TouchableOpacity>
       </View>
@@ -50,18 +50,18 @@ const Home = () => {
 
       {/* Sección de métricas */}
       <View style={styles.metricsSection}>
-        <MetricCard title={`Ganancias ${dateFilter}`} value="S/. 0.00" color="#FF5733" icon="trending-up" />
-        <MetricCard title="Total Productos" value="0" color="#FF914D" icon="box" />
-        <MetricCard title="Total Clientes" value="0" color="#3498DB" icon="users" />
-        <MetricCard title="Producto Más Vendido" value="Producto A" color="#FF7043" icon="star" />
+        <MetricCard title={`Ganancias ${dateFilter}`} value="S/. 0.00" color="#5300a9" icon="trending-up" />
+        <MetricCard title="Total Productos" value="0" color="#4e059a" icon="box" />
+        <MetricCard title="Total Clientes" value="0" color="#3c1664" icon="users" />
+        <MetricCard title="Producto Más Vendido" value="Producto A" color="#7228be" icon="star" />
       </View>
 
       {/* Botones de navegación */}
       <Text style={styles.navigationTitle}>Navega a Secciones</Text>
       <View style={styles.navigationSection}>
-        <NavButton title="Productos" icon="box" color="#E74C3C" />
-        <NavButton title="Clientes" icon="users" color="#1ABC9C" />
-        <NavButton title="Ventas" icon="dollar-sign" color="#FF6347" />
+        <NavButton title="Productos" icon="box" color="#3c0475" />
+        <NavButton title="Clientes" icon="users" color="#ee9606" />
+        <NavButton title="Ventas" icon="dollar-sign" color="#1ABC9C" />
       </View>
 
       {/* Gráfico de barras de ganancias por día */}
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderRadius: 20,
     alignItems: 'center',
-    backgroundColor: '#2C3E50', // Color oscuro para destacar
+    backgroundColor: '#6200EE', // Color oscuro para destacar
     marginBottom: 30,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },

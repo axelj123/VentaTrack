@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   },
   carritoContent: {
     flexDirection: 'row',
-    backgroundColor: '#B90909',
+    backgroundColor: '#6200EE',
     borderRadius: 10,
     padding: 10,
   },
