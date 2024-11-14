@@ -1,18 +1,21 @@
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import CustomInput from '../components/CustomInput';
-import { getDBConnection } from '../database';
+import { getDBConnection, registrarVenta } from '../database';
 import DropDownPicker from 'react-native-dropdown-picker';
 import ProductoCarritoCard from '../components/ProductoCarritoCard ';  // Importamos el nuevo componente
 import EmptyState from '../components/EmptyState';
 import { useCart } from '../components/CartContext'; // Usamos el contexto para el carrito
 import ClientSearchInput from '../components/ClientSearchInput ';
+import { useToast } from '../components/ToastContext'; // Importar el contexto
 
 const DetalleVenta = ({ navigation }) => {
+    const { showToast } = useToast(); // Usamos el hook para acceder al showToast
     const { cartItems, removeFromCart, updateQuantity } = useCart();  // Obtener cartItems y removeFromCart
     const [total, setTotal] = useState(0);
     const [selectedClient, setSelectedClient] = useState(null);
+    const [subtotal, setSubtotal] = useState(0);
 
     const [openCourier, setOpenCourier] = useState(false);
     const [openTipo, setOpenTipo] = useState(false);
@@ -20,6 +23,7 @@ const DetalleVenta = ({ navigation }) => {
     const [selectedTipo, setSelectedTipo] = useState(null);
     const [courierItems, setCourierItems] = useState([]);
     const [tipoItems, setTipoItems] = useState([]);
+    const [descuento, setDescuento] = useState('');
 
     const fetchCouriers = async () => {
         try {
@@ -58,10 +62,26 @@ const DetalleVenta = ({ navigation }) => {
         }
     };
     useEffect(() => {
-        // Calcular el total cada vez que cambian los productos en el carrito
-        const totalAmount = cartItems.reduce((sum, producto) => sum + producto.price * producto.quantity, 0);
-        setTotal(totalAmount);  // Actualizamos el estado de total
-    }, [cartItems]);
+        // Calcula el subtotal del carrito (sin descuento)
+        const subtotalAmount = cartItems.reduce(
+            (sum, producto) => sum + producto.price * producto.quantity,
+            0
+        );
+        setSubtotal(subtotalAmount);
+
+        // Calcula el total final (con descuento) solo si el descuento es válido
+        const descuentoNumerico = parseFloat(descuento) || 0;
+        if (descuentoNumerico > subtotalAmount) {
+            showToast('Info', 'El descuento no puede ser mayor que el subtotal', 'info');
+            setDescuento(0);  // Establece el descuento a 0 si es mayor que el subtotal
+            setTotal(subtotalAmount);  // Mantén el total igual al subtotal
+        } else {
+            const totalFinal = Math.max(0, subtotalAmount - descuentoNumerico);
+            setTotal(totalFinal);
+        }
+    }, [cartItems, descuento]);
+
+
 
     useEffect(() => {
         fetchCouriers();
@@ -85,6 +105,38 @@ const DetalleVenta = ({ navigation }) => {
 
     const handleClientSelect = (client) => {
         setSelectedClient(client); // Asigna el cliente seleccionado
+    };
+    const handleRegistrarVenta = async () => {
+        if (!selectedClient || !selectedTipo || !selectedCourier) {
+            showToast('Error', 'Por favor, complete todos los campos.', 'warning');
+            return;
+        }
+
+        // Datos de la venta
+        const ventaData = {
+            Cliente_id: selectedClient.Cliente_id,
+            Total: total - (parseFloat(descuento) || 0),
+            tipoVenta_id: selectedTipo,
+            Courier_id: selectedCourier,
+            descuento: parseFloat(descuento) || 0
+        };
+
+        // Detalles de la venta
+        const detallesVenta = cartItems.map(item => ({
+            Producto_id: item.id,
+            cantidad: item.quantity,
+            precio_unitario: item.price,
+            subtotal: item.price * item.quantity
+        }));
+
+        const success = await registrarVenta(ventaData, detallesVenta);
+        if (success) {
+            showToast('Sucess', 'Venta registrada correctamente', 'success');
+            cartItems.forEach(item => removeFromCart(item.id));
+            navigation.goBack(); // Regresar a la pantalla anterior
+        } else {
+            showToast('Error', 'Error al registrar la venta', 'error');
+        }
     };
     return (
         <View style={styles.container}>
@@ -146,11 +198,12 @@ const DetalleVenta = ({ navigation }) => {
 
                     <CustomInput
                         placeholder="Descuento"
+                        value={descuento.toString()} // Pasa el valor actual de descuento como string
+                        onChangeText={(value) => setDescuento(value)} // Actualiza el estado descuento
                         focusedBorderColor="#211132"
                         unfocusedBorderColor="#dddddd"
                         placeholderTextColor="#999"
                         keyboardType="numeric"
-                        errorMessage='false'
                     />
                 </View>
             </View>
@@ -182,7 +235,7 @@ const DetalleVenta = ({ navigation }) => {
                 <TouchableOpacity style={styles.cancelButton}>
                     <Text style={styles.buttonText}>CANCELAR VENTA</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.registerButton}>
+                <TouchableOpacity style={styles.registerButton} onPress={handleRegistrarVenta}>
                     <Text style={styles.buttonText}>REGISTRAR VENTA</Text>
                 </TouchableOpacity>
             </View>

@@ -323,7 +323,37 @@ export const createProducto = async (db, producto) => {
     throw error;
   }
 };
+export const obtenerVentas = async () => {
+  try {
+    const db = await getDBConnection();
+    
+    // Obtener todas las ventas
+    const ventas = await db.getAllAsync(
+      `SELECT v.*, c.nombre_completo as cliente_nombre, t.nombre as tipo_venta, co.nombre as courier_nombre
+       FROM Venta v
+       JOIN Cliente c ON v.Cliente_id = c.Cliente_id
+       JOIN Tipo_Venta t ON v.tipoVenta_id = t.tipoVenta_id
+       JOIN Courier co ON v.Courier_id = co.Courier_id`
+    );
 
+    // Obtener los detalles de cada venta
+    for (let venta of ventas) {
+      const detalles = await db.getAllAsync(
+        `SELECT dv.*, p.nombre as producto_nombre
+         FROM detalle_venta dv
+         JOIN Productos p ON dv.Producto_id = p.Producto_id
+         WHERE dv.Venta_id = ?`,
+        [venta.Venta_id]
+      );
+      venta.detalles = detalles; // Agregar detalles de cada venta
+    }
+
+    return ventas;
+  } catch (error) {
+    console.error("Error al obtener ventas:", error);
+    throw error;
+  }
+};
 export const listaProducto = async (db) => {
   try {
     const result = await db.getAllAsync(`SELECT * FROM Productos`);
@@ -345,6 +375,47 @@ export const listClientes = async (db)=>{
   }
 }
 
+// database.js
+
+export const registrarVenta = async (ventaData, detallesVenta) => {
+  try {
+    const db = await getDBConnection();
+    
+    // Inserta la venta en la tabla Venta
+    const resultVenta = await db.runAsync(
+      `INSERT INTO Venta (Cliente_id, Total, tipoVenta_id, Courier_id, descuento) VALUES (?, ?, ?, ?, ?)`,
+      [
+        ventaData.Cliente_id,
+        ventaData.Total,
+        ventaData.tipoVenta_id,
+        ventaData.Courier_id,
+        ventaData.descuento
+      ]
+    );
+
+    const Venta_id = resultVenta.lastInsertRowId; // Obtiene el ID de la venta recién insertada
+
+    // Inserta cada producto en la tabla detalle_venta
+    for (const detalle of detallesVenta) {
+      await db.runAsync(
+        `INSERT INTO detalle_venta (Venta_id, Producto_id, cantidad, precio_unitario, subtotal) VALUES (?, ?, ?, ?, ?)`,
+        [
+          Venta_id,
+          detalle.Producto_id,
+          detalle.cantidad,
+          detalle.precio_unitario,
+          detalle.subtotal
+        ]
+      );
+    }
+
+    console.log("Venta registrada exitosamente.");
+    return true;
+  } catch (error) {
+    console.error("Error al registrar la venta:", error);
+    return false;
+  }
+};
 
 
 export const getProductos = async (db) => {
