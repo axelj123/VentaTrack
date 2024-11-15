@@ -44,53 +44,77 @@ const ProductModal = ({
     >
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <MaterialIcons name="close" size={24} color="black" />
-          </TouchableOpacity>
-
-          <Text style={styles.modalTitle}>{product?.title}</Text>
-          <Text style={styles.price}>Precio: ${product?.price}</Text>
-          <Text style={styles.stock}>Stock disponible: {product?.stock}</Text>
-
-          <View style={styles.quantityContainer}>
-            <TouchableOpacity 
-              style={styles.quantityButton} 
-              onPress={() => adjustQuantity(-1)}
-            >
-              <MaterialIcons name="remove" size={24} color="white" />
-            </TouchableOpacity>
-
-            <TextInput
-              style={styles.quantityInput}
-              value={quantity}
-              onChangeText={(text) => {
-                const num = parseInt(text) || 0;
-                if (num <= product?.stock) {
-                  setQuantity(text);
-                }
-              }}
-              keyboardType="numeric"
-              maxLength={4}
-            />
-
-            <TouchableOpacity 
-              style={styles.quantityButton} 
-              onPress={() => adjustQuantity(1)}
-            >
-              <MaterialIcons name="add" size={24} color="white" />
-            </TouchableOpacity>
+          <View style={styles.header}>
+            <View style={styles.headerContent}>
+              <Text style={styles.modalTitle}>{product?.title}</Text>
+              <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                <MaterialIcons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
           </View>
 
-          <Text style={styles.subtotal}>
-            Subtotal: ${(parseFloat(quantity || 0) * (product?.price || 0)).toFixed(2)}
-          </Text>
+          <View style={styles.content}>
+            <View style={styles.priceContainer}>
+              <Text style={styles.priceLabel}>Precio:</Text>
+              <Text style={styles.price}>S/. {product?.price}</Text>
+            </View>
 
-          <TouchableOpacity 
-            style={styles.addButton}
-            onPress={handleAddToCart}
-          >
-            <Text style={styles.addButtonText}>Agregar al carrito</Text>
-          </TouchableOpacity>
+            <View style={styles.stockContainer}>
+              <MaterialIcons name="inventory" size={20} color="#6B21A8" />
+              <Text style={styles.stock}>Stock disponible: {product?.stock}</Text>
+            </View>
+
+            <View style={styles.divider} />
+
+            <Text style={styles.quantityLabel}>Cantidad:</Text>
+            <View style={styles.quantityContainer}>
+              <TouchableOpacity 
+                style={[styles.quantityButton, quantity === '1' && styles.quantityButtonDisabled]} 
+                onPress={() => adjustQuantity(-1)}
+                disabled={quantity === '1'}
+              >
+                <MaterialIcons name="remove" size={24} color="white" />
+              </TouchableOpacity>
+
+              <TextInput
+                style={styles.quantityInput}
+                value={quantity}
+                onChangeText={(text) => {
+                  const num = parseInt(text) || 0;
+                  if (num <= product?.stock) {
+                    setQuantity(text);
+                  }
+                }}
+                keyboardType="numeric"
+                maxLength={4}
+              />
+
+              <TouchableOpacity 
+                style={[styles.quantityButton, parseInt(quantity) >= product?.stock && styles.quantityButtonDisabled]} 
+                onPress={() => adjustQuantity(1)}
+                disabled={parseInt(quantity) >= product?.stock}
+              >
+                <MaterialIcons name="add" size={24} color="white" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.subtotalContainer}>
+              <Text style={styles.subtotalLabel}>Subtotal:</Text>
+              <Text style={styles.subtotal}>
+                S/. {(parseFloat(quantity || 0) * (product?.price || 0)).toFixed(2)}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.footer}>
+            <TouchableOpacity 
+              style={styles.addButton}
+              onPress={handleAddToCart}
+            >
+              <MaterialIcons name="shopping-cart" size={24} color="white" style={styles.cartIcon} />
+              <Text style={styles.addButtonText}>Agregar al carrito</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </Modal>
@@ -100,82 +124,161 @@ const ProductModal = ({
 const styles = StyleSheet.create({
   centeredView: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-end', // Modal desde abajo
     backgroundColor: 'rgba(0, 0, 0, 0.5)'
   },
   modalView: {
-    width: '80%',
+    backgroundColor: '#F9FAFB',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    minHeight: '50%',
+    width: '100%',
+  },
+  header: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
     backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 20,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5
   },
   closeButton: {
-    position: 'absolute',
-    right: 15,
-    top: 15
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#F3F4F6',
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 15,
-    marginTop: 10
+    color: '#1F2937',
+    flex: 1,
+    marginRight: 16,
+  },
+  content: {
+    padding: 20,
+  },
+  priceContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    marginBottom: 16,
+  },
+  priceLabel: {
+    fontSize: 16,
+    color: '#6B7280',
+    marginRight: 8,
   },
   price: {
-    fontSize: 18,
-    marginBottom: 10
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#6B21A8',
+  },
+  stockContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3E8FF',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    alignSelf: 'flex-start',
   },
   stock: {
+    fontSize: 14,
+    color: '#6B21A8',
+    marginLeft: 8,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#E5E7EB',
+    marginVertical: 20,
+  },
+  quantityLabel: {
     fontSize: 16,
-    color: '#666',
-    marginBottom: 20
+    color: '#374151',
+    marginBottom: 12,
+    fontWeight: '600',
   },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20
+    marginBottom: 24,
   },
   quantityButton: {
-    backgroundColor: '#B90909',
-    borderRadius: 25,
-    padding: 8
+    backgroundColor: '#6B21A8',
+    borderRadius: 12,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quantityButtonDisabled: {
+    backgroundColor: '#E5E7EB',
   },
   quantityInput: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 10,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
     paddingHorizontal: 20,
     paddingVertical: 8,
-    marginHorizontal: 10,
-    minWidth: 60,
+    marginHorizontal: 12,
+    minWidth: 80,
     textAlign: 'center',
-    fontSize: 18
+    fontSize: 18,
+    backgroundColor: 'white',
+  },
+  subtotalContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  subtotalLabel: {
+    fontSize: 16,
+    color: '#374151',
+    fontWeight: '600',
   },
   subtotal: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 20
+    color: '#6B21A8',
+  },
+  footer: {
+    padding: 16,
+    backgroundColor: 'white',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
   },
   addButton: {
-    backgroundColor: '#B90909',
-    borderRadius: 10,
-    padding: 15,
-    width: '100%',
-    alignItems: 'center'
+    backgroundColor: '#6B21A8',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#6B21A8',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
+  },
+  cartIcon: {
+    marginRight: 8,
   },
   addButtonText: {
     color: 'white',
     fontSize: 16,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   }
 });
 

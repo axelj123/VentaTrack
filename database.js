@@ -19,7 +19,7 @@ export const deleteDatabase = async () => {
   try {
     const dbPath = getDatabasePath();
     const { exists } = await FileSystem.getInfoAsync(dbPath);
-    
+
     if (exists) {
       await FileSystem.deleteAsync(dbPath, { idempotent: true });
       console.log('Base de datos eliminada con éxito');
@@ -136,7 +136,7 @@ export const createTables = async (db) => {
       console.log(`Tabla creada: ${table.split(' ')[2]}`); // Muestra el nombre de la tabla creada
     }
 
-   
+
     // Insertar datos iniciales
     await db.runAsync(
       `INSERT OR IGNORE INTO Tipo_Venta (nombre) VALUES ('Nacional'), ('Internacional')`
@@ -366,7 +366,7 @@ export const createProducto = async (db, producto) => {
 export const obtenerVentas = async () => {
   try {
     const db = await getDBConnection();
-    
+
     // Obtener todas las ventas
     const ventas = await db.getAllAsync(
       `SELECT v.*, c.nombre_completo as cliente_nombre, t.nombre as tipo_venta, co.nombre as courier_nombre
@@ -375,6 +375,7 @@ export const obtenerVentas = async () => {
        JOIN Tipo_Venta t ON v.tipoVenta_id = t.tipoVenta_id
        JOIN Courier co ON v.Courier_id = co.Courier_id`
     );
+    console.log("Ventas obtenidas sin detalles:", ventas);
 
     // Obtener los detalles de cada venta
     for (let venta of ventas) {
@@ -394,20 +395,21 @@ export const obtenerVentas = async () => {
     throw error;
   }
 };
+
 export const listaProducto = async (db) => {
   try {
     const result = await db.getAllAsync(`SELECT * FROM Productos`);
     console.log("Productos obtenidos:", result); // Verifica que los productos se obtienen
-    return result; 
+    return result;
   } catch (error) {
     console.error("Error al obtener productos:", error);
     throw error;
   }
 };
-export const listClientes = async (db)=>{
+export const listClientes = async (db) => {
   try {
     const result = await db.getAllAsync(`SELECT * FROM Cliente`)
-    console.log ("Clientes obtenidos", result);
+    console.log("Clientes obtenidos", result);
     return result;
   } catch (error) {
     console.error("Error al obtener clientes:", error);
@@ -420,7 +422,7 @@ export const listClientes = async (db)=>{
 export const registrarVenta = async (ventaData, detallesVenta) => {
   try {
     const db = await getDBConnection();
-    
+
     // Inserta la venta en la tabla Venta
     const resultVenta = await db.runAsync(
       `INSERT INTO Venta (Cliente_id, Total, tipoVenta_id, Courier_id, descuento) VALUES (?, ?, ?, ?, ?)`,
@@ -483,7 +485,7 @@ export const initDatabase = async () => {
     await consultarDatos(db, 'Tipo_Venta');
     await consultarDatos(db, 'Categoria_Producto');
     await consultarDatos(db, 'Courier');
-    await consultarDatos(db,'Cliente');
+    await consultarDatos(db, 'Cliente');
 
     console.log("Base de datos inicializada correctamente");
     return db;

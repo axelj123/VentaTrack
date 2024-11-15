@@ -6,6 +6,7 @@ import ProductModal from '../components/ProductModal';
 import { getDBConnection, listaProducto } from '../database';
 import EmptyState from '../components/EmptyState';
 import { useCart } from '../components/CartContext'; // Usamos el contexto para el carrito
+import { useFocusEffect } from '@react-navigation/native';
 
 const VentaProducto = ({navigation }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -41,6 +42,11 @@ const VentaProducto = ({navigation }) => {
   useEffect(() => {
     fetchProductos();
   }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchProductos();
+    }, [])
+  );
 
   useEffect(() => {
     filterProducts();
@@ -177,7 +183,7 @@ const styles = StyleSheet.create({
   },
   carritoContent: {
     flexDirection: 'row',
-    backgroundColor: '#6200EE',
+    backgroundColor: '#6B21A8',
     borderRadius: 10,
     padding: 10,
   },

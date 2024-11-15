@@ -9,6 +9,7 @@ import EmptyState from '../components/EmptyState';
 import { useCart } from '../components/CartContext'; // Usamos el contexto para el carrito
 import ClientSearchInput from '../components/ClientSearchInput ';
 import { useToast } from '../components/ToastContext'; // Importar el contexto
+import VentaFooter from '../components/VentaFooter';
 
 const DetalleVenta = ({ navigation }) => {
     const { showToast } = useToast(); // Usamos el hook para acceder al showToast
@@ -61,28 +62,31 @@ const DetalleVenta = ({ navigation }) => {
             console.error("Error al obtener tipos de venta:", error);
         }
     };
+    const validarDescuento = () => {
+        const descuentoNumerico = parseFloat(descuento) || 0;
+        if (descuentoNumerico > subtotal) {
+            showToast('Info', 'El descuento no puede ser mayor que el subtotal', 'info');
+            setDescuento(0); // Limpiar el descuento si es mayor que el subtotal
+            return false;
+        }
+        return true;
+    };
+    
     useEffect(() => {
-        // Calcula el subtotal del carrito (sin descuento)
+        // Calcular subtotal del carrito
         const subtotalAmount = cartItems.reduce(
             (sum, producto) => sum + producto.price * producto.quantity,
             0
         );
         setSubtotal(subtotalAmount);
-
-        // Calcula el total final (con descuento) solo si el descuento es válido
+    
+        // Calcular el total basado en el descuento solo si es válido
         const descuentoNumerico = parseFloat(descuento) || 0;
-        if (descuentoNumerico > subtotalAmount) {
-            showToast('Info', 'El descuento no puede ser mayor que el subtotal', 'info');
-            setDescuento(0);  // Establece el descuento a 0 si es mayor que el subtotal
-            setTotal(subtotalAmount);  // Mantén el total igual al subtotal
-        } else {
-            const totalFinal = Math.max(0, subtotalAmount - descuentoNumerico);
-            setTotal(totalFinal);
-        }
+        const totalFinal = Math.max(0, subtotalAmount - descuentoNumerico);
+        setTotal(totalFinal);
     }, [cartItems, descuento]);
 
-
-
+  
     useEffect(() => {
         fetchCouriers();
         fetchTipos();
@@ -107,20 +111,23 @@ const DetalleVenta = ({ navigation }) => {
         setSelectedClient(client); // Asigna el cliente seleccionado
     };
     const handleRegistrarVenta = async () => {
+        // Validar el descuento antes de registrar la venta
+        if (!validarDescuento()) return;
+    
         if (!selectedClient || !selectedTipo || !selectedCourier) {
             showToast('Error', 'Por favor, complete todos los campos.', 'warning');
             return;
         }
-
+    
         // Datos de la venta
         const ventaData = {
             Cliente_id: selectedClient.Cliente_id,
-            Total: total - (parseFloat(descuento) || 0),
+            Total: total,
             tipoVenta_id: selectedTipo,
             Courier_id: selectedCourier,
             descuento: parseFloat(descuento) || 0
         };
-
+    
         // Detalles de la venta
         const detallesVenta = cartItems.map(item => ({
             Producto_id: item.id,
@@ -128,10 +135,10 @@ const DetalleVenta = ({ navigation }) => {
             precio_unitario: item.price,
             subtotal: item.price * item.quantity
         }));
-
+    
         const success = await registrarVenta(ventaData, detallesVenta);
         if (success) {
-            showToast('Sucess', 'Venta registrada correctamente', 'success');
+            showToast('Success', 'Venta registrada correctamente', 'success');
             cartItems.forEach(item => removeFromCart(item.id));
             navigation.goBack(); // Regresar a la pantalla anterior
         } else {
@@ -230,15 +237,13 @@ const DetalleVenta = ({ navigation }) => {
             </ScrollView>
 
             {/* Total y Botones */}
-            <View style={styles.footer}>
-                <Text style={styles.totalText}>Total: s/ {total}</Text>
-                <TouchableOpacity style={styles.cancelButton}>
-                    <Text style={styles.buttonText}>CANCELAR VENTA</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.registerButton} onPress={handleRegistrarVenta}>
-                    <Text style={styles.buttonText}>REGISTRAR VENTA</Text>
-                </TouchableOpacity>
-            </View>
+            <VentaFooter
+                total={total}
+                onCancelarVenta={() => navigation.goBack()}
+                onRegistrarVenta={handleRegistrarVenta}
+            />
+
+      
         </View>
     );
 };

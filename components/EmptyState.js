@@ -10,7 +10,7 @@ const EmptyState = ({
   iconName = 'cube-outline',
   iconSize = 40,
   iconColor = '#6200EE',
-  buttonColor = '#6200EE',
+  buttonColor = '#6B21A8',
   // Acciones del botón
   onRefresh,
   onPress,
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#6200EE',
+    color: '#6B21A8',
     marginBottom: 8,
     textAlign: 'center',
   },

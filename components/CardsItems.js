@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   buttonContainer: {
-    backgroundColor: '#6200EE',
+    backgroundColor: '#6B21A8',
     paddingVertical: 10,
     borderRadius: 5,
     alignItems: 'center',
