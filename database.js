@@ -1,7 +1,9 @@
 import * as SQLite from 'expo-sqlite';
+import { AppState } from 'react-native';
 
 const DATABASE_NAME = 'VentasDB.db';
 
+let dbInstance = null;
 
 // Función para obtener la ruta de la base de datos
 const getDatabasePath = () => {
@@ -12,8 +14,23 @@ const getDatabasePath = () => {
 };
 // Función para abrir la base de datos
 export const getDBConnection = async () => {
-  return await SQLite.openDatabaseAsync(DATABASE_NAME); // Usar openDatabaseAsync
+  if (!dbInstance) {
+    console.log('Creando una nueva conexión...');
+    dbInstance = await SQLite.openDatabaseAsync(DATABASE_NAME);
+  } else {
+    console.log('Usando la conexión existente...');
+  }
+  return dbInstance;
 };
+// Escucha los cambios de estado de la app
+AppState.addEventListener('change', async (nextAppState) => {
+  if (nextAppState === 'active') {
+    // La aplicación ha vuelto al primer plano, asegura la reconexión
+    dbInstance = null; // Limpiar la instancia para asegurar la reconexión
+    await getDBConnection();
+    console.log("Reconexión al regresar al primer plano.");
+  }
+});
 // Función para eliminar la base de datos
 export const deleteDatabase = async () => {
   try {
@@ -239,27 +256,7 @@ export const handleSave = async (formData, selectedImage, Producto_id, currentIm
     return false;
   }
 };
-export const eliminarProducto = async (Producto_id) => {
-  try {
-    const db = await getDBConnection();
 
-    const result = await db.runAsync(
-      `DELETE FROM Productos WHERE Producto_id = ?`,
-      [Producto_id]
-    );
-
-    if (result.changes === 0) {
-      console.log("No se encontró el producto con el id especificado.");
-      return false; // No se encontró el producto o no hubo cambios
-    }
-
-    console.log("Producto eliminado con éxito.");
-    return true; // Devuelve true si la operación fue exitosa
-  } catch (error) {
-    console.error("Error al eliminar el producto:", error);
-    return false; // Devuelve false si ocurrió un error
-  }
-};
 // Función para consultar datos
 export const consultarDatos = async (db, tableName) => {
   try {
@@ -507,20 +504,17 @@ export const getProductos = async (db) => {
 export const initDatabase = async () => {
   try {
     const db = await getDBConnection();
-    console.log("Conexión a la base de datos establecida.");
+    console.log('Conexión a la base de datos establecida.');
+
+    // Configuración de PRAGMA
+    await db.execAsync('PRAGMA journal_mode=WAL;');
+
     await createTables(db);
-
-    // Verificar datos insertados
-    await consultarDatos(db, 'Tipo_Venta');
-    await consultarDatos(db, 'Categoria_Producto');
-    await consultarDatos(db, 'Courier');
-    await consultarDatos(db, 'Cliente');
-
-    console.log("Base de datos inicializada correctamente");
+    console.log('Base de datos inicializada correctamente.');
     return db;
   } catch (error) {
-    console.error("Error al inicializar la base de datos:", error);
-    throw new Error('Error al inicializar la base de datos');
+    console.error('Error al inicializar la base de datos:', error);
+    throw error;
   }
 };
 

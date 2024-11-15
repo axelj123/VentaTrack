@@ -14,6 +14,8 @@ import ViewItem from './screens/ViewItem';
 import VentaProducto from './screens/VentaProducto';
 import DetalleVenta from './screens/DetalleVenta';
 import Notificaciones from './screens/Notificaciones';
+import SplashScreen from './screens/Splashscreen';
+
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -102,6 +104,9 @@ const Navigation = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
+          {/* Configura SplashScreen como pantalla inicial */}
+          <Stack.Screen name="SplashScreen" component={SplashScreen} />
+
         <Stack.Screen name="LOGIN" component={Login} />
         <Stack.Screen name="MAIN" component={TabNavigator} />
         <Stack.Screen name="RegistrarProducto" component={NuevoProducto} />

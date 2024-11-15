@@ -7,7 +7,6 @@ import {
   Alert,
   Image,
   SafeAreaView,
-  Dimensions,
   KeyboardAvoidingView,
   Platform,
   ScrollView
