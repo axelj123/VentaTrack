@@ -16,13 +16,15 @@ import { StatusBar } from 'expo-status-bar';
 import CustomInput from '../components/CustomInput';
 import { useNavigation } from '@react-navigation/native';
 import { FontAwesome } from '@expo/vector-icons';
-import { initDatabase,deleteDatabase } from '../database'; // Importa la función de inicialización de la base de datos
+import { initDatabase,deleteDatabase,obtenerHoraYfecha } from '../database'; // Importa la función de inicialización de la base de datos
 import * as FileSystem from 'expo-file-system';
-
+import { useToast } from '../components/ToastContext';
 
 
 
 const Login = () => {
+  const { showToast } = useToast(); // Usamos el hook para acceder al showToast
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -42,14 +44,16 @@ const Login = () => {
       const dbExists = await FileSystem.getInfoAsync(dbUri);
 
       if (!dbExists.exists) {
-        console.log("Inicializando la base de datos por primera vez...");
+        showToast('Info', 'Inicializando la base de datos por primera vez...', 'info');
 
         await initDatabase();
       } else {
-        console.log("La base de datos ya existe, se omite la inicialización.");
+        showToast('Info', 'La base de datos ya existe, se omite la inicialización.', 'info');
+        showToast('Info', `Base de datos ubicada en: ${dbUri}`, 'info'); 
+
       }
     } catch (error) {
-      console.error("Error al inicializar la base de datos en Login:", error);
+      showToast('Info', 'Error al inicializar la base de datos', 'info');
     }
   };
  // Función para eliminar la base de datos
@@ -73,7 +77,9 @@ const Login = () => {
 
     navigation.navigate('MAIN');
   };
- 
+  const handleForgotPassword = async () => {
+    await obtenerHoraYfecha();
+  };
   return (
 
     <SafeAreaView style={styles.container}>
@@ -132,7 +138,7 @@ const Login = () => {
               />
             </View>
 
-            <TouchableOpacity style={styles.forgotPassword}>
+            <TouchableOpacity style={styles.forgotPassword} onPress={handleForgotPassword} >
               <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
             </TouchableOpacity>
 

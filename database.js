@@ -104,7 +104,7 @@ export const createTables = async (db) => {
     `CREATE TABLE IF NOT EXISTS Venta (
       Venta_id INTEGER PRIMARY KEY AUTOINCREMENT,
       Cliente_id INTEGER,
-      Fecha_venta TEXT DEFAULT CURRENT_TIMESTAMP,
+      Fecha_venta TEXT NOT NULL,
       Total DECIMAL(10,2) NOT NULL,
       tipoVenta_id INTEGER,
       Courier_id INTEGER,
@@ -291,7 +291,30 @@ export const obtenerDetallesVenta = async (ventaId) => {
     throw error;
   }
 };
+export const obtenerHoraYfecha = async () => {
+  try {
+    console.log("Intentando obtener conexión a la base de datos...");
+    const db = await getDBConnection();
+    console.log("Conexión a la base de datos obtenida:", db);
 
+    const query = "SELECT datetime('now', 'localtime') AS Fecha_actual";
+    console.log("Ejecutando la consulta:", query);
+
+    const result = await db.getAllAsync(query);
+    console.log("Resultado de la consulta:", result);
+
+    if (result && result.length > 0) {
+      const fechaActual = result[0].Fecha_actual;
+      console.log("Fecha y hora actual obtenida:", fechaActual);
+      Alert.alert("Fecha y Hora Actual de SQLite", `Fecha obtenida: ${fechaActual}`);
+    } else {
+      console.log("No se obtuvo ninguna fecha. El resultado está vacío.");
+    }
+  } catch (error) {
+    console.error("Error al obtener la fecha y hora actual:", error);
+    Alert.alert("Error", "No se pudo obtener la fecha y hora actual");
+  }
+};
 // Función para obtener información de un producto por su ID
 export const obtenerProductoPorId = async (productoId) => {
   try {
@@ -423,11 +446,16 @@ export const registrarVenta = async (ventaData, detallesVenta) => {
   try {
     const db = await getDBConnection();
 
-    // Inserta la venta en la tabla Venta
+    // Obtener la fecha y hora locales
+    const fechaLocalQuery = await db.getAllAsync("SELECT datetime('now', 'localtime') AS Fecha_actual");
+    const Fecha_venta = fechaLocalQuery[0].Fecha_actual;
+
+    // Inserta la venta en la tabla Venta con la fecha local
     const resultVenta = await db.runAsync(
-      `INSERT INTO Venta (Cliente_id, Total, tipoVenta_id, Courier_id, descuento) VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO Venta (Cliente_id, Fecha_venta, Total, tipoVenta_id, Courier_id, descuento) VALUES (?, ?, ?, ?, ?, ?)`,
       [
         ventaData.Cliente_id,
+        Fecha_venta, // Usa la fecha y hora locales
         ventaData.Total,
         ventaData.tipoVenta_id,
         ventaData.Courier_id,
@@ -451,13 +479,14 @@ export const registrarVenta = async (ventaData, detallesVenta) => {
       );
     }
 
-    console.log("Venta registrada exitosamente.");
+    console.log("Venta registrada exitosamente con hora local.");
     return true;
   } catch (error) {
     console.error("Error al registrar la venta:", error);
     return false;
   }
 };
+
 
 
 export const getProductos = async (db) => {
