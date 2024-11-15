@@ -9,13 +9,14 @@ import { handleSave, eliminarProducto } from '../database';  // Importa el méto
 import ModalConfirm from '../components/ModalConfirm';
 import { useToast } from '../components/ToastContext'; // Importar el contexto
 import CustomInput from '../components/CustomInput';
+import { useSQLiteContext } from 'expo-sqlite';
 
 function ViewItem({ route }) {
   const navigation = useNavigation();
   const { Producto_id, title, price, image, descripcion, stock } = route.params;
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const { showToast } = useToast(); // Usamos el hook para acceder al showToast
-
+const db=useSQLiteContext();
   const [formData, setFormData] = useState({
     title: title,
     price: price.toString(),
@@ -31,7 +32,7 @@ function ViewItem({ route }) {
   // Función de eliminación solo después de la confirmación
   const handleDeleteProduct = async () => {
     try {
-      const success = await eliminarProducto(Producto_id);  // Llamar a la función para eliminar el producto
+      const success = await eliminarProducto(db,Producto_id);  // Llamar a la función para eliminar el producto
 
       if (success) {
         showToast('¡Operación exitosa!', 'Producto eliminado correctamente', 'success');
@@ -54,7 +55,7 @@ function ViewItem({ route }) {
       }
 
       // Pasar la imagen actual si no hay una nueva seleccionada
-      const success = await handleSave(formData, selectedImage, Producto_id, currentImage);
+      const success = await handleSave(db,formData, selectedImage, Producto_id, currentImage);
 
       if (success) {
         showToast('¡Operación exitosa!', 'Se ha guardado correctamente', 'success');

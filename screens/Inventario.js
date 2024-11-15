@@ -5,8 +5,10 @@ import { getDBConnection, listaProducto } from '../database';  // Asegúrate de 
 import Card from '../components/CardsItems'; // Asegúrate de que el componente esté bien importado
 import { useFocusEffect } from '@react-navigation/native';
 import EmptyState from '../components/EmptyState';
+import { useSQLiteContext } from 'expo-sqlite';
 
 const Inventario = ({ navigation }) => {
+  const db=useSQLiteContext();
   // Estado para el término de búsqueda, productos y filtro activo
   const [searchTerm, setSearchTerm] = useState('');
   const [productos, setProductos] = useState([]);
@@ -16,7 +18,6 @@ const Inventario = ({ navigation }) => {
   // Función para obtener productos desde la base de datos
   const fetchProductos = async () => {
     try {
-      const db = await getDBConnection();
       const productosData = await listaProducto(db); // Llama a la función que consulta la base de datos
       setProductos(productosData);  // Guarda los productos obtenidos en el estado
     } catch (error) {

@@ -11,19 +11,20 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import ModalImagePicker from '../components/ModalImagePicker';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { getDBConnection, createProducto } from '../database';
+import { getDBConnection,createProducto } from '../database';
 import CustomInput from '../components/CustomInput';
 import CustomDatePicker from '../components/CustomDatePicker';
 import { useToast } from '../components/ToastContext'; // Importar el contexto
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useSQLiteContext } from 'expo-sqlite';
 
 const FORM_DATA_KEY = 'form_data_key';  // Clave de almacenamiento
 
 const RegistrarProducto = () => {
   const navigation = useNavigation();
-
+  const db = useSQLiteContext(); // Usa el contexto de SQLite
   const { showToast } = useToast(); // Usamos el hook para acceder al showToast
   
   // Definir estados para cada campo del formulario
@@ -49,7 +50,6 @@ const RegistrarProducto = () => {
   // Función para obtener categorías de la base de datos
   const fetchCategorias = async () => {
     try {
-      const db = await getDBConnection();
       const result = await db.getAllAsync(`SELECT * FROM Categoria_Producto`);
       if (result && result.length > 0) {
         const categoriasList = result.map(categoria => ({
@@ -143,8 +143,7 @@ const RegistrarProducto = () => {
     };
 
     try {
-      const db = await getDBConnection();
-      await createProducto(db, producto);
+      await createProducto(db,producto);
 
       // Limpia los campos después de registrar y elimina el almacenamiento
       setNombre('');
@@ -168,9 +167,7 @@ const RegistrarProducto = () => {
       showToast('Error', 'Hubo un problema al registrar el producto.', 'warning');
     }
   };
-  const dismissKeyboard = () => {
-    Keyboard.dismiss();
-  };
+
   return (
     <SafeAreaView style={styles.container}>
      <View style={styles.header}>

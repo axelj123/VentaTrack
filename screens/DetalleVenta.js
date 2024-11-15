@@ -10,7 +10,7 @@ import { useCart } from '../components/CartContext'; // Usamos el contexto para 
 import ClientSearchInput from '../components/ClientSearchInput ';
 import { useToast } from '../components/ToastContext'; // Importar el contexto
 import VentaFooter from '../components/VentaFooter';
-
+import { useSQLiteContext } from 'expo-sqlite';
 const DetalleVenta = ({ navigation }) => {
     const { showToast } = useToast(); // Usamos el hook para acceder al showToast
     const { cartItems, removeFromCart, updateQuantity } = useCart();  // Obtener cartItems y removeFromCart
@@ -26,9 +26,10 @@ const DetalleVenta = ({ navigation }) => {
     const [tipoItems, setTipoItems] = useState([]);
     const [descuento, setDescuento] = useState('');
 
+    const db=useSQLiteContext();
+
     const fetchCouriers = async () => {
         try {
-            const db = await getDBConnection();
             const result = await db.getAllAsync(`SELECT * FROM Courier`);
 
             if (result && result.length > 0) {
@@ -47,7 +48,6 @@ const DetalleVenta = ({ navigation }) => {
 
     const fetchTipos = async () => {
         try {
-            const db = await getDBConnection();
             const result = await db.getAllAsync(`SELECT * FROM Tipo_Venta`);
             if (result && result.length > 0) {
                 const tiposList = result.map(tipo => ({
@@ -136,7 +136,7 @@ const DetalleVenta = ({ navigation }) => {
             subtotal: item.price * item.quantity
         }));
     
-        const success = await registrarVenta(ventaData, detallesVenta);
+        const success = await registrarVenta(db,ventaData, detallesVenta);
         if (success) {
             showToast('Success', 'Venta registrada correctamente', 'success');
             cartItems.forEach(item => removeFromCart(item.id));

@@ -1,9 +1,9 @@
+//database.js
 import * as SQLite from 'expo-sqlite';
-import { AppState } from 'react-native';
+import { useSQLiteContext } from 'expo-sqlite';
 
 const DATABASE_NAME = 'VentasDB.db';
 
-let dbInstance = null;
 
 // Función para obtener la ruta de la base de datos
 const getDatabasePath = () => {
@@ -14,23 +14,16 @@ const getDatabasePath = () => {
 };
 // Función para abrir la base de datos
 export const getDBConnection = async () => {
-  if (!dbInstance) {
-    console.log('Creando una nueva conexión...');
-    dbInstance = await SQLite.openDatabaseAsync(DATABASE_NAME);
-  } else {
-    console.log('Usando la conexión existente...');
+  try {
+    const db = await SQLite.openDatabaseAsync(DATABASE_NAME);
+    console.log('Conexión a la base de datos establecida.');
+    return db;
+  } catch (error) {
+    console.error('Error al conectar con la base de datos:', error);
+    throw error;
   }
-  return dbInstance;
 };
-// Escucha los cambios de estado de la app
-AppState.addEventListener('change', async (nextAppState) => {
-  if (nextAppState === 'active') {
-    // La aplicación ha vuelto al primer plano, asegura la reconexión
-    dbInstance = null; // Limpiar la instancia para asegurar la reconexión
-    await getDBConnection();
-    console.log("Reconexión al regresar al primer plano.");
-  }
-});
+
 // Función para eliminar la base de datos
 export const deleteDatabase = async () => {
   try {
@@ -194,7 +187,7 @@ export const createTables = async (db) => {
     throw error;
   }
 };
-export const handleSave = async (formData, selectedImage, Producto_id, currentImage) => {
+export const handleSave = async (db,formData, selectedImage, Producto_id, currentImage) => {
   try {
     console.log("Guardando producto con los siguientes datos:", {
       formData,
@@ -203,7 +196,6 @@ export const handleSave = async (formData, selectedImage, Producto_id, currentIm
       currentImage
     });
 
-    const db = await getDBConnection();
 
     // Determinar qué imagen usar
     let imageToSave;
@@ -256,7 +248,26 @@ export const handleSave = async (formData, selectedImage, Producto_id, currentIm
     return false;
   }
 };
+export const eliminarProducto = async (db,Producto_id) => {
+  try {
 
+    const result = await db.runAsync(
+      `DELETE FROM Productos WHERE Producto_id = ?`,
+      [Producto_id]
+    );
+
+    if (result.changes === 0) {
+      console.log("No se encontró el producto con el id especificado.");
+      return false; // No se encontró el producto o no hubo cambios
+    }
+
+    console.log("Producto eliminado con éxito.");
+    return true; // Devuelve true si la operación fue exitosa
+  } catch (error) {
+    console.error("Error al eliminar el producto:", error);
+    return false; // Devuelve false si ocurrió un error
+  }
+};
 // Función para consultar datos
 export const consultarDatos = async (db, tableName) => {
   try {
@@ -358,31 +369,31 @@ export const getUsuarios = async (db) => {
 };
 
 // Función para crear un producto
+// Función para crear un producto
 export const createProducto = async (db, producto) => {
   try {
     const result = await db.runAsync(
-      `INSERT INTO Productos (
-        nombre, descripcion, precio_compra, precio_venta, cantidad, imagen, 
-        fecha_ingreso, fecha_vencimiento, categoria_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO Productos (nombre, descripcion, precio_compra, precio_venta, cantidad, imagen, fecha_ingreso, fecha_vencimiento, categoria_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         producto.nombre,
         producto.descripcion,
-        parseFloat(producto.precio_compra),  // Convertir a número decimal
-        parseFloat(producto.precio_venta),   // Convertir a número decimal
-        parseInt(producto.cantidad),         // Convertir a número entero
+        parseFloat(producto.precio_compra),
+        parseFloat(producto.precio_venta),
+        parseInt(producto.cantidad),
         producto.imagen,
         producto.fecha_ingreso,
         producto.fecha_vencimiento,
-        producto.categoria_id
+        producto.categoria_id,
       ]
     );
-    return result.lastInsertRowId; // Obtiene el ID del último registro insertado
+    return result.lastInsertRowId;
   } catch (error) {
     console.error("Error al crear producto:", error);
     throw error;
   }
 };
+
 export const obtenerVentas = async () => {
   try {
     const db = await getDBConnection();
@@ -439,9 +450,8 @@ export const listClientes = async (db) => {
 
 // database.js
 
-export const registrarVenta = async (ventaData, detallesVenta) => {
+export const registrarVenta = async (db,ventaData, detallesVenta) => {
   try {
-    const db = await getDBConnection();
 
     // Obtener la fecha y hora locales
     const fechaLocalQuery = await db.getAllAsync("SELECT datetime('now', 'localtime') AS Fecha_actual");
@@ -499,22 +509,21 @@ export const getProductos = async (db) => {
     throw error;
   }
 };
-
+//database.js
 // Función para inicializar la base de datos
-export const initDatabase = async () => {
+export const initDatabase = async (db) => {
   try {
-    const db = await getDBConnection();
-    console.log('Conexión a la base de datos establecida.');
-
+    console.log("Conexión a la base de datos establecida.");
+    
     // Configuración de PRAGMA
-    await db.execAsync('PRAGMA journal_mode=WAL;');
-
+    await db.execAsync('PRAGMA journal_mode = WAL;');
+    
     await createTables(db);
-    console.log('Base de datos inicializada correctamente.');
-    return db;
+
+    console.log("Base de datos inicializada correctamente");
   } catch (error) {
-    console.error('Error al inicializar la base de datos:', error);
-    throw error;
+    console.error("Error al inicializar la base de datos:", error);
+    throw new Error('Error al inicializar la base de datos');
   }
 };
 

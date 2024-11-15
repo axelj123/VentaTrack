@@ -7,7 +7,7 @@ import { getDBConnection, listaProducto } from '../database';
 import EmptyState from '../components/EmptyState';
 import { useCart } from '../components/CartContext'; // Usamos el contexto para el carrito
 import { useFocusEffect } from '@react-navigation/native';
-
+import { useSQLiteContext } from 'expo-sqlite';
 const VentaProducto = ({navigation }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
@@ -16,11 +16,11 @@ const VentaProducto = ({navigation }) => {
   const [productos, setProductos] = useState([]);
   const { cartItems, addToCart } = useCart(); // Obtener cartItems y la función addToCart
 
+  const db=useSQLiteContext();
 
 
   const fetchProductos = async () => {
     try {
-      const db = await getDBConnection();
       const productosData = await listaProducto(db);
       setProductos(productosData);
     } catch (error) {

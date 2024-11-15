@@ -16,7 +16,6 @@ import CustomInput from '../components/CustomInput';
 import { useNavigation } from '@react-navigation/native';
 import { FontAwesome } from '@expo/vector-icons';
 import { initDatabase,deleteDatabase,obtenerHoraYfecha } from '../database'; // Importa la función de inicialización de la base de datos
-import * as FileSystem from 'expo-file-system';
 import { useToast } from '../components/ToastContext';
 
 
@@ -29,32 +28,9 @@ const Login = () => {
   const [passwordError, setPasswordError] = useState('');
 
   const navigation = useNavigation();
-  const dbUri = `${FileSystem.documentDirectory}SQLite/VentasDB.db`; // Ruta de la base de datos
 
-  useEffect(() => {
-  
-  
-    initializeDB();
-  }, []);
-  const initializeDB = async () => {
+ 
 
-    try {
-      // Verifica si la base de datos ya existe
-      const dbExists = await FileSystem.getInfoAsync(dbUri);
-
-      if (!dbExists.exists) {
-        showToast('Info', 'Inicializando la base de datos por primera vez...', 'info');
-
-        await initDatabase();
-      } else {
-        showToast('Info', 'La base de datos ya existe, se omite la inicialización.', 'info');
-        showToast('Info', `Base de datos ubicada en: ${dbUri}`, 'info'); 
-
-      }
-    } catch (error) {
-      showToast('Info', 'Error al inicializar la base de datos', 'info');
-    }
-  };
  // Función para eliminar la base de datos
  const handleDeleteDatabase = async () => {
   try {
