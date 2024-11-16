@@ -3,14 +3,14 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 
-const CardsItems = ({ productoId, title, price, image, descripcion, stock, navigation, buttonText, onPress }) => {
+const CardsItems = ({ productoId, title, price,purchasePrice, image, descripcion, stock, navigation, buttonText, onPress }) => {
 
   const handlePress = () => {
     if (onPress) {
       onPress();  // Si se pasa una función onPress, se ejecuta
     } else {
       // Si no se pasa, ejecutamos la navegación predeterminada
-      navigation.navigate('VerItem', { Producto_id: productoId, title, price, image, descripcion, stock });
+      navigation.navigate('VerItem', { Producto_id: productoId, title, price,purchasePrice, image, descripcion, stock });
     }
   };
 

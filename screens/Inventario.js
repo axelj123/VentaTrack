@@ -112,6 +112,7 @@ const Inventario = ({ navigation }) => {
             price={item.precio_venta}
             image={{ uri: item.imagen }}  // Asume que 'imagen' es una URL o un path
             descripcion={item.descripcion}
+            purchasePrice={item.precio_compra} // Añade purchasePrice aquí
             stock={item.cantidad}
             navigation={navigation} // Pasamos la navegación al Card
           />

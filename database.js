@@ -138,37 +138,50 @@ export const createTables = async (db) => {
 
 
   ];
-
   try {
     // Crear tablas
     for (const table of tables) {
       await db.execAsync(table);
-      console.log(`Tabla creada: ${table.split(' ')[2]}`); // Muestra el nombre de la tabla creada
+      console.log(`Tabla creada: ${table.split(' ')[2]}`);
     }
 
+    // Llama a la función para insertar datos iniciales si las tablas están vacías
+    await insertarDatosIniciales(db);
 
-    // Insertar datos iniciales
-    await db.runAsync(
-      `INSERT OR IGNORE INTO Tipo_Venta (nombre) VALUES ('Nacional'), ('Internacional')`
-    );
-    console.log("Datos insertados en Tipo_Venta");
+  } catch (error) {
+    console.error("Error al crear tablas o insertar datos:", error);
+    throw error;
+  }
+};
+const insertarDatosIniciales = async (db) => {
+  try {
+    // Comprobar si ya existen datos en la tabla Tipo_Venta
+    const tiposVenta = await db.getAllAsync('SELECT * FROM Tipo_Venta');
+    if (tiposVenta.length === 0) {
+      await db.runAsync(`INSERT INTO Tipo_Venta (nombre) VALUES ('Nacional'), ('Internacional')`);
+      console.log("Datos insertados en Tipo_Venta");
+    }
 
-    await db.runAsync(
-      `INSERT OR IGNORE INTO Categoria_Producto (nombre) 
-       VALUES ('Te'), ('Cafes'), ('energizantes'), ('Proteinas'), ('Aseo Personal')`
-    );
-    console.log("Datos insertados en Categoria_Producto");
+    // Comprobar si ya existen datos en la tabla Categoria_Producto
+    const categoriasProducto = await db.getAllAsync('SELECT * FROM Categoria_Producto');
+    if (categoriasProducto.length === 0) {
+      await db.runAsync(`INSERT INTO Categoria_Producto (nombre) VALUES ('Te'), ('Cafes'), ('Energizantes'), ('Proteinas'), ('Aseo Personal')`);
+      console.log("Datos insertados en Categoria_Producto");
+    }
 
-    await db.runAsync(
-      `INSERT OR IGNORE INTO Courier (nombre) 
-       VALUES ('Olva Courier'), ('In Drive'), ('Shalom'), ('Vifasa'), ('Frapessa'), ('Otros')`
-    );
-    console.log("Datos insertados en Courier");
+    // Comprobar si ya existen datos en la tabla Courier
+    const couriers = await db.getAllAsync('SELECT * FROM Courier');
+    if (couriers.length === 0) {
+      await db.runAsync(`INSERT INTO Courier (nombre) VALUES ('Olva Courier'), ('In Drive'), ('Shalom'), ('Vifasa'), ('Frapessa'), ('Otros')`);
+      console.log("Datos insertados en Courier");
+    }
 
-    await db.runAsync(
-      `INSERT OR IGNORE INTO Cliente (dni, pais, nombre_completo, email, telefono, direccion)
-      VALUES
-      (123456789, 'Chile', 'Maria García', 'maria.garcia@example.com', 999999999, 'Calle Primavera 25, Santiago, Chile'),
+    // Comprobar si ya existen datos en la tabla Cliente
+    const clientes = await db.getAllAsync('SELECT * FROM Cliente');
+    if (clientes.length === 0) {
+      await db.runAsync(`INSERT INTO Cliente (dni, pais, nombre_completo, email, telefono, direccion)
+        VALUES
+       (123456789, 'Chile', 'Maria García', 'maria.garcia@example.com', 999999999, 'Calle Primavera 25, Santiago, Chile'),
       (987654321, 'México', 'John Doe', 'john.doe@example.com', 123123123, '123 Elm Street, Ciudad de México, México'),
       (112233445, 'Argentina', 'Marta López', 'marta.lopez@example.com', 555555555, 'Av. de Mayo 1000, Buenos Aires, Argentina'),
       (998877666, 'Colombia', 'David Smith', 'david.smith@example.com', 222222222, '456 Maple Ave, Bogotá, Colombia'),
@@ -178,15 +191,16 @@ export const createTables = async (db) => {
       (223344557, 'Ecuador', 'Ana Martínez', 'ana.martinez@example.com', 555666777, 'Calle Sucre 45, Quito, Ecuador'),
       (123443212, 'Uruguay', 'Luis Gómez', 'luis.gomez@example.com', 111222333, 'Calle 18 de Julio 500, Montevideo, Uruguay'),
       (334455668, 'Paraguay', 'Raúl Fernández', 'raul.fernandez@example.com', 888999000, 'Avenida España 15, Asunción, Paraguay');
-    `
-    );
-
-    console.log("Datos insertados en Cliente");
+    `);
+      console.log("Datos insertados en Cliente");
+    }
   } catch (error) {
-    console.error("Error al crear tablas o insertar datos:", error);
-    throw error;
+    console.error("Error al insertar datos iniciales:", error);
   }
 };
+
+
+
 export const handleSave = async (db,formData, selectedImage, Producto_id, currentImage) => {
   try {
     console.log("Guardando producto con los siguientes datos:", {
@@ -221,6 +235,7 @@ export const handleSave = async (db,formData, selectedImage, Producto_id, curren
         nombre = ?, 
         descripcion = ?, 
         precio_venta = ?, 
+        precio_compra=?,
         cantidad = ?, 
         imagen = ? 
       WHERE Producto_id = ?`,
@@ -228,6 +243,7 @@ export const handleSave = async (db,formData, selectedImage, Producto_id, curren
         formData.title,
         formData.description,
         parseFloat(formData.price),
+        parseFloat(formData.purchasePrice),
         parseInt(formData.stock),
         imageToSave,
         Producto_id
@@ -430,7 +446,6 @@ export const obtenerVentas = async () => {
 export const listaProducto = async (db) => {
   try {
     const result = await db.getAllAsync(`SELECT * FROM Productos`);
-    console.log("Productos obtenidos:", result); // Verifica que los productos se obtienen
     return result;
   } catch (error) {
     console.error("Error al obtener productos:", error);

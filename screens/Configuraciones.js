@@ -1,7 +1,20 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, TextInput, Modal, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, TextInput, Modal, SafeAreaView, StatusBar } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+
+// Paleta de colores moderna en tonos morados
+const COLORS = {
+  primary: '#5B21B6',      // Morado principal
+  secondary: '#7C3AED',    // Morado secundario
+  tertiary: '#A78BFA',     // Morado claro
+  background: '#F5F3FF',   // Fondo muy claro morado
+  surface: '#FFFFFF',      // Blanco para tarjetas
+  text: '#1F2937',        // Texto oscuro
+  textSecondary: '#6B7280', // Texto secundario
+  border: '#E5E7EB',      // Bordes
+  error: '#DC2626',       // Rojo para acciones críticas
+};
 
 const Configuraciones = () => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -22,437 +35,337 @@ const Configuraciones = () => {
     logo: 'https://via.placeholder.com/150',
   });
 
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
-
-  const pickImage = async (type) => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      if (type === 'profile') {
-        setProfileData({ ...profileData, profileImage: result.assets[0].uri });
-      } else {
-        setCompanyData({ ...companyData, logo: result.assets[0].uri });
-      }
-    }
-  };
-
-  const handleSaveProfile = () => {
-    // Aquí iría la lógica para guardar los datos del perfil
-    setIsEditingProfile(false);
-    Alert.alert('Éxito', 'Perfil actualizado correctamente');
-  };
-
-  const handleSaveCompany = () => {
-    // Aquí iría la lógica para guardar los datos de la empresa
-    setIsEditingCompany(false);
-    Alert.alert('Éxito', 'Datos de la empresa actualizados correctamente');
-  };
-
-  const handleChangePassword = () => {
-    // Aquí iría la lógica para cambiar la contraseña
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      Alert.alert('Error', 'Las contraseñas no coinciden');
-      return;
-    }
-    setIsChangingPassword(false);
-    Alert.alert('Éxito', 'Contraseña actualizada correctamente');
-  };
-
-  // Modal de edición de perfil
-  const ProfileEditModal = () => (
-    <Modal
-      visible={isEditingProfile}
-      animationType="slide"
-      transparent={true}
+  const MenuItem = ({ icon, title, subtitle, onPress }) => (
+    <TouchableOpacity 
+      style={styles.menuItem}
+      onPress={onPress}
     >
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Editar Perfil</Text>
-          
-          <TouchableOpacity 
-            style={styles.imageContainer}
-            onPress={() => pickImage('profile')}
-          >
-            <Image
-              source={{ uri: profileData.profileImage }}
-              style={styles.profileImage}
-            />
-            <View style={styles.imageOverlay}>
-              <FontAwesome name="camera" size={20} color="#fff" />
-            </View>
-          </TouchableOpacity>
-
-          <TextInput
-            style={styles.input}
-            value={profileData.name}
-            onChangeText={(text) => setProfileData({...profileData, name: text})}
-            placeholder="Nombre completo"
-          />
-          <TextInput
-            style={styles.input}
-            value={profileData.email}
-            onChangeText={(text) => setProfileData({...profileData, email: text})}
-            placeholder="Correo electrónico"
-            keyboardType="email-address"
-          />
-
-          <View style={styles.modalButtons}>
-            <TouchableOpacity 
-              style={[styles.modalButton, styles.cancelButton]}
-              onPress={() => setIsEditingProfile(false)}
-            >
-              <Text style={styles.buttonText}>Cancelar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.modalButton, styles.saveButton]}
-              onPress={handleSaveProfile}
-            >
-              <Text style={styles.buttonText}>Guardar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+      <FontAwesome name={icon} size={20} color={COLORS.primary} style={styles.menuIcon} />
+      <View style={styles.menuTextContainer}>
+        <Text style={styles.menuTitle}>{title}</Text>
+        {subtitle && <Text style={styles.menuSubtitle}>{subtitle}</Text>}
       </View>
-    </Modal>
+      <FontAwesome name="angle-right" size={20} color={COLORS.textSecondary} />
+    </TouchableOpacity>
   );
 
-  // Modal de edición de empresa
-  const CompanyEditModal = () => (
-    <Modal
-      visible={isEditingCompany}
-      animationType="slide"
-      transparent={true}
-    >
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Datos de la Empresa</Text>
-
-          <TouchableOpacity 
-            style={styles.imageContainer}
-            onPress={() => pickImage('company')}
-          >
-            <Image
-              source={{ uri: companyData.logo }}
-              style={styles.companyLogo}
-            />
-            <View style={styles.imageOverlay}>
-              <FontAwesome name="camera" size={20} color="#fff" />
-            </View>
+  const Header = () => (
+    <View style={styles.headerContainer}>
+      <View style={styles.headerContent}>
+        <TouchableOpacity style={styles.backButton}>
+          <FontAwesome name="angle-left" size={24} color={COLORS.surface} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Configuración</Text>
+        <View style={styles.headerRight}>
+          <TouchableOpacity style={styles.headerAction}>
+            <FontAwesome name="bell" size={20} color={COLORS.surface} />
+            <View style={styles.notificationBadge} />
           </TouchableOpacity>
-
-          <TextInput
-            style={styles.input}
-            value={companyData.name}
-            onChangeText={(text) => setCompanyData({...companyData, name: text})}
-            placeholder="Nombre de la empresa"
-          />
-          <TextInput
-            style={styles.input}
-            value={companyData.ruc}
-            onChangeText={(text) => setCompanyData({...companyData, ruc: text})}
-            placeholder="RUC"
-            keyboardType="numeric"
-          />
-          <TextInput
-            style={styles.input}
-            value={companyData.location}
-            onChangeText={(text) => setCompanyData({...companyData, location: text})}
-            placeholder="Ubicación"
-          />
-          <TextInput
-            style={styles.input}
-            value={companyData.phone}
-            onChangeText={(text) => setCompanyData({...companyData, phone: text})}
-            placeholder="Teléfono"
-            keyboardType="phone-pad"
-          />
-
-          <View style={styles.modalButtons}>
-            <TouchableOpacity 
-              style={[styles.modalButton, styles.cancelButton]}
-              onPress={() => setIsEditingCompany(false)}
-            >
-              <Text style={styles.buttonText}>Cancelar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.modalButton, styles.saveButton]}
-              onPress={handleSaveCompany}
-            >
-              <Text style={styles.buttonText}>Guardar</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </View>
-    </Modal>
-  );
-
-  // Modal de cambio de contraseña
-  const PasswordChangeModal = () => (
-    <Modal
-      visible={isChangingPassword}
-      animationType="slide"
-      transparent={true}
-    >
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Cambiar Contraseña</Text>
-
-          <TextInput
-            style={styles.input}
-            value={passwordData.currentPassword}
-            onChangeText={(text) => setPasswordData({...passwordData, currentPassword: text})}
-            placeholder="Contraseña actual"
-            secureTextEntry
+      
+      {/* Profile Preview in Header */}
+      <View style={styles.profilePreview}>
+        <View style={styles.profileImageWrapper}>
+          <Image
+            source={{ uri: profileData.profileImage }}
+            style={styles.headerProfileImage}
           />
-          <TextInput
-            style={styles.input}
-            value={passwordData.newPassword}
-            onChangeText={(text) => setPasswordData({...passwordData, newPassword: text})}
-            placeholder="Nueva contraseña"
-            secureTextEntry
-          />
-          <TextInput
-            style={styles.input}
-            value={passwordData.confirmPassword}
-            onChangeText={(text) => setPasswordData({...passwordData, confirmPassword: text})}
-            placeholder="Confirmar nueva contraseña"
-            secureTextEntry
-          />
-
-          <View style={styles.modalButtons}>
-            <TouchableOpacity 
-              style={[styles.modalButton, styles.cancelButton]}
-              onPress={() => setIsChangingPassword(false)}
-            >
-              <Text style={styles.buttonText}>Cancelar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.modalButton, styles.saveButton]}
-              onPress={handleChangePassword}
-            >
-              <Text style={styles.buttonText}>Cambiar</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity 
+            style={styles.editProfileBadge}
+            onPress={() => setIsEditingProfile(true)}
+          >
+            <FontAwesome name="camera" size={12} color={COLORS.surface} />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.profilePreviewInfo}>
+          <Text style={styles.profilePreviewName}>{profileData.name}</Text>
+          <Text style={styles.profilePreviewEmail}>{profileData.email}</Text>
         </View>
       </View>
-    </Modal>
+    </View>
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* Profile Section */}
-      <View style={styles.profileContainer}>
-        <TouchableOpacity onPress={() => setIsEditingProfile(true)}>
-          <View style={styles.imageContainer}>
-            <Image
-              style={styles.profileImage}
-              source={{ uri: profileData.profileImage }}
-            />
-            <View style={styles.editBadge}>
-              <FontAwesome name="pencil" size={12} color="#fff" />
-            </View>
+    <View style={styles.container}>
+      <Header />
+      
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Company Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Datos de la Empresa</Text>
+            <TouchableOpacity 
+              style={styles.editButton} 
+              onPress={() => setIsEditingCompany(true)}
+            >
+              <FontAwesome name="edit" size={16} color={COLORS.surface} />
+            </TouchableOpacity>
           </View>
-        </TouchableOpacity>
-        <Text style={styles.userName}>{profileData.name}</Text>
-        <Text style={styles.userEmail}>{profileData.email}</Text>
-      </View>
-
-      {/* Company Section */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Datos de la Empresa</Text>
-          <TouchableOpacity onPress={() => setIsEditingCompany(true)}>
-            <FontAwesome name="edit" size={20} color="#1E90FF" />
-          </TouchableOpacity>
+          
+          <View style={styles.companyContent}>
+            <View style={styles.companyLogoContainer}>
+              <Image
+                source={{ uri: companyData.logo }}
+                style={styles.companyLogo}
+              />
+              <View style={styles.companyLogoOverlay}>
+                <TouchableOpacity onPress={() => pickImage('company')}>
+                  <FontAwesome name="camera" size={16} color={COLORS.surface} />
+                </TouchableOpacity>
+              </View>
+            </View>
+            
+            <MenuItem 
+              icon="building" 
+              title={companyData.name}
+              subtitle="Nombre de la empresa"
+            />
+            <MenuItem 
+              icon="id-card" 
+              title={companyData.ruc}
+              subtitle="RUC"
+            />
+            <MenuItem 
+              icon="map-marker" 
+              title={companyData.location}
+              subtitle="Ubicación"
+            />
+            <MenuItem 
+              icon="phone" 
+              title={companyData.phone}
+              subtitle="Teléfono"
+            />
+          </View>
         </View>
-        
-        <View style={styles.companyLogoContainer}>
-          <Image
-            style={styles.companyLogo}
-            source={{ uri: companyData.logo }}
+
+        {/* Account Settings */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Configuraciones de Cuenta</Text>
+          <MenuItem 
+            icon="lock" 
+            title="Cambiar Contraseña"
+            onPress={() => setIsChangingPassword(true)}
+          />
+          <MenuItem 
+            icon="shield" 
+            title="Privacidad y Seguridad"
+          />
+          <MenuItem 
+            icon="gear" 
+            title="Preferencias"
           />
         </View>
 
-        <View style={styles.infoRow}>
-          <FontAwesome name="building" size={24} color="#555" />
-          <Text style={styles.infoText}>{companyData.name}</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <FontAwesome name="id-card" size={24} color="#555" />
-          <Text style={styles.infoText}>RUC: {companyData.ruc}</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <FontAwesome name="map-marker" size={24} color="#555" />
-          <Text style={styles.infoText}>{companyData.location}</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <FontAwesome name="phone" size={24} color="#555" />
-          <Text style={styles.infoText}>{companyData.phone}</Text>
-        </View>
-      </View>
-
-      {/* Account Settings Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Configuraciones de Cuenta</Text>
-        <TouchableOpacity 
-          style={styles.optionButton}
-          onPress={() => setIsChangingPassword(true)}
-        >
-          <Text style={styles.optionText}>Cambiar Contraseña</Text>
+        {/* Logout Button */}
+        <TouchableOpacity style={styles.logoutButton}>
+          <FontAwesome name="sign-out" size={20} color={COLORS.surface} />
+          <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
         </TouchableOpacity>
-      </View>
-
-      {/* Logout Button */}
-      <TouchableOpacity style={styles.logoutButton}>
-        <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
-      </TouchableOpacity>
-
-      {/* Modals */}
-      <ProfileEditModal />
-      <CompanyEditModal />
-      <PasswordChangeModal />
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    backgroundColor: '#f5f5f5',
-    padding: 20,
+    flex: 1,
+    backgroundColor: COLORS.background,
   },
-  profileContainer: {
+  headerContainer: {
+    backgroundColor: COLORS.primary,
+    paddingTop: 60,
+    paddingBottom: 30,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    elevation: 8,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  headerContent: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 30,
-    marginTop: 40,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginBottom: 20,
   },
-  imageContainer: {
+  backButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: COLORS.surface,
+  },
+  headerRight: {
+    width: 40,
+    alignItems: 'center',
+  },
+  headerAction: {
+    position: 'relative',
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#EF4444',
+    borderWidth: 1,
+    borderColor: COLORS.surface,
+  },
+  profilePreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  profileImageWrapper: {
     position: 'relative',
   },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10,
+  headerProfileImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    borderWidth: 3,
+    borderColor: COLORS.surface,
   },
-  editBadge: {
+  editProfileBadge: {
     position: 'absolute',
-    bottom: 10,
+    bottom: 0,
     right: 0,
-    backgroundColor: '#1E90FF',
-    borderRadius: 15,
-    width: 25,
-    height: 25,
+    backgroundColor: COLORS.secondary,
+    borderRadius: 12,
+    width: 24,
+    height: 24,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.surface,
   },
-  userName: {
+  profilePreviewInfo: {
+    marginLeft: 15,
+    flex: 1,
+  },
+  profilePreviewName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: COLORS.surface,
+    marginBottom: 4,
   },
-  userEmail: {
+  profilePreviewEmail: {
     fontSize: 14,
-    color: '#666',
+    color: 'rgba(255,255,255,0.8)',
+  },
+  content: {
+    flex: 1,
+    padding: 20,
   },
   section: {
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 20,
+    backgroundColor: COLORS.surface,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 16,
+    elevation: 2,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: COLORS.text,
+  },
+  editButton: {
+    backgroundColor: COLORS.secondary,
+    padding: 8,
+    borderRadius: 12,
+  },
+  companyContent: {
+    alignItems: 'center',
   },
   companyLogoContainer: {
-    alignItems: 'center',
-    marginBottom: 15,
+    position: 'relative',
+    marginBottom: 20,
   },
   companyLogo: {
     width: 80,
     height: 80,
     borderRadius: 40,
   },
-  infoRow: {
+  companyLogoOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: COLORS.secondary,
+    borderRadius: 15,
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.surface,
+  },
+  menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    width: '100%',
   },
-  infoText: {
-    marginLeft: 10,
-    fontSize: 14,
-    color: '#555',
+  menuIcon: {
+    width: 24,
+    alignItems: 'center',
   },
-  optionButton: {
-    paddingVertical: 10,
+  menuTextContainer: {
+    flex: 1,
+    marginLeft: 12,
   },
-  optionText: {
-    fontSize: 14,
-    color: '#1E90FF',
+  menuTitle: {
+    fontSize: 16,
+    color: COLORS.text,
+    fontWeight: '500',
+  },
+  menuSubtitle: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 2,
   },
   logoutButton: {
-    marginTop: 20,
-    backgroundColor: '#FF6347',
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: COLORS.error,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 15,
+    marginVertical: 20,
   },
   logoutButtonText: {
-    color: '#fff',
+    color: COLORS.surface,
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  // Modal styles
-  modalContainer: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 20,
-    maxHeight: '80%',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 15,
-    fontSize: 14,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-  },
-  modalButton: {
-    flex: 0.48,
-    paddingVertical: 12,
+    marginLeft: 8,
   },
 });
 

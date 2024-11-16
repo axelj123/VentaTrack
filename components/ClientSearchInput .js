@@ -3,12 +3,17 @@ import { View, Text, TextInput, TouchableOpacity, Modal, FlatList, StyleSheet } 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { getDBConnection } from '../database';
 import CountrySelector from './CountrySelector';
+import NewClientModal from './NewClientModal';
+import { useToast } from './ToastContext';
+import { useNavigation } from '@react-navigation/native';
+
 const ClientSearchInput = ({ onClientSelect, style }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [clients, setClients] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const navigation = useNavigation(); // Hook de navegación
 
-
+  const { showToast } = useToast(); // Usamos el hook para acceder al showToast
   // Estados para los campos del nuevo cliente
   const [newClientDNI, setNewClientDNI] = useState('');
   const [newClientCountry, setNewClientCountry] = useState('');
@@ -54,51 +59,11 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
     setClients([]);
   };
 
-  const handleAddNewClient = async () => {
-    try {
-      if (!newClientName.trim() || !newClientDNI.trim()) {
-        alert('Por favor complete todos los campos');
-        return;
-      }
 
-      const db = await getDBConnection();
+  const handleAddNewClient = () => {
+    navigation.navigate('NuevoCliente', { dni: searchTerm });
 
-      // Check if client already exists
-      const existingClient = await db.getAllAsync(
-        'SELECT * FROM Cliente WHERE dni = ?',
-        [newClientDNI]
-      );
-
-      if (existingClient.length > 0) {
-        alert('Ya existe un cliente con este DNI');
-        return;
-      }
-
-      await db.runAsync(
-        'INSERT INTO Cliente (nombre_completo, dni) VALUES (?, ?)',
-        [newClientName, newClientDNI]
-      );
-
-      const newClient = await db.getAllAsync(
-        'SELECT * FROM Cliente WHERE dni = ?',
-        [newClientDNI]
-      );
-
-      if (newClient && newClient.length > 0) {
-        handleClientSelect(newClient[0]);
-      }
-
-      setNewClientName('');
-      setNewClientDNI('');
-      setIsModalVisible(false);
-      alert('Cliente agregado correctamente');
-
-    } catch (error) {
-      console.error("Error adding client:", error);
-      alert('Error al agregar cliente');
-    }
   };
-
   return (
     <View style={[styles.container, style]}>
       <View style={styles.searchContainer}>
@@ -154,105 +119,16 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
       {searchTerm.length > 0 && clients.length === 0 && !selectedClient && (
         <TouchableOpacity
           style={styles.addNewButton}
-          onPress={() => {
-            setNewClientDNI(searchTerm);
-            setIsModalVisible(true);
-          }}
+          onPress={handleAddNewClient}
+
         >
-          <Icon name="person-add" size={20} color="#007AFF" style={styles.addIcon} />
+          <Icon name="person-add" size={20} color="white" style={styles.addIcon} />
           <Text style={styles.addNewButtonText}>
             Añadir nuevo cliente
           </Text>
         </TouchableOpacity>
       )}
-
-      <Modal
-        visible={isModalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setIsModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Registrar Nuevo Cliente</Text>
-              <TouchableOpacity
-                style={styles.modalCloseButton}
-                onPress={() => setIsModalVisible(false)}
-              >
-                <Icon name="close" size={24} color="#000" />
-              </TouchableOpacity>
-            </View>
-
-            <TextInput
-              style={styles.modalInput}
-              placeholder="DNI"
-              value={newClientDNI}
-              onChangeText={setNewClientDNI}
-              keyboardType="numeric"
-            />
-
-            <CountrySelector style={styles.modalInput}
-
-              onSelectCountry={(country) => setNewClientCountry(country)}
-            />
-
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Nombre Completo"
-              value={newClientName}
-              onChangeText={setNewClientName}
-              autoCapitalize="words"
-            />
-
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Email"
-              value={newClientEmail}
-              onChangeText={setNewClientEmail}
-              keyboardType="email-address"
-            />
-            {/* Contenedor de Teléfono con Código de País y Bandera */}
-            <View style={styles.phoneContainer}>
-              {newClientCountry && (
-                <Text style={styles.callingCode}>
-                  {newClientCountry.flag} {newClientCountry.callingCode}
-                </Text>
-              )}
-              <TextInput
-                style={styles.phoneInput}
-                placeholder="Teléfono"
-                value={newClientPhone}
-                onChangeText={setNewClientPhone}
-                keyboardType="numeric"
-              />
-            </View>
-
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Dirección"
-              value={newClientAddress}
-              onChangeText={setNewClientAddress}
-            />
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setIsModalVisible(false)}
-              >
-                <Text style={styles.buttonText}>Cancelar</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.modalButton, styles.saveButton]}
-                onPress={handleAddNewClient}
-              >
-                <Text style={styles.buttonText}>Guardar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+  
     </View>
   );
 };
@@ -260,7 +136,7 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
 const styles = StyleSheet.create({
   container: {
     marginBottom: 20,
-    zIndex: 10000,
+    zIndex: 11,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -285,7 +161,7 @@ const styles = StyleSheet.create({
   selectedClientInfo: {
     marginTop: 8,
     padding: 12,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#7534FF',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#e9ecef',
@@ -293,11 +169,11 @@ const styles = StyleSheet.create({
   selectedClientName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#212529',
+    color: 'white',
   },
   selectedClientDetails: {
     fontSize: 14,
-    color: '#6c757d',
+    color: 'white',
     marginTop: 4,
   },
   suggestionsContainer: {
@@ -336,7 +212,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 12,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#7534FF',
     borderRadius: 8,
     marginTop: 8,
   },
@@ -344,95 +220,10 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   addNewButtonText: {
-    color: '#007AFF',
+    color: 'white',
     fontSize: 15,
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo difuso
-    justifyContent: 'center',
-    padding: 20,
-  },
-  modalContent: {
-    backgroundColor: 'white',
-    borderRadius: 20, // Bordes redondeados más marcados
-    padding: 25,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 10, // Sombra suave
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  modalTitle: {
-    fontSize: 24, // Aumenté el tamaño de la fuente
-    fontWeight: 'bold',
-    color: '#000', // Color oscuro
-  },
-  modalCloseButton: {
-    padding: 5,
-  },
-  modalInput: {
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    marginBottom: 20, // Aumenté el margen
-    fontSize: 16,
-    backgroundColor: 'white', // Fondo claro para el input
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-  },
-  modalButton: {
-    flex: 1,
-    padding: 15,
-    borderRadius: 12, // Bordes suaves
-    marginHorizontal: 5,
-  },
-  cancelButton: {
-    backgroundColor: '#B90909', // Rojo (como el de tu paleta)
-  },
-  saveButton: {
-    backgroundColor: '#EFB810', // Amarillo (como el de tu paleta)
-  },
-  buttonText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  //phone
-  phoneContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    marginBottom:20,
-
-    borderRadius: 8,
-    marginVertical: 8,
-    paddingHorizontal: 10,
-  },
-  callingCode: {
-    fontSize: 16,
-    color: '#333',
-    marginRight: 10,
-  },
-  phoneInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#333',
-    height:50,
-  },
+  
 });
 
 export default ClientSearchInput;

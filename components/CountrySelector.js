@@ -49,7 +49,7 @@ const CountrySelector = ({ onSelectCountry }) => {
             onPress={() => setIsModalVisible(true)}
         >
             <Text style={styles.selectorText}>
-            {selectedCountry ? `${selectedCountry.flag} ${selectedCountry.name}` : 'Seleccione un país'}
+            {selectedCountry ? `${selectedCountry.flag} ${selectedCountry.name}` : 'Seleccione un país' }
             </Text>
         </TouchableOpacity>
 
@@ -99,8 +99,6 @@ const CountrySelector = ({ onSelectCountry }) => {
 
 const styles = StyleSheet.create({
   selectorButton: {
-    borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 8,
     padding: 12,
     marginVertical: 8,

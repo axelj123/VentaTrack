@@ -8,6 +8,7 @@ import EmptyState from '../components/EmptyState';
 import { useCart } from '../components/CartContext'; // Usamos el contexto para el carrito
 import { useFocusEffect } from '@react-navigation/native';
 import { useSQLiteContext } from 'expo-sqlite';
+import { useToast } from '../components/ToastContext';
 const VentaProducto = ({navigation }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
@@ -15,7 +16,7 @@ const VentaProducto = ({navigation }) => {
   const [filteredItems, setFilteredItems] = useState([]);
   const [productos, setProductos] = useState([]);
   const { cartItems, addToCart } = useCart(); // Obtener cartItems y la función addToCart
-
+  const { showToast }=useToast();
   const db=useSQLiteContext();
 
 
@@ -74,10 +75,17 @@ const VentaProducto = ({navigation }) => {
   }, [navigation]);
 
   const navigateToCart = () => {
-    navigation.navigate('DetalleVenta');
+    if (cartItems.length > 0) {
+      navigation.navigate('DetalleVenta');
+
+    } else {
+      showToast("error","Tiene que añadir productos para usar el carrito","error")
+    }
   };
   const handleAddToCart = (productToAdd) => {
     addToCart(productToAdd);  // Usamos la función addToCart del contexto
+    showToast("success",`Producto agregado: ${productToAdd.title}`,"success",navigateToCart )
+
     setModalVisible(false);
   };
 

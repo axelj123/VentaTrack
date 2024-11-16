@@ -15,7 +15,7 @@ import VentaProducto from './screens/VentaProducto';
 import DetalleVenta from './screens/DetalleVenta';
 import Notificaciones from './screens/Notificaciones';
 import SplashScreen from './screens/Splashscreen';
-
+import NuevoCliente from './screens/NuevoCliente';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -113,6 +113,7 @@ const Navigation = () => {
         <Stack.Screen name="VerItem" component={ViewItem} />
         <Stack.Screen name="DetalleVenta" component={DetalleVenta} />
         <Stack.Screen name="Notificaciones" component={Notificaciones} />
+        <Stack.Screen name="NuevoCliente" component={NuevoCliente} />
 
 
       </Stack.Navigator>

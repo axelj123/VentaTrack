@@ -110,6 +110,12 @@ const DetalleVenta = ({ navigation }) => {
     const handleClientSelect = (client) => {
         setSelectedClient(client); // Asigna el cliente seleccionado
     };
+
+const handleNavigateVenta =() =>{
+    navigation.navigate('Reportes'); // Navegar a la pantalla deseada
+
+}
+
     const handleRegistrarVenta = async () => {
         // Validar el descuento antes de registrar la venta
         if (!validarDescuento()) return;
@@ -138,7 +144,7 @@ const DetalleVenta = ({ navigation }) => {
     
         const success = await registrarVenta(db,ventaData, detallesVenta);
         if (success) {
-            showToast('Success', 'Venta registrada correctamente', 'success');
+            showToast('Success', 'Venta registrada correctamente', 'success',handleNavigateVenta);
             cartItems.forEach(item => removeFromCart(item.id));
             navigation.goBack(); // Regresar a la pantalla anterior
         } else {
@@ -254,17 +260,18 @@ const styles = StyleSheet.create({
     },
     header: {
         flexDirection: 'row',
-        alignItems: 'center',
-        padding: 16,
-        marginTop: 40,
-        borderBottomWidth: 1,
-        borderBottomColor: '#eee',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    height: 56,
+    marginTop:20,
     },
     headerTitle: {
         flex: 1,
         fontSize: 18,
         fontWeight: 'bold',
         marginLeft: 16,
+        textAlign:'center'
     },
     cartIcon: {
         position: 'relative',

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, ScrollView , Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -13,13 +13,15 @@ import { useSQLiteContext } from 'expo-sqlite';
 
 function ViewItem({ route }) {
   const navigation = useNavigation();
-  const { Producto_id, title, price, image, descripcion, stock } = route.params;
+  const { Producto_id, title, price, purchasePrice,image, descripcion, stock } = route.params;
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const { showToast } = useToast(); // Usamos el hook para acceder al showToast
-const db=useSQLiteContext();
+  const db = useSQLiteContext();
+
   const [formData, setFormData] = useState({
     title: title,
     price: price.toString(),
+    purchasePrice: purchasePrice ? purchasePrice.toString() : '', // Asegúrate de asignar purchasePrice aquí
     description: descripcion,
     stock: stock.toString()
   });
@@ -32,11 +34,11 @@ const db=useSQLiteContext();
   // Función de eliminación solo después de la confirmación
   const handleDeleteProduct = async () => {
     try {
-      const success = await eliminarProducto(db,Producto_id);  // Llamar a la función para eliminar el producto
+      const success = await eliminarProducto(db, Producto_id);  // Llamar a la función para eliminar el producto
 
       if (success) {
         showToast('¡Operación exitosa!', 'Producto eliminado correctamente', 'success');
-          navigation.goBack();
+        navigation.goBack();
       } else {
         showToast('¡Error!', 'No se pudo eliminar el producto', 'warning');
       }
@@ -44,77 +46,40 @@ const db=useSQLiteContext();
       showToast('¡Error!', 'Hubo un problema al eliminar el producto', 'warning');
       console.error("Error en handleDeleteProduct:", error);
     }
-      setConfirmModalVisible(false);
+    setConfirmModalVisible(false);
   };
 
   const handleSaveProduct = async () => {
     try {
-      if (!formData.title || !formData.description || !formData.price || !formData.stock) {
+      if (!formData.title || !formData.description || !formData.price || !formData.purchasePrice || !formData.stock) {
         showToast('¡Error!', 'Por favor, completa todos los campos obligatorios', 'warning');
         return;
       }
 
       // Pasar la imagen actual si no hay una nueva seleccionada
-      const success = await handleSave(db,formData, selectedImage, Producto_id, currentImage);
+      const success = await handleSave(db, formData, selectedImage, Producto_id, currentImage);
 
       if (success) {
         showToast('¡Operación exitosa!', 'Se ha guardado correctamente', 'success');
       } else {
         showToast('¡Error!', 'Hubo un problema al guardar los cambios', 'warning');
+
       }
     } catch (error) {
-      showToast('¡Error!', 'Hubo un problema al guardar los cambios', 'warning');
+      showToast('¡Error!', 'Hubo un problema al guardar los cambios ', 'warning');
       console.error("Error en handleSaveProduct:", error);
     }
   };
 
-  const handleImagePick = async () => {
-    setModalVisible(false);
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if (permissionResult.granted === false) {
-      Alert.alert('¡Permiso denegado!', 'Necesitas permitir el acceso a la galería para seleccionar una imagen.');
-      return;
-    }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 4],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setSelectedImage(result.assets[0].uri);
-    }
-  };
-
-  const handleTakePhoto = async () => {
-    setModalVisible(false);
-    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-
-    if (permissionResult.granted === false) {
-      Alert.alert('¡Permiso denegado!', 'Necesitas permitir el acceso a la cámara para tomar una foto.');
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 4],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setSelectedImage(result.assets[0].uri);
-    }
-  };
 
   return (
     <View style={styles.mainContainer}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton} 
+        <TouchableOpacity
+          style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
           <Ionicons name="arrow-back" size={24} color="#333" />
@@ -126,12 +91,12 @@ const db=useSQLiteContext();
         {/* Imagen y Botón de Cámara */}
         <View style={styles.imageSection}>
           <View style={styles.imageWrapper}>
-            <Image 
-              source={selectedImage ? { uri: selectedImage } : image} 
-              style={styles.image} 
+            <Image
+              source={selectedImage ? { uri: selectedImage } : image}
+              style={styles.image}
             />
-            <TouchableOpacity 
-              onPress={() => setModalVisible(true)} 
+            <TouchableOpacity
+              onPress={() => setModalVisible(true)}
               style={styles.cameraButton}
             >
               <MaterialIcons name="camera-alt" size={22} color="#FFF" />
@@ -168,6 +133,7 @@ const db=useSQLiteContext();
           </View>
 
           <View style={styles.rowContainer}>
+
             <View style={[styles.inputGroup, styles.halfWidth]}>
               <CustomInput
                 style={[styles.input, styles.numberInput]}
@@ -194,6 +160,17 @@ const db=useSQLiteContext();
               />
             </View>
           </View>
+          <View style={[styles.inputGroup, styles.halfWidth]}>
+            <CustomInput
+              style={[styles.input, styles.numberInput]}
+              value={formData.purchasePrice}
+              onChangeText={(text) => setFormData({ ...formData, purchasePrice: text })}
+              keyboardType="numeric"
+              placeholder="Precio de compra"
+              placeholderTextColor="#999"
+              focusedBorderColor="#000"
+            />
+          </View>
         </View>
       </ScrollView>
 
@@ -203,12 +180,12 @@ const db=useSQLiteContext();
           style={styles.deleteButton}
           onPress={() => setConfirmModalVisible(true)}
         >
-          <MaterialIcons name="delete-outline" size={24} color="#FF3B30" />
+          <MaterialIcons name="delete-outline" size={24} color="#5B21B6" />
           <Text style={styles.deleteButtonText}>Eliminar</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={styles.saveButton} 
+        <TouchableOpacity
+          style={styles.saveButton}
           onPress={handleSaveProduct}
         >
           <MaterialIcons name="save" size={24} color="#FFF" />
@@ -284,7 +261,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: -15,
     right: -15,
-    backgroundColor: '#B90909',
+    backgroundColor: '#5B21B6',
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -347,20 +324,20 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginRight: 10,
     borderWidth: 1,
-    borderColor: '#FF3B30',
+    borderColor: '#5B21B6',
   },
   saveButton: {
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#B90909',
+    backgroundColor: '#5B21B6',
     paddingVertical: 12,
     borderRadius: 12,
     marginLeft: 10,
   },
   deleteButtonText: {
-    color: '#FF3B30',
+    color: '#5B21B6',
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,

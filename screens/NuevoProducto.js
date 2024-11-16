@@ -159,7 +159,7 @@ const RegistrarProducto = () => {
 
       // Elimina el formulario guardado en AsyncStorage
       await AsyncStorage.removeItem(FORM_DATA_KEY);
-
+    
       Keyboard.dismiss();
       showToast('Éxito', 'Producto registrado correctamente.', 'success');
     } catch (error) {
@@ -175,7 +175,7 @@ const RegistrarProducto = () => {
           style={styles.backButton} 
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="arrow-back" size={24} color="#333" />
+          <Ionicons name="arrow-back" size={24} color="#111827" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Registrar Producto</Text>
       </View>
@@ -300,26 +300,25 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: 'white',
     flex: 1,
-    padding: 10,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
-    paddingTop: 50,
-    paddingBottom: 15,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EAEAEA',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    height: 56,
+    marginTop:20,
   },
   headerTitle: {
+    color: '#111827',
     fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginLeft: 15,
+    fontWeight: 'bold',
+    flex: 1,
+    textAlign: 'center',
   },
   backButton: {
-    padding: 5,
+    padding: 8,
+        marginLeft: -8,
   },
   title: {
     fontSize: 32,

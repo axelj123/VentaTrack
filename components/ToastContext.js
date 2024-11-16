@@ -1,4 +1,3 @@
-// ToastContext.js
 import React, { createContext, useState, useContext, useCallback } from 'react';
 import Toast from './Toast';
 
@@ -14,8 +13,8 @@ export const useToast = () => {
 export const ToastProvider = ({ children }) => {
   const [toast, setToast] = useState(null);
 
-  const showToast = useCallback((title,message, type = 'info') => {
-    setToast({ title,message, type });
+  const showToast = useCallback((title, message, type = 'info', onAction = null) => {
+    setToast({ title, message, type, onAction });
   }, []);
 
   const hideToast = useCallback(() => {
@@ -25,12 +24,15 @@ export const ToastProvider = ({ children }) => {
   return (
     <ToastContext.Provider value={{ showToast, hideToast }}>
       {children}
-      {toast && 
-      <Toast 
-      title={toast.title}
-      message={toast.message} 
-      type={toast.type}
-       onHide={hideToast} />}
+      {toast && (
+        <Toast
+          title={toast.title}
+          message={toast.message}
+          type={toast.type}
+          onAction={toast.onAction} // Pasar la acción personalizada
+          onHide={hideToast}
+        />
+      )}
     </ToastContext.Provider>
   );
 };

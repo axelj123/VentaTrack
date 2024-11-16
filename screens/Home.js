@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { BarChart } from 'react-native-chart-kit';
 import { Feather } from '@expo/vector-icons';
-
+import { useSQLiteContext } from 'expo-sqlite';
 const screenWidth = Dimensions.get('window').width;
 
 const Home = ({ navigation }) => {
   const [dateFilter, setDateFilter] = useState("Hoy");
+  const db = useSQLiteContext();
+const [totalClientes,setTotalClientes]=useState(0);
 
   const chartConfig = {
     backgroundGradientFrom: "#f5f5f5",
@@ -16,14 +18,33 @@ const Home = ({ navigation }) => {
     labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
     barPercentage: 0.5,
   };
+  useEffect(() => {
+    fetchClientes();
+  }, []);
 
+  const fetchClientes = async () => {
+    try {
+        const result = await db.getAllAsync(`SELECT COUNT(*) as totalClientes FROM Cliente`);
+        console.log('Clientes actuales:', result);
+
+        // Asegúrate de que result es un array con al menos un elemento
+        if (result && result.length > 0) {
+            const totalClientes = result[0]?.totalClientes || 0;
+            setTotalClientes(totalClientes); // Esto actualiza el estado correctamente
+        } else {
+            setTotalClientes(0); // Si no hay resultados, asegúrate de que el valor sea 0
+        }
+    } catch (error) {
+        console.error("Error al obtener clientes:", error);
+    }
+};
   return (
     <ScrollView style={styles.container}>
       {/* Encabezado de bienvenida con icono de notificación */}
       <View style={styles.headerSection}>
         <Text style={styles.greetingText}>¡Hola, Usuario!</Text>
         <Text style={styles.dateText}>{new Date().toLocaleDateString()}</Text>
-        <TouchableOpacity style={styles.notificationIcon}  onPress={() => navigation.navigate('Notificaciones')}>
+        <TouchableOpacity style={styles.notificationIcon} onPress={() => navigation.navigate('Notificaciones')}>
           <Feather name="bell" size={24} color="#333" />
         </TouchableOpacity>
       </View>
@@ -52,16 +73,17 @@ const Home = ({ navigation }) => {
       <View style={styles.metricsSection}>
         <MetricCard title={`Ganancias ${dateFilter}`} value="S/. 0.00" color="#5300a9" icon="trending-up" />
         <MetricCard title="Total Productos" value="0" color="#4e059a" icon="box" />
-        <MetricCard title="Total Clientes" value="0" color="#3c1664" icon="users" />
+        <MetricCard title="Total Clientes" value={totalClientes.toString()} color="#3c1664" icon="users" />
         <MetricCard title="Producto Más Vendido" value="Producto A" color="#7228be" icon="star" />
       </View>
 
       {/* Botones de navegación */}
       <Text style={styles.navigationTitle}>Navega a Secciones</Text>
       <View style={styles.navigationSection}>
-        <NavButton title="Productos" icon="box" color="#3c0475" />
-        <NavButton title="Clientes" icon="users" color="#ee9606" />
-        <NavButton title="Ventas" icon="dollar-sign" color="#1ABC9C" />
+        <NavButton title="Productos" icon="box" color="#3c0475" onPress={() => navigation.navigate('Inventario')} />
+        <NavButton title="Clientes" icon="users" color="#ee9606" onPress={() => navigation.navigate('NuevoCliente')}
+        />
+        <NavButton title="Ventas" icon="dollar-sign" color="#1ABC9C" onPress={() => navigation.navigate('Reportes')} />
       </View>
 
       {/* Gráfico de barras de ganancias por día */}
@@ -91,8 +113,8 @@ const MetricCard = ({ title, value, color, icon }) => (
 );
 
 // Componente para los botones de navegación
-const NavButton = ({ title, icon, color }) => (
-  <TouchableOpacity style={[styles.navButtonStyle, { backgroundColor: color }]}>
+const NavButton = ({ title, icon, color, onPress }) => (
+  <TouchableOpacity onPress={onPress} style={[styles.navButtonStyle, { backgroundColor: color }]}>
     <Feather name={icon} size={24} color="#fff" />
     <Text style={styles.navButtonText}>{title}</Text>
   </TouchableOpacity>

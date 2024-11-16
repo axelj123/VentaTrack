@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-const Toast = ({ title, message, type, onHide }) => {
+const Toast = ({ title, message, type, onHide, onAction }) => {
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(-100));
 
@@ -69,7 +69,7 @@ const Toast = ({ title, message, type, onHide }) => {
   const getActionButton = () => {
     switch (type) {
       case 'success':
-        return 'Undo';
+        return 'Ver';
       case 'info':
         return 'Update';
       case 'warning':
@@ -103,7 +103,10 @@ const Toast = ({ title, message, type, onHide }) => {
         {getActionButton() && (
           <TouchableOpacity 
             style={styles.actionButton}
-            onPress={onHide}
+            onPress={() => {
+              if (onAction) onAction(); // Llamar a la función personalizada
+              onHide(); // Ocultar el Toast después de ejecutar la acción
+            }}
           >
             <Text style={styles.actionButtonText}>{getActionButton()}</Text>
           </TouchableOpacity>
@@ -160,7 +163,7 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    zIndex: 1000,
+    zIndex: 100000,
   },
   contentContainer: {
     flexDirection: 'row',
