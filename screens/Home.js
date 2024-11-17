@@ -4,12 +4,20 @@ import { Picker } from '@react-native-picker/picker';
 import { BarChart } from 'react-native-chart-kit';
 import { Feather } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
+import { useToast } from '../components/ToastContext';
+import { obtenerVentas, obtenerDetallesVenta, obtenerProductoPorId } from '../database';
+
 const screenWidth = Dimensions.get('window').width;
 
 const Home = ({ navigation }) => {
   const [dateFilter, setDateFilter] = useState("Hoy");
+  const [totalClientes, setTotalClientes] = useState(0);
+  const [totalSalesAmount, setTotalSalesAmount] = useState(0);
+  const [historicalSalesAmount, setHistoricalSalesAmount] = useState(0); // Total histórico
+const [totalProductos,setTotalProductos]=useState(0);
+  const [totalProfits, setTotalProfits] = useState(0);
   const db = useSQLiteContext();
-const [totalClientes,setTotalClientes]=useState(0);
+  const { showToast } = useToast();
 
   const chartConfig = {
     backgroundGradientFrom: "#f5f5f5",
@@ -18,26 +26,111 @@ const [totalClientes,setTotalClientes]=useState(0);
     labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
     barPercentage: 0.5,
   };
+
   useEffect(() => {
+    fetchProductos();
+    cargarVentasHistoricas();
     fetchClientes();
-  }, []);
+    cargarVentas(dateFilter); // Cargar ventas según el filtro inicial
+  }, [dateFilter]);
 
   const fetchClientes = async () => {
     try {
-        const result = await db.getAllAsync(`SELECT COUNT(*) as totalClientes FROM Cliente`);
-        console.log('Clientes actuales:', result);
-
-        // Asegúrate de que result es un array con al menos un elemento
-        if (result && result.length > 0) {
-            const totalClientes = result[0]?.totalClientes || 0;
-            setTotalClientes(totalClientes); // Esto actualiza el estado correctamente
-        } else {
-            setTotalClientes(0); // Si no hay resultados, asegúrate de que el valor sea 0
-        }
+      const result = await db.getAllAsync(`SELECT COUNT(*) as totalClientes FROM Cliente`);
+      if (result && result.length > 0) {
+        const totalClientes = result[0]?.totalClientes || 0;
+        setTotalClientes(totalClientes);
+      } else {
+        setTotalClientes(0);
+      }
     } catch (error) {
-        console.error("Error al obtener clientes:", error);
+      console.error("Error al obtener clientes:", error);
     }
-};
+  };
+  const fetchProductos = async () => {
+    try {
+      const result = await db.getAllAsync(`SELECT COUNT(*) as totalProductos FROM Productos`);
+      if (result && result.length > 0) {
+        const totalProductos = result[0]?.totalProductos || 0;
+        setTotalProductos(totalProductos);
+      } else {
+        setTotalProductos(0);
+      }
+    } catch (error) {
+      console.error("Error al obtener clientes:", error);
+    }
+  };
+  const calcularFechaInicio = (intervalo) => {
+    const hoy = new Date();
+    switch (intervalo) {
+      case 'Hoy':
+        return new Date(hoy.setHours(0, 0, 0, 0));
+      case 'Este Mes':
+        const inicioMes = new Date(hoy);
+        inicioMes.setDate(hoy.getDate() - 30);
+        return inicioMes;
+      case 'Último Año':
+        const inicioAno = new Date(hoy);
+        inicioAno.setFullYear(hoy.getFullYear() - 1);
+        return inicioAno;
+      default:
+        return new Date(hoy.setHours(0, 0, 0, 0));
+    }
+  };
+  const cargarVentasHistoricas = async () => {
+    try {
+      const ventasObtenidas = await obtenerVentas();
+      let totalHistorico = 0;
+  
+      for (let venta of ventasObtenidas) {
+        totalHistorico += parseFloat(venta.Total) || 0;
+      }
+  
+      setHistoricalSalesAmount(totalHistorico); // Guardar las ganancias totales históricas
+    } catch (error) {
+      console.error('Error al cargar las ventas históricas:', error);
+      showToast('Error al cargar las ganancias históricas', 'error');
+    }
+  };
+  const cargarVentas = async (filtro) => {
+    try {
+      const ventasObtenidas = await obtenerVentas();
+      const fechaInicio = calcularFechaInicio(filtro);
+      const fechaFin = new Date();
+
+      const ventasFiltradas = ventasObtenidas.filter(venta => {
+        const fechaVenta = new Date(venta.Fecha_venta);
+        return fechaVenta >= fechaInicio && fechaVenta <= fechaFin;
+      });
+
+      let totalVentas = 0;
+      let totalGanancias = 0;
+
+      for (let venta of ventasFiltradas) {
+        const detallesVenta = await obtenerDetallesVenta(venta.Venta_id);
+        let gananciaVenta = 0;
+
+        for (let detalle of detallesVenta) {
+          const producto = await obtenerProductoPorId(detalle.Producto_id);
+          const precioCompra = parseFloat(producto.precio_compra) || 0;
+          const precioVenta = parseFloat(detalle.precio_unitario) || 0;
+          const cantidad = parseInt(detalle.cantidad) || 0;
+
+          const gananciaProducto = (precioVenta - precioCompra) * cantidad;
+          gananciaVenta += gananciaProducto;
+        }
+
+        totalVentas += parseFloat(venta.Total) || 0;
+        totalGanancias += gananciaVenta;
+      }
+
+      setTotalSalesAmount(totalVentas);
+      setTotalProfits(totalGanancias);
+    } catch (error) {
+      console.error('Error al cargar ventas:', error);
+      showToast('Error al cargar las ventas', 'error');
+    }
+  };
   return (
     <ScrollView style={styles.container}>
       {/* Encabezado de bienvenida con icono de notificación */}
@@ -52,8 +145,8 @@ const [totalClientes,setTotalClientes]=useState(0);
       {/* Sección de Ganancias Totales */}
       <View style={styles.totalEarningsSection}>
         <Text style={styles.totalEarningsLabel}>Ganancias Totales</Text>
-        <Text style={styles.totalEarningsValue}>S/. 8600.00</Text>
-      </View>
+        <Text style={styles.totalEarningsValue}>{`S/. ${historicalSalesAmount.toFixed(2)}`}</Text>
+        </View>
 
       {/* Filtro de fecha */}
       <View style={styles.filterSection}>
@@ -71,17 +164,17 @@ const [totalClientes,setTotalClientes]=useState(0);
 
       {/* Sección de métricas */}
       <View style={styles.metricsSection}>
-        <MetricCard title={`Ganancias ${dateFilter}`} value="S/. 0.00" color="#5300a9" icon="trending-up" />
-        <MetricCard title="Total Productos" value="0" color="#4e059a" icon="box" />
+      <MetricCard title={`Ganancias ${dateFilter}`} value={`S/. ${totalProfits.toFixed(2)}`} color="#5300a9" icon="trending-up" />
+      <MetricCard title="Total Productos" value={totalProductos.toString()} color="#4e059a" icon="box" />
         <MetricCard title="Total Clientes" value={totalClientes.toString()} color="#3c1664" icon="users" />
-        <MetricCard title="Producto Más Vendido" value="Producto A" color="#7228be" icon="star" />
+        <MetricCard title="Producto Más Vendido" value="0" color="#7228be" icon="star" />
       </View>
 
       {/* Botones de navegación */}
       <Text style={styles.navigationTitle}>Navega a Secciones</Text>
       <View style={styles.navigationSection}>
         <NavButton title="Productos" icon="box" color="#3c0475" onPress={() => navigation.navigate('Inventario')} />
-        <NavButton title="Clientes" icon="users" color="#ee9606" onPress={() => navigation.navigate('NuevoCliente')}
+        <NavButton title="Clientes" icon="users" color="#ee9606" onPress={() => navigation.navigate('Clientes')}
         />
         <NavButton title="Ventas" icon="dollar-sign" color="#1ABC9C" onPress={() => navigation.navigate('Reportes')} />
       </View>

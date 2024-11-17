@@ -108,7 +108,6 @@ function ViewItem({ route }) {
         <View style={styles.formContainer}>
           <View style={styles.inputGroup}>
             <CustomInput
-              style={styles.input}
               value={formData.title}
               onChangeText={(text) => setFormData({ ...formData, title: text })}
               placeholder="Ingrese el nombre del producto"
@@ -136,7 +135,6 @@ function ViewItem({ route }) {
 
             <View style={[styles.inputGroup, styles.halfWidth]}>
               <CustomInput
-                style={[styles.input, styles.numberInput]}
                 value={formData.price}
                 onChangeText={(text) => setFormData({ ...formData, price: text })}
                 keyboardType="numeric"
@@ -149,7 +147,6 @@ function ViewItem({ route }) {
 
             <View style={[styles.inputGroup, styles.halfWidth]}>
               <CustomInput
-                style={[styles.input, styles.numberInput]}
                 value={formData.stock}
                 onChangeText={(text) => setFormData({ ...formData, stock: text })}
                 keyboardType="numeric"
@@ -162,7 +159,6 @@ function ViewItem({ route }) {
           </View>
           <View style={[styles.inputGroup, styles.halfWidth]}>
             <CustomInput
-              style={[styles.input, styles.numberInput]}
               value={formData.purchasePrice}
               onChangeText={(text) => setFormData({ ...formData, purchasePrice: text })}
               keyboardType="numeric"
@@ -277,7 +273,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   inputGroup: {
-    marginBottom: 50,
+    marginBottom: 30,
   },
   label: {
     fontSize: 14,
@@ -285,16 +281,7 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 8,
   },
-  input: {
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    color: '#333',
-  },
+
 
   rowContainer: {
     flexDirection: 'row',

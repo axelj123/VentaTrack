@@ -106,14 +106,21 @@ const VentaProducto = ({navigation }) => {
       <Text style={styles.subHeader}>Busca los productos y agrégales al carrito</Text>
 
       <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="gray" style={styles.icon} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Buscar"
-          value={searchTerm}
-          onChangeText={text => setSearchTerm(text)}
-          selectionColor="#003366"
-        />
+        <View style={styles.searchBox}>
+          <Ionicons name="search-outline" size={20} color="#666" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Buscar por nombre o descripción..."
+            value={searchTerm}
+            onChangeText={setSearchTerm}
+            placeholderTextColor="#666"
+          />
+          {searchTerm.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchTerm('')}>
+              <Ionicons name="close-circle" size={20} color="#666" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       <FlatList
@@ -156,7 +163,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     flex: 1,
-    backgroundColor: 'white'
+    backgroundColor: '#F8F9FF',
   },
   containerHeader: {
     flexDirection: 'row',
@@ -171,23 +178,30 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   searchContainer: {
+    paddingBottom: 16,
+  },
+  searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#999', // Agregar color de borde
     borderRadius: 15,
-    paddingHorizontal: 10,
-    marginVertical: 10, // Agregar margen superior e inferior
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  searchIcon: {
+    marginRight: 10,
   },
   searchInput: {
-    height: 40,
     flex: 1,
-    paddingHorizontal: 10,
     fontSize: 16,
-  },
-  icon: {
-    marginRight: 10, // Agregar espacio entre el icono y el campo de entrada
+    color: '#333',
   },
   carritoContent: {
     flexDirection: 'row',

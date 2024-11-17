@@ -8,7 +8,7 @@ import EmptyState from '../components/EmptyState';
 import { useSQLiteContext } from 'expo-sqlite';
 
 const Inventario = ({ navigation }) => {
-  const db=useSQLiteContext();
+  const db = useSQLiteContext();
   // Estado para el término de búsqueda, productos y filtro activo
   const [searchTerm, setSearchTerm] = useState('');
   const [productos, setProductos] = useState([]);
@@ -66,23 +66,30 @@ const Inventario = ({ navigation }) => {
 
       {/* Barra de búsqueda */}
       <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="gray" style={styles.icon} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Buscar"
-          value={searchTerm}
-          onChangeText={(text) => setSearchTerm(text)}
-          selectionColor="#003366" // Cambia el color del cursor aquí
-        />
+        <View style={styles.searchBox}>
+          <Ionicons name="search-outline" size={20} color="#666" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Buscar por nombre o descripción..."
+            value={searchTerm}
+            onChangeText={setSearchTerm}
+            placeholderTextColor="#666"
+          />
+          {searchTerm.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchTerm('')}>
+              <Ionicons name="close-circle" size={20} color="#666" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {/* Botón de agregar nuevo producto */}
-      <View style={styles.containerButton}>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('RegistrarProducto')}>
-          <Text style={styles.buttonText}>Nuevo</Text>
-          <Ionicons name="add" size={25} color="white" style={styles.iconAdd} />
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => navigation.navigate('RegistrarProducto')}
+      >
+        <Ionicons name="add" size={25} color="white" />
+      </TouchableOpacity>
 
       {/* Filtros */}
       <View style={styles.contenedorFiltros}>
@@ -136,8 +143,8 @@ const Inventario = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: 'white',
+    padding: 18,
+    backgroundColor: '#F8F9FF',
   },
   h1: {
     fontSize: 32,
@@ -152,55 +159,32 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   searchContainer: {
+    paddingBottom: 16,
+  },
+  searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#999', // Agregar color de borde
     borderRadius: 15,
-    paddingHorizontal: 10,
-    marginVertical: 20, // Agregar margen superior e inferior
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  searchIcon: {
+    marginRight: 10,
   },
   searchInput: {
-    height: 40,
     flex: 1,
-    paddingHorizontal: 10,
     fontSize: 16,
+    color: '#333',
   },
-  icon: {
-    marginRight: 10, // Agregar espacio entre el icono y el campo de entrada
-  },
-  containerButton: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center', // Centra el contenido verticalmente
-    marginBottom: 50,
-    marginTop: 50,
-  },
-  button: {
-    width: 145,
-    height: 50,
-    backgroundColor: '#6B21A8',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 15,
-    marginTop: 40,
-    elevation: 3, // Sombra en Android
-    shadowColor: '#000', // Sombra en iOS
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 2,
-    marginBottom: 30,
-    flexDirection: 'row',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '800',
-    padding: 2,
-  },
-  iconAdd: {
-  },
+
   contenedorFiltros: {
     marginBottom: 20,
     flexDirection: 'row',
@@ -231,6 +215,26 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
     marginTop: 20, // Espacio entre el icono y el texto
+  },
+  fab: {
+    position: 'absolute',
+    right: 20,
+    bottom: 20,
+    width: 56,
+    height: 56,
+    backgroundColor: '#6B21A8', // Mantenemos el mismo color que tenías
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 3, // Mismo valor de elevation que tenías
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    zIndex: 1,
   },
 });
 

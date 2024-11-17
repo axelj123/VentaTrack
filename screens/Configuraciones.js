@@ -16,7 +16,7 @@ const COLORS = {
   error: '#DC2626',       // Rojo para acciones críticas
 };
 
-const Configuraciones = () => {
+const Configuraciones = ({navigation}) => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -57,7 +57,7 @@ const Configuraciones = () => {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Configuración</Text>
         <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.headerAction}>
+          <TouchableOpacity style={styles.headerAction} onPress={() => navigation.navigate('Notificaciones')}>
             <FontAwesome name="bell" size={20} color={COLORS.surface} />
             <View style={styles.notificationBadge} />
           </TouchableOpacity>

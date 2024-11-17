@@ -16,6 +16,7 @@ import DetalleVenta from './screens/DetalleVenta';
 import Notificaciones from './screens/Notificaciones';
 import SplashScreen from './screens/Splashscreen';
 import NuevoCliente from './screens/NuevoCliente';
+import Clientes from './screens/Clientes';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -114,6 +115,7 @@ const Navigation = () => {
         <Stack.Screen name="DetalleVenta" component={DetalleVenta} />
         <Stack.Screen name="Notificaciones" component={Notificaciones} />
         <Stack.Screen name="NuevoCliente" component={NuevoCliente} />
+        <Stack.Screen name="Clientes" component={Clientes} />
 
 
       </Stack.Navigator>
