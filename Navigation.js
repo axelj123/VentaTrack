@@ -17,6 +17,12 @@ import Notificaciones from './screens/Notificaciones';
 import SplashScreen from './screens/Splashscreen';
 import NuevoCliente from './screens/NuevoCliente';
 import Clientes from './screens/Clientes';
+import GetStarted  from './screens/GetStarted';
+import Register from './screens/Register';
+import OnboardingFlow from './screens/OnboardingFlow';
+import { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -102,22 +108,60 @@ const TabNavigator = () => {
 };
 
 const Navigation = () => {
+  const [isOnboardingComplete, setIsOnboardingComplete] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      try {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        const value = await AsyncStorage.getItem('hasCompletedOnboarding');
+        setIsOnboardingComplete(value === 'true');
+      } catch (error) {
+        console.error('Error verificando el estado de onboarding:', error);
+        setIsOnboardingComplete(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkOnboardingStatus();
+  }, []);
+
+  if (loading) {
+    return <SplashScreen />;
+  }
+
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-          {/* Configura SplashScreen como pantalla inicial */}
-          <Stack.Screen name="SplashScreen" component={SplashScreen} />
-
-        <Stack.Screen name="LOGIN" component={Login} />
-        <Stack.Screen name="MAIN" component={TabNavigator} />
-        <Stack.Screen name="RegistrarProducto" component={NuevoProducto} />
-        <Stack.Screen name="VerItem" component={ViewItem} />
-        <Stack.Screen name="DetalleVenta" component={DetalleVenta} />
-        <Stack.Screen name="Notificaciones" component={Notificaciones} />
-        <Stack.Screen name="NuevoCliente" component={NuevoCliente} />
-        <Stack.Screen name="Clientes" component={Clientes} />
-
-
+        {!isOnboardingComplete ? (
+          <>
+            <Stack.Screen name="GetStarted" component={GetStarted} />
+            <Stack.Screen name="OnboardingFlow" component={OnboardingFlow} />
+            <Stack.Screen name="Register" component={Register} />
+            {/* Agregamos las rutas del TabNavigator aquí también */}
+            <Stack.Screen name="TabNavigator" component={TabNavigator} />
+            <Stack.Screen name="LOGIN" component={Login} />
+            <Stack.Screen name="RegistrarProducto" component={NuevoProducto} />
+            <Stack.Screen name="VerItem" component={ViewItem} />
+            <Stack.Screen name="DetalleVenta" component={DetalleVenta} />
+            <Stack.Screen name="Notificaciones" component={Notificaciones} />
+            <Stack.Screen name="NuevoCliente" component={NuevoCliente} />
+            <Stack.Screen name="Clientes" component={Clientes} />
+          </>
+        ) : (
+          <>
+            <Stack.Screen name="TabNavigator" component={TabNavigator} />
+            <Stack.Screen name="LOGIN" component={Login} />
+            <Stack.Screen name="RegistrarProducto" component={NuevoProducto} />
+            <Stack.Screen name="VerItem" component={ViewItem} />
+            <Stack.Screen name="DetalleVenta" component={DetalleVenta} />
+            <Stack.Screen name="Notificaciones" component={Notificaciones} />
+            <Stack.Screen name="NuevoCliente" component={NuevoCliente} />
+            <Stack.Screen name="Clientes" component={Clientes} />
+          </>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );

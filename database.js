@@ -1,6 +1,5 @@
 //database.js
 import * as SQLite from 'expo-sqlite';
-import { useSQLiteContext } from 'expo-sqlite';
 
 const DATABASE_NAME = 'VentasDB.db';
 
@@ -63,7 +62,6 @@ export const createTables = async (db) => {
       direccion TEXT,
       telefono INTEGER,
       correo_contacto TEXT,
-      descripcion TEXT,
       ruc INTEGER UNIQUE
     )`,
 
@@ -374,12 +372,36 @@ export const createUsuario = async (db, usuario) => {
   }
 };
 
-export const getUsuarios = async (db) => {
+export const createEmpresa = async (db, empresa) => {
+  try {
+    const result = await db.runAsync(
+      'INSERT INTO Empresa (nombre, direccion, telefono,correo_contacto,ruc) VALUES (?, ?, ?, ?, ?)',
+      [empresa.nombre, empresa.direccion, empresa.telefono, empresa.correo_contacto, empresa.ruc]
+    );
+    return result.lastInsertRowId; // Obtiene el ID del último registro insertado
+  } catch (error) {
+    console.error("Error al crear a la empresa:", error);
+    throw error;
+  }
+};
+
+export const getAllUsuarios = async (db) => {
   try {
     const result = await db.getAllAsync('SELECT * FROM Usuario');
-    return result || [];
+    console.log('Usuarios registrados:', result);
+    return result;
   } catch (error) {
-    console.error("Error al obtener usuarios:", error);
+    console.error('Error al obtener usuarios:', error);
+    throw error;
+  }
+};
+export const getAllEmpresa = async (db) => {
+  try {
+    const result = await db.getAllAsync('SELECT * FROM Empresa');
+    console.log('Empresa Registrada:', result);
+    return result;
+  } catch (error) {
+    console.error('Error al obtener la empresa:', error);
     throw error;
   }
 };
@@ -465,11 +487,12 @@ export const listClientes = async (db) => {
 
 // database.js
 
-export const registrarVenta = async (db,ventaData, detallesVenta) => {
+export const registrarVenta = async (db, ventaData, detallesVenta) => {
   try {
-
     // Obtener la fecha y hora locales
-    const fechaLocalQuery = await db.getAllAsync("SELECT datetime('now', 'localtime') AS Fecha_actual");
+    const fechaLocalQuery = await db.getAllAsync(
+      "SELECT datetime('now', 'localtime') AS Fecha_actual"
+    );
     const Fecha_venta = fechaLocalQuery[0].Fecha_actual;
 
     // Inserta la venta en la tabla Venta con la fecha local
@@ -477,18 +500,19 @@ export const registrarVenta = async (db,ventaData, detallesVenta) => {
       `INSERT INTO Venta (Cliente_id, Fecha_venta, Total, tipoVenta_id, Courier_id, descuento) VALUES (?, ?, ?, ?, ?, ?)`,
       [
         ventaData.Cliente_id,
-        Fecha_venta, // Usa la fecha y hora locales
+        Fecha_venta, // Usar la fecha y hora locales
         ventaData.Total,
         ventaData.tipoVenta_id,
         ventaData.Courier_id,
-        ventaData.descuento
+        ventaData.descuento,
       ]
     );
 
     const Venta_id = resultVenta.lastInsertRowId; // Obtiene el ID de la venta recién insertada
 
-    // Inserta cada producto en la tabla detalle_venta
+    // Inserta cada producto en la tabla detalle_venta y actualiza el stock
     for (const detalle of detallesVenta) {
+      // Insertar detalle de la venta
       await db.runAsync(
         `INSERT INTO detalle_venta (Venta_id, Producto_id, cantidad, precio_unitario, subtotal) VALUES (?, ?, ?, ?, ?)`,
         [
@@ -496,18 +520,38 @@ export const registrarVenta = async (db,ventaData, detallesVenta) => {
           detalle.Producto_id,
           detalle.cantidad,
           detalle.precio_unitario,
-          detalle.subtotal
+          detalle.subtotal,
         ]
       );
+
+      // Actualizar el stock del producto
+      const updateStockResult = await db.runAsync(
+        `UPDATE Productos
+         SET cantidad = cantidad - ?
+         WHERE Producto_id = ? AND cantidad >= ?`,
+        [
+          detalle.cantidad, // Cantidad vendida
+          detalle.Producto_id, // ID del producto
+          detalle.cantidad, // Validación para evitar stock negativo
+        ]
+      );
+
+      // Si no se actualiza el stock, lanzar un error por falta de inventario
+      if (updateStockResult.rowsAffected === 0) {
+        throw new Error(
+          `Stock insuficiente para el producto con ID ${detalle.Producto_id}`
+        );
+      }
     }
 
     console.log("Venta registrada exitosamente con hora local.");
-    return true;
+    return true; // Indicar éxito
   } catch (error) {
     console.error("Error al registrar la venta:", error);
-    return false;
+    return false; // Indicar fallo
   }
 };
+
 
 
 

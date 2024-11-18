@@ -1,230 +1,457 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
-  Alert,
-  Image,
   SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView
+  StatusBar,
+  Dimensions,
+  ActivityIndicator,
+  Keyboard,
+  TouchableWithoutFeedback,
+  Animated,
 } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import CustomInput from '../components/CustomInput';
 import { useNavigation } from '@react-navigation/native';
-import { FontAwesome } from '@expo/vector-icons';
-import { initDatabase,deleteDatabase,obtenerHoraYfecha } from '../database'; // Importa la función de inicialización de la base de datos
+import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import CustomInput from '../components/CustomInput';
 import { useToast } from '../components/ToastContext';
 
-
+const { width, height } = Dimensions.get('window');
 
 const Login = () => {
-  const { showToast } = useToast(); // Usamos el hook para acceder al showToast
-
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-
+  const { showToast } = useToast();
   const navigation = useNavigation();
 
- 
+  // Estado
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
 
- // Función para eliminar la base de datos
- const handleDeleteDatabase = async () => {
-  try {
-    const result = await deleteDatabase();
-    if (result) {
-      Alert.alert('Éxito', 'Base de datos eliminada correctamente');
-      return true;
-    } else {
-      Alert.alert('Info', 'No existe base de datos para eliminar');
-      return false;
+  // Animaciones
+  const fadeAnim = new Animated.Value(1);
+  const translateY = new Animated.Value(0);
+
+  // Validaciones
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!email) {
+      newErrors.email = 'El correo es requerido';
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Ingrese un correo válido';
     }
-  } catch (error) {
-    console.error('Error al eliminar la base de datos:', error);
-    Alert.alert('Error', 'No se pudo eliminar la base de datos');
-    return false;
-  }
-};
-  const handleLogin = () => {
 
-    navigation.navigate('MAIN');
+    if (!password) {
+      newErrors.password = 'La contraseña es requerida';
+    } else if (password.length < 6) {
+      newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
-  const handleForgotPassword = async () => {
-    await obtenerHoraYfecha();
+
+  // Manejo del login
+  const handleLogin = async () => {
+
+    try {
+      setIsLoading(true);
+
+      // Simular delay de red
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // Aquí iría la lógica real de autenticación
+
+      // Animación de éxito
+      Animated.sequence([
+        Animated.timing(fadeAnim, {
+          toValue: 0.3,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      navigation.navigate('MAIN');
+    } catch (error) {
+      showToast('Error al iniciar sesión. Intente nuevamente.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
+  const handleRegister = async () => {
+    navigation.navigate('Register');
+  };
+
+  // Efecto de scroll cuando el teclado aparece
+  const handleFocus = () => {
+    Animated.timing(translateY, {
+      toValue: -100,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleBlur = () => {
+    Animated.timing(translateY, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
   return (
-
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
-
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps="handled"
+    <TouchableWithoutFeedback >
+      <SafeAreaView style={styles.container}>
+        <LinearGradient
+          colors={['#6B21A8', '#4C1D95']}
+          style={styles.gradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
         >
+          <View style={styles.decorativeCircle1} />
+          <View style={styles.decorativeCircle2} />
 
-          <View style={styles.headerContainer}>
-            <Text style={styles.welcomeText}> Log in</Text>
-            <View style={styles.logoContainer}>
-              <Image
-                source={require('../assets/logo.png')}
-                style={styles.logo}
-                resizeMode="contain"
-              />
+          <Animated.View
+            style={[
+              styles.content,
+              {
+                transform: [{ translateY }],
+                opacity: fadeAnim,
+              }
+            ]}
+          >
+            <View style={styles.headerContainer}>
+              <View style={styles.brandContainer}>
+                <View style={styles.iconWrapper}>
+                  <FontAwesome5 name="box-open" size={32} color="#fff" />
+                </View>
+                <Text style={styles.welcomeText}>InvenTrack Pro</Text>
+              </View>
+              <View style={styles.dividerContainer}>
+                <View style={styles.divider} />
+                <View style={[styles.divider, styles.dividerShort]} />
+              </View>
+
             </View>
-          </View>
 
-          <View style={styles.formContainer}>
-            <View style={styles.inputContainer}>
-              <FontAwesome name="user" size={20} color="#666" style={styles.inputIcon} />
+            <View style={styles.formContainer}>
               <CustomInput
-                containerStyle={styles.input}
                 placeholder="Usuario"
-                focusedBorderColor="#211132"         
-                unfocusedBorderColor="#999"       
-                placeholderTextColor="#999"          
-                errorMessage="Este campo es obligatorio" 
+                focusedBorderColor="#211132"
+                unfocusedBorderColor="#999"
+                placeholderTextColor="#999"
+                errorMessage="Este campo es obligatorio"
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
-            </View>
 
-            <View style={styles.inputContainer}>
-              <FontAwesome name="lock" size={20} color="#666" style={styles.inputIcon} />
               <CustomInput
-                containerStyle={styles.input}
-                placeholder="Contraseña"
-                focusedBorderColor="#211132"          
-                unfocusedBorderColor="#999"       
-                placeholderTextColor="#999"         
-                errorMessage="Este campo es obligatorio"
-                onChangeText={setPassword}
-                error={passwordError}
-                secureTextEntry
-                autoCapitalize="none"
-                returnKeyType="done"
-                onSubmitEditing={handleLogin}
+                value={confirmPassword}
+                placeholder="Confirmar contraseña"
+                focusedBorderColor="#211132"
+                unfocusedBorderColor="#999"
+                placeholderTextColor="#999"
+                errorMessage={errors.confirmPassword}
+                onChangeText={(text) => {
+                  setConfirmPassword(text);
+                  if (errors.confirmPassword) {
+                    setErrors(prev => ({ ...prev, confirmPassword: '' }));
+                  }
+                }}
+                secureTextEntry={!isConfirmPasswordVisible}
+                leftIcon={
+                  <FontAwesome name="lock" size={20} color="#666" />
+                }
+                rightIcon={
+                  <TouchableOpacity
+                    onPress={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)}
+                  >
+                    <FontAwesome
+                      name={isConfirmPasswordVisible ? "eye-slash" : "eye"}
+                      size={20}
+                      color="#666"
+                    />
+                  </TouchableOpacity>
+                }
               />
+
+              <TouchableOpacity
+                style={styles.forgotPassword}
+                onPress={() => navigation.navigate('ForgotPassword')}
+              >
+                <Text style={styles.forgotPasswordText}>
+                  ¿Olvidaste tu contraseña?
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.loginButton,
+                  isLoading && styles.loginButtonDisabled
+                ]}
+                onPress={handleLogin}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#6B21A8" />
+                ) : (
+                  <Text style={styles.loginButtonText}>INICIAR SESIÓN</Text>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.registerButton}
+                onPress={handleRegister}
+              >
+                <Text style={styles.registerButtonText}>
+                  ¿No tienes cuenta? Regístrate
+                </Text>
+              </TouchableOpacity>
             </View>
 
-            <TouchableOpacity style={styles.forgotPassword} onPress={handleForgotPassword} >
-              <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
-            </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.loginButton}
-              onPress={handleLogin}
-            >
-              <Text style={styles.loginButtonText}>INICIAR SESIÓN</Text>
-            </TouchableOpacity>
-
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>Sistema de Inventario v1.0</Text>
-              <Text style={styles.copyrightText}>Vida Divina S.A.C © 2024</Text>
-            </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-
+          </Animated.View>
+        </LinearGradient>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fafafa', 
+  },
+  gradient: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 0,
+    position: 'relative',
+  },
+  decorativeCircle1: {
+    position: 'absolute',
+    width: height * 0.4,
+    height: height * 0.4,
+    borderRadius: height * 0.2,
+    backgroundColor: 'rgba(233, 213, 255, 0.1)',
+    top: -height * 0.1,
+    right: -width * 0.2,
+  },
+  decorativeCircle2: {
+    position: 'absolute',
+    width: height * 0.3,
+    height: height * 0.3,
+    borderRadius: height * 0.15,
+    backgroundColor: 'rgba(233, 213, 255, 0.08)',
+    bottom: -height * 0.05,
+    left: -width * 0.15,
   },
   headerContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 30,
+    paddingTop: height * 0.1,
   },
-  logoContainer: {
-    width: 250,
-    height: 250,
+  brandContainer: {
     alignItems: 'center',
-    marginTop:30,
-  
+    marginBottom: 24,
   },
-  logo: {
-    width: '80%',
-    height: '80%',
+  iconWrapper: {
+    width: 72,
+    height: 72,
+    borderRadius: 24,
+    backgroundColor: 'rgba(233, 213, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(233, 213, 255, 0.3)',
   },
   welcomeText: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    color: '#000',
-    marginTop: 20,
+    fontSize: 42,
+    fontWeight: '800',
+    color: '#fff',
     textAlign: 'center',
+    letterSpacing: 1,
   },
-
-  formContainer: {
-    flex: 0.6,
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 35,
-    borderTopRightRadius: 35,
-    paddingHorizontal: 25,
-    
-  },
-  inputContainer: {
-    flexDirection: 'row',
+  dividerContainer: {
     alignItems: 'center',
-    marginBottom: 15,
-    borderRadius: 10,
+    marginVertical: 20,
   },
-  inputIcon: {
-    marginRight: 15,
-    marginTop: 45,
+  divider: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#E9D5FF',
+    borderRadius: 2,
+    marginBottom: 8,
+  },
+  dividerShort: {
+    width: 20,
+    opacity: 0.6,
+  },
+  subtitleText: {
+    fontSize: 18,
+    color: '#E9D5FF',
+    textAlign: 'center',
+    lineHeight: 28,
+    opacity: 0.9,
+  },
+  decorationContainer: {
+    alignItems: 'flex-end',
+    marginTop: height * 0.08,
+    gap: 12,
+  },
+  decorationLine: {
+    height: 2,
+    backgroundColor: 'rgba(233, 213, 255, 0.2)',
+    borderRadius: 1,
+  },
+  buttonContainer: {
+    marginTop: 'auto',
+    marginBottom: 40,
+    gap: 16,
+    paddingHorizontal: 12,
+  },
 
+
+
+  footer: {
+    alignItems: 'center',
+    marginBottom: 24,
   },
+  footerContent: {
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 20,
+  },
+  footerDivider: {
+    width: 20,
+    height: 1,
+    backgroundColor: 'rgba(233, 213, 255, 0.3)',
+    marginVertical: 8,
+  },
+  footerText: {
+    color: '#E9D5FF',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  copyrightText: {
+    color: '#E9D5FF',
+    fontSize: 12,
+    opacity: 0.8,
+  },
+  formContainer: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    height: 600,
+    paddingVertical: 32,
+    paddingHorizontal: 24,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+    gap: 16,
+    // Eliminamos marginHorizontal y ajustamos el ancho
+    width: '100%',
+  },
+
   input: {
-    flex: 1,
-    height: 50,
-    marginTop: 45,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    height: 56,
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
   },
+
   forgotPassword: {
     alignSelf: 'flex-end',
-    marginBottom: 20,
+    marginTop: 8,
   },
+
   forgotPasswordText: {
-    color: '#666',
+    color: '#6B21A8',
     fontSize: 14,
+    fontWeight: '500',
   },
+
   loginButton: {
-    backgroundColor: '#B90909',
-    height: 55,
-    borderRadius: 10,
+    height: 56,
+    backgroundColor: '#6B21A8',
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
-    shadowColor: '#000',
-  
+    marginTop: 24,
+    shadowColor: '#6B21A8',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
+
+  loginButtonDisabled: {
+    opacity: 0.7,
+  },
+
   loginButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+    letterSpacing: 1,
   },
-  footer: {
+
+  registerButton: {
+    height: 56,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 8,
   },
-  footerText: {
-    color: '#666',
+
+  registerButtonText: {
+    color: '#6B21A8',
     fontSize: 14,
-    marginBottom: 5,
+    fontWeight: '500',
   },
-  copyrightText: {
-    color: '#999',
+
+  // Modificar el CustomInput para que se vea mejor en el fondo blanco
+  inputContainer: {
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+  },
+
+  inputIcon: {
+    color: '#6B21A8',
+  },
+
+  errorText: {
+    color: '#DC2626',
     fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
   },
+
 });
 
 export default Login;

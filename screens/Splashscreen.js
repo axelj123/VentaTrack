@@ -8,6 +8,7 @@ import {
   LinearGradient,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { FontAwesome5 } from '@expo/vector-icons';
 
 const SplashScreen = ({ navigation }) => {
     const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -35,7 +36,7 @@ const SplashScreen = ({ navigation }) => {
     ]).start();
 
     const timer = setTimeout(() => {
-      navigation.replace('LOGIN');
+      navigation.replace('GetStarted');
     }, 3000);
 
     return () => clearTimeout(timer);
@@ -57,9 +58,9 @@ const SplashScreen = ({ navigation }) => {
           },
         ]}
       >
-        <View style={styles.iconContainer}>
-          <Ionicons name="cart" size={width * 0.2} color="#FFFFFF" />
-        </View>
+    <View style={styles.iconWrapper}>
+                <FontAwesome5 name="box-open" size={32} color="#fff" />
+              </View>
         <Text style={styles.title}>InvenTrack Pro</Text>
         <Text style={styles.subtitle}>Sistema Inteligente de Gestión</Text>
       </Animated.View>
@@ -105,7 +106,7 @@ const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#6B46C1', // Color morado base
+    backgroundColor: '#6B21A8', // Color morado base
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 50,
@@ -132,14 +133,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: height * 0.1,
   },
-  iconContainer: {
-    width: width * 0.35,
-    height: width * 0.35,
-    borderRadius: width * 0.175,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    justifyContent: 'center',
+  iconWrapper: {
+    width: 72,
+    height: 72,
+    borderRadius: 24,
+    backgroundColor: 'rgba(233, 213, 255, 0.2)',
     alignItems: 'center',
-    marginBottom: 20,
+    justifyContent: 'center',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(233, 213, 255, 0.3)',
   },
   title: {
     fontSize: 36,
