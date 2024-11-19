@@ -36,7 +36,7 @@ const SplashScreen = ({ navigation }) => {
     ]).start();
 
     const timer = setTimeout(() => {
-      navigation.replace('GetStarted');
+      navigation.navigate('GetStarted');
     }, 3000);
 
     return () => clearTimeout(timer);

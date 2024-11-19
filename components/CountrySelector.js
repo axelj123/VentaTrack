@@ -1,36 +1,21 @@
 // CountrySelector.js
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, FlatList, StyleSheet } from 'react-native';
+import { countries } from './countries';
 
-const countries = [
-    { code: 'AR', name: 'Argentina', flag: '🇦🇷', callingCode: '+54' },
-    { code: 'BO', name: 'Bolivia', flag: '🇧🇴', callingCode: '+591' },
-    { code: 'CL', name: 'Chile', flag: '🇨🇱', callingCode: '+56' },
-    { code: 'CO', name: 'Colombia', flag: '🇨🇴', callingCode: '+57' },
-    { code: 'CR', name: 'Costa Rica', flag: '🇨🇷', callingCode: '+506' },
-    { code: 'CU', name: 'Cuba', flag: '🇨🇺', callingCode: '+53' },
-    { code: 'DO', name: 'República Dominicana', flag: '🇩🇴', callingCode: '+1' },
-    { code: 'EC', name: 'Ecuador', flag: '🇪🇨', callingCode: '+593' },
-    { code: 'SV', name: 'El Salvador', flag: '🇸🇻', callingCode: '+503' },
-    { code: 'GT', name: 'Guatemala', flag: '🇬🇹', callingCode: '+502' },
-    { code: 'HN', name: 'Honduras', flag: '🇭🇳', callingCode: '+504' },
-    { code: 'MX', name: 'México', flag: '🇲🇽', callingCode: '+52' },
-    { code: 'NI', name: 'Nicaragua', flag: '🇳🇮', callingCode: '+505' },
-    { code: 'PA', name: 'Panamá', flag: '🇵🇦', callingCode: '+507' },
-    { code: 'PY', name: 'Paraguay', flag: '🇵🇾', callingCode: '+595' },
-    { code: 'PE', name: 'Perú', flag: '🇵🇪', callingCode: '+51' },
-    { code: 'ES', name: 'España', flag: '🇪🇸', callingCode: '+34' },
-    { code: 'UY', name: 'Uruguay', flag: '🇺🇾', callingCode: '+598' },
-    { code: 'VE', name: 'Venezuela', flag: '🇻🇪', callingCode: '+58' },
-    { code: 'US', name: 'Estados Unidos', flag: '🇺🇸', callingCode: '+1' },
-    { code: 'CA', name: 'Canadá', flag: '🇨🇦', callingCode: '+1' },
-];
-
-const CountrySelector = ({ onSelectCountry }) => {
+const CountrySelector = ({ initialCountry,onSelectCountry }) => {
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
+
+      // Efecto para sincronizar el valor inicial con el estado local
+      React.useEffect(() => {
+        if (initialCountry) {
+            setSelectedCountry(initialCountry);
+        }
+    }, [initialCountry]);
+    
   // Filtra los países según el término de búsqueda
   const filteredCountries = countries.filter((country) =>
     country.name.toLowerCase().includes(searchTerm.toLowerCase())

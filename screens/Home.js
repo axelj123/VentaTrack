@@ -14,8 +14,9 @@ const Home = ({ navigation }) => {
   const [totalClientes, setTotalClientes] = useState(0);
   const [totalSalesAmount, setTotalSalesAmount] = useState(0);
   const [historicalSalesAmount, setHistoricalSalesAmount] = useState(0); // Total histórico
-const [totalProductos,setTotalProductos]=useState(0);
+  const [totalProductos, setTotalProductos] = useState(0);
   const [totalProfits, setTotalProfits] = useState(0);
+  const [userName,setUserName]=useState("");
   const db = useSQLiteContext();
   const { showToast } = useToast();
 
@@ -28,6 +29,7 @@ const [totalProductos,setTotalProductos]=useState(0);
   };
 
   useEffect(() => {
+    fetchUserName();
     fetchProductos();
     cargarVentasHistoricas();
     fetchClientes();
@@ -47,6 +49,24 @@ const [totalProductos,setTotalProductos]=useState(0);
       console.error("Error al obtener clientes:", error);
     }
   };
+
+  const fetchUserName = async () => {
+    try {
+      const result = await db.getAllAsync(`SELECT nombre_completo FROM Usuario LIMIT 1`); // Ajusta esta consulta según tu lógica de autenticación
+      if (result && result.length > 0) {
+        const fullName = result[0]?.nombre_completo || "Usuario";
+        // Obtener solo las dos primeras palabras del nombre
+        const firstTwoWords = fullName.split(" ").slice(0, 2).join(" ");
+        setUserName(firstTwoWords);
+
+      } else {
+        setUserName("Usuario");
+      }
+    } catch (error) {
+      console.error("Error al obtener el nombre del usuario:", error);
+    }
+  };
+
   const fetchProductos = async () => {
     try {
       const result = await db.getAllAsync(`SELECT COUNT(*) as totalProductos FROM Productos`);
@@ -81,11 +101,11 @@ const [totalProductos,setTotalProductos]=useState(0);
     try {
       const ventasObtenidas = await obtenerVentas();
       let totalHistorico = 0;
-  
+
       for (let venta of ventasObtenidas) {
         totalHistorico += parseFloat(venta.Total) || 0;
       }
-  
+
       setHistoricalSalesAmount(totalHistorico); // Guardar las ganancias totales históricas
     } catch (error) {
       console.error('Error al cargar las ventas históricas:', error);
@@ -135,8 +155,7 @@ const [totalProductos,setTotalProductos]=useState(0);
     <ScrollView style={styles.container}>
       {/* Encabezado de bienvenida con icono de notificación */}
       <View style={styles.headerSection}>
-        <Text style={styles.greetingText}>¡Hola, Usuario!</Text>
-        <Text style={styles.dateText}>{new Date().toLocaleDateString()}</Text>
+        <Text style={styles.greetingText}>¡Hola, {userName}!</Text>
         <TouchableOpacity style={styles.notificationIcon} onPress={() => navigation.navigate('Notificaciones')}>
           <Feather name="bell" size={24} color="#333" />
         </TouchableOpacity>
@@ -146,7 +165,7 @@ const [totalProductos,setTotalProductos]=useState(0);
       <View style={styles.totalEarningsSection}>
         <Text style={styles.totalEarningsLabel}>Ganancias Totales</Text>
         <Text style={styles.totalEarningsValue}>{`S/. ${historicalSalesAmount.toFixed(2)}`}</Text>
-        </View>
+      </View>
 
       {/* Filtro de fecha */}
       <View style={styles.filterSection}>
@@ -164,8 +183,8 @@ const [totalProductos,setTotalProductos]=useState(0);
 
       {/* Sección de métricas */}
       <View style={styles.metricsSection}>
-      <MetricCard title={`Ganancias ${dateFilter}`} value={`S/. ${totalProfits.toFixed(2)}`} color="#5300a9" icon="trending-up" />
-      <MetricCard title="Total Productos" value={totalProductos.toString()} color="#4e059a" icon="box" />
+        <MetricCard title={`Ganancias ${dateFilter}`} value={`S/. ${totalProfits.toFixed(2)}`} color="#5300a9" icon="trending-up" />
+        <MetricCard title="Total Productos" value={totalProductos.toString()} color="#4e059a" icon="box" />
         <MetricCard title="Total Clientes" value={totalClientes.toString()} color="#3c1664" icon="users" />
         <MetricCard title="Producto Más Vendido" value="0" color="#7228be" icon="star" />
       </View>

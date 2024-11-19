@@ -357,7 +357,45 @@ export const obtenerProductoPorId = async (productoId) => {
     throw error;
   }
 };
+export const obtenerCantidadYVerificarStock = async (productoId, limiteStock = 5) => {
+  try {
+      const db = await getDBConnection();
+      const query = `SELECT cantidad, nombre FROM Productos WHERE Producto_id = ?`;
+      const result = await db.getAllAsync(query, [productoId]);
 
+      if (result && result.length > 0) {
+          const producto = result[0]; // Acceder al primer resultado
+          console.log(`Producto (ID ${productoId}):`, producto);
+
+          // Verifica si el stock está por debajo del límite establecido
+          if (producto.cantidad <= limiteStock) {
+              console.log(`⚠️ El stock de "${producto.nombre}" es bajo (${producto.cantidad} unidades).`);
+              await enviarNotificacionStockBajo(producto); // Enviar notificación
+          } else {
+              console.log(`El stock de "${producto.nombre}" es suficiente (${producto.cantidad} unidades).`);
+          }
+
+          return producto;
+      } else {
+          console.log("No se encontró el producto con ID:", productoId);
+          return null;
+      }
+  } catch (error) {
+      console.error("Error al obtener producto:", error);
+      throw error;
+  }
+};
+// Función para enviar notificación de stock bajo
+const enviarNotificacionStockBajo = async (producto) => {
+  await Notifications.scheduleNotificationAsync({
+      content: {
+          title: '⚠️ Stock Bajo',
+          body: `El stock de "${producto.nombre}" es de ${producto.cantidad} unidades.`,
+          data: { productoId: producto.Producto_id }, // Información adicional opcional
+      },
+      trigger: null, // Notificación inmediata
+  });
+};
 // Funciones CRUD para Usuario
 export const createUsuario = async (db, usuario) => {
   try {
@@ -384,6 +422,19 @@ export const createEmpresa = async (db, empresa) => {
     throw error;
   }
 };
+
+export const registrarCliente = async (db,cliente)=>{
+  try {
+    const result = await db.runAsync (
+      'INSERT INTO Cliente (dni, pais, nombre_completo, email, telefono, direccion) VALUES (?, ?, ?, ?, ?, ?)',
+    [cliente.dni, cliente.pais, cliente.nombre_completo, cliente.email,cliente.telefono]
+    );
+    return result;
+  } catch (error) {
+    console.error("Error al registrar el cliente:", error);
+    throw error;
+  }
+}
 
 export const getAllUsuarios = async (db) => {
   try {

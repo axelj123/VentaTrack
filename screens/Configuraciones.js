@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, TextInput, Modal, SafeAreaView, StatusBar } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-
+import { useSQLiteContext } from 'expo-sqlite';
+import ModalImagePicker from '../components/ModalImagePicker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // Paleta de colores moderna en tonos morados
 const COLORS = {
   primary: '#5B21B6',      // Morado principal
@@ -16,16 +18,64 @@ const COLORS = {
   error: '#DC2626',       // Rojo para acciones críticas
 };
 
-const Configuraciones = ({navigation}) => {
+const Configuraciones = ({ navigation }) => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [profileModalVisible, setProfileModalVisible] = useState(false); // Modal para perfil
+  const [companyModalVisible, setCompanyModalVisible] = useState(false); // Modal para empresa
+  const [selectedImage, setSelectedImage] = useState(null); // Imagen del perfil
+  const [selectCompanyImage, setSelectCompanyImage] = useState(null); // Imagen de la empresa
   
-  const [profileData, setProfileData] = useState({
-    name: 'Melina Erika Muñoz Silva',
-    email: 'axeljhosmell13@gmail.com',
-    profileImage: 'https://www.elitesingles.co.uk/wp-content/uploads/sites/59/2019/11/2b_en_articleslide_sm2-350x264.jpg'
-  });
+  const db = useSQLiteContext();
+
+  const saveImageToStorage = async (key, value) => {
+    try {
+      await AsyncStorage.setItem(key, value);
+    } catch (error) {
+      console.error('Error guardando la imagen:', error);
+    }
+  };
+const loadImageFromStorage = async (key, setImage) => {
+  try {
+    const savedImage = await AsyncStorage.getItem(key);
+    if (savedImage) {
+      setImage(savedImage); // Actualiza el estado con la imagen cargada
+    }
+  } catch (error) {
+    console.error('Error cargando la imagen:', error);
+  }
+};
+
+  const fetchUserName = async () => {
+    try {
+      const result = await db.getAllAsync(`SELECT nombre_completo, email FROM Usuario LIMIT 1`); // Ajusta esta consulta según tu lógica de autenticación
+      if (result && result.length > 0) {
+        const fullName = result[0]?.nombre_completo || "Usuario";
+        const mail = result[0]?.email || "email";
+        // Obtener solo las dos primeras palabras del nombre
+        const firstTwoWords = fullName.split(" ").slice(0, 2).join(" ");
+        setName(firstTwoWords);
+        setEmail(mail);
+
+      } else {
+        setName("Usuario");
+      }
+    } catch (error) {
+      console.error("Error al obtener el nombre del usuario:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserName(); // Carga el nombre del usuario desde la base de datos
+    loadImageFromStorage('profileImage', setSelectedImage);
+    loadImageFromStorage('companyImage', setSelectCompanyImage);
+  }, []);
+
+
+
 
   const [companyData, setCompanyData] = useState({
     name: 'Empresa Peruana',
@@ -36,7 +86,7 @@ const Configuraciones = ({navigation}) => {
   });
 
   const MenuItem = ({ icon, title, subtitle, onPress }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.menuItem}
       onPress={onPress}
     >
@@ -63,24 +113,35 @@ const Configuraciones = ({navigation}) => {
           </TouchableOpacity>
         </View>
       </View>
-      
+
       {/* Profile Preview in Header */}
       <View style={styles.profilePreview}>
-        <View style={styles.profileImageWrapper}>
-          <Image
-            source={{ uri: profileData.profileImage }}
-            style={styles.headerProfileImage}
-          />
-          <TouchableOpacity 
-            style={styles.editProfileBadge}
-            onPress={() => setIsEditingProfile(true)}
-          >
-            <FontAwesome name="camera" size={12} color={COLORS.surface} />
-          </TouchableOpacity>
-        </View>
+      <View style={styles.profileImageWrapper}>
+  <Image
+    source={selectedImage ? { uri: selectedImage } : { uri: 'https://via.placeholder.com/150' }}
+    style={styles.headerProfileImage}
+    resizeMode="contain"
+  />
+  <TouchableOpacity
+    style={styles.editProfileBadge}
+    onPress={() => setProfileModalVisible(true)} // Controla el modal de perfil
+  >
+    <FontAwesome name="camera" size={16} color={COLORS.surface} />
+  </TouchableOpacity>
+  <ModalImagePicker
+  modalVisible={profileModalVisible}
+  setModalVisible={setProfileModalVisible}
+  setSelectedImage={(image) => {
+    setSelectedImage(image); // Actualiza el estado de la imagen del perfil
+    saveImageToStorage('profileImage', image); // Guarda en AsyncStorage
+  }}
+/>
+</View>
+
+     
         <View style={styles.profilePreviewInfo}>
-          <Text style={styles.profilePreviewName}>{profileData.name}</Text>
-          <Text style={styles.profilePreviewEmail}>{profileData.email}</Text>
+          <Text style={styles.profilePreviewName}>{name}</Text>
+          <Text style={styles.profilePreviewEmail}>{email}</Text>
         </View>
       </View>
     </View>
@@ -89,50 +150,65 @@ const Configuraciones = ({navigation}) => {
   return (
     <View style={styles.container}>
       <Header />
-      
+
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Company Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Datos de la Empresa</Text>
-            <TouchableOpacity 
-              style={styles.editButton} 
+            <TouchableOpacity
+              style={styles.editButton}
               onPress={() => setIsEditingCompany(true)}
             >
               <FontAwesome name="edit" size={16} color={COLORS.surface} />
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.companyContent}>
-            <View style={styles.companyLogoContainer}>
-              <Image
-                source={{ uri: companyData.logo }}
-                style={styles.companyLogo}
-              />
-              <View style={styles.companyLogoOverlay}>
-                <TouchableOpacity onPress={() => pickImage('company')}>
-                  <FontAwesome name="camera" size={16} color={COLORS.surface} />
-                </TouchableOpacity>
-              </View>
-            </View>
-            
-            <MenuItem 
-              icon="building" 
+          <View style={styles.companyLogoContainer}>
+  <Image
+    source={
+      selectCompanyImage
+        ? { uri: selectCompanyImage } // Imagen seleccionada de la empresa
+        : { uri: companyData.logo }  // Logo predeterminado de la empresa
+    }
+    style={styles.companyLogo}
+    resizeMode="contain"
+  />
+  <TouchableOpacity
+    style={styles.companyLogoOverlay}
+    onPress={() => setCompanyModalVisible(true)} // Controla el modal de empresa
+  >
+    <FontAwesome name="camera" size={16} color={COLORS.surface} />
+  </TouchableOpacity>
+  <ModalImagePicker
+          modalVisible={companyModalVisible}
+          setModalVisible={setCompanyModalVisible}
+          setSelectedImage={(image) => {
+            setSelectCompanyImage(image);
+            saveImageToStorage('companyImage', image);
+          }}
+        />
+</View>
+
+
+            <MenuItem
+              icon="building"
               title={companyData.name}
               subtitle="Nombre de la empresa"
             />
-            <MenuItem 
-              icon="id-card" 
+            <MenuItem
+              icon="id-card"
               title={companyData.ruc}
               subtitle="RUC"
             />
-            <MenuItem 
-              icon="map-marker" 
+            <MenuItem
+              icon="map-marker"
               title={companyData.location}
               subtitle="Ubicación"
             />
-            <MenuItem 
-              icon="phone" 
+            <MenuItem
+              icon="phone"
               title={companyData.phone}
               subtitle="Teléfono"
             />
@@ -142,17 +218,17 @@ const Configuraciones = ({navigation}) => {
         {/* Account Settings */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Configuraciones de Cuenta</Text>
-          <MenuItem 
-            icon="lock" 
+          <MenuItem
+            icon="lock"
             title="Cambiar Contraseña"
             onPress={() => setIsChangingPassword(true)}
           />
-          <MenuItem 
-            icon="shield" 
+          <MenuItem
+            icon="shield"
             title="Privacidad y Seguridad"
           />
-          <MenuItem 
-            icon="gear" 
+          <MenuItem
+            icon="gear"
             title="Preferencias"
           />
         </View>

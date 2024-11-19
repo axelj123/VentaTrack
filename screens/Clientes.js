@@ -2,6 +2,9 @@ import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, SafeArea
 import React, { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import EditClientModal from '../components/EditClientModal';
+import { listClientes } from '../database';
+import { useSQLiteContext } from 'expo-sqlite';
+import { useFocusEffect } from '@react-navigation/native';
 
 const ClienteCard = ({ cliente, onEdit }) => (
   <TouchableOpacity 
@@ -38,86 +41,40 @@ const ClienteCard = ({ cliente, onEdit }) => (
 );
 
 const Clientes = ({ navigation }) => {
+
   const [searchQuery, setSearchQuery] = useState('');
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
-  
-  // Datos de ejemplo
-  const [clientesEjemplo, setClientesEjemplo] = useState([
-    {
-      id: '1',
-      dni: '12345678',
-      nombre: 'Juan Pérez',
-      email: 'juan@email.com',
-      telefono: '+51 987 654 321',
-      direccion: 'Av. Principal 123',
-      country: {
-        flag: '🇵🇪',
-        callingCode: '+51'
-      }
-    },
-    {
-      id: '2',
-      dni: '87654321',
-      nombre: 'María García',
-      email: 'maria@email.com',
-      telefono: '+51 923 456 789',
-      direccion: 'Jr. Secundario 456',
-      country: {
-        flag: '🇵🇪',
-        callingCode: '+51'
-      }
-    },
-    {
-      id: '3',
-      dni: '87654321',
-      nombre: 'María García',
-      email: 'maria@email.com',
-      telefono: '+51 923 456 789',
-      direccion: 'Jr. Secundario 456',
-      country: {
-        flag: '🇵🇪',
-        callingCode: '+51'
-      }
-    },
-    {
-      id: '4',
-      dni: '87654321',
-      nombre: 'María García',
-      email: 'maria@email.com',
-      telefono: '+51 923 456 789',
-      direccion: 'Jr. Secundario 456',
-      country: {
-        flag: '🇵🇪',
-        callingCode: '+51'
-      }
-    },
-    {
-      id: '5',
-      dni: '87654321',
-      nombre: 'María García',
-      email: 'maria@email.com',
-      telefono: '+51 923 456 789',
-      direccion: 'Jr. Secundario 456',
-      country: {
-        flag: '🇵🇪',
-        callingCode: '+51'
-      }
-    },
-    {
-      id: '6',
-      dni: '87654321',
-      nombre: 'María García',
-      email: 'maria@email.com',
-      telefono: '+51 923 456 789',
-      direccion: 'Jr. Secundario 456',
-      country: {
-        flag: '🇵🇪',
-        callingCode: '+51'
-      }
-    },
-  ]);
+  const [clientes,setClientes]=useState([]);
 
+  const db= useSQLiteContext();
+  // Datos de ejemplo
+
+  const fetchClientes = async () => {
+    try {
+      const clientesData = await listClientes(db);
+      const sanitizedClientes = clientesData.map(cliente => ({
+        id: cliente.Cliente_id, // Mapeo de Cliente_id a id
+        dni: cliente.dni?.toString() || 'Sin dni', 
+        nombre: cliente.nombre_completo || 'Sin Nombre',
+        email: cliente.email || 'Sin Email',
+        telefono: cliente.telefono?.toString() || 'Sin Teléfono',
+        direccion: cliente.direccion || 'Sin Dirección',
+        pais: cliente.pais || 'Sin País',
+      }));
+      console.log('Clientes obtenidos:', sanitizedClientes);
+      setClientes(sanitizedClientes);
+      
+    } catch (error) {
+      console.error('Error al obtener clientes:', error);
+    }
+  };
+
+useFocusEffect(
+  React.useCallback(() => {
+    fetchClientes();
+  }, [])
+);
   const handleEditCliente = (cliente) => {
     setSelectedClient({
       dni: cliente.dni,
@@ -125,34 +82,20 @@ const Clientes = ({ navigation }) => {
       email: cliente.email,
       phone: cliente.telefono,
       address: cliente.direccion,
-      country: cliente.country
+      country: cliente.pais
     });
+
     setIsEditModalVisible(true);
   };
-  const handleUpdateClient = (updatedClientData) => {
-    // Actualizar el cliente en el array de clientes
-    setClientesEjemplo(prevClientes => 
-      prevClientes.map(cliente => {
-        if (cliente.id === selectedClient.id) {
-          return {
-            ...cliente,
-            dni: updatedClientData.dni,
-            nombre: updatedClientData.name,
-            email: updatedClientData.email,
-            telefono: updatedClientData.phone,
-            direccion: updatedClientData.address,
-            country: updatedClientData.country
-          };
-        }
-        return cliente;
-      })
-    );
-  };
-  const filteredClientes = clientesEjemplo.filter(cliente =>
-    cliente.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    cliente.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    cliente.telefono.includes(searchQuery)
+
+  const filteredClientes = clientes.filter(cliente =>
+    (cliente.nombre?.toLowerCase().includes(searchQuery.toLowerCase()) || '') ||
+    (cliente.dni?.toLowerCase().includes(searchQuery.toLowerCase()) || '') ||
+    (cliente.email?.toLowerCase().includes(searchQuery.toLowerCase()) || '') ||
+    (cliente.telefono?.toString().includes(searchQuery) || '')
   );
+  
+  
 
   return (
     <SafeAreaView style={styles.container}>
@@ -166,7 +109,7 @@ const Clientes = ({ navigation }) => {
           <Ionicons name="search-outline" size={20} color="#666" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Buscar por nombre, email o teléfono..."
+            placeholder="Buscar por nombre, email, dni o teléfono..."
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholderTextColor="#666"
@@ -181,22 +124,21 @@ const Clientes = ({ navigation }) => {
 
       <View style={styles.statsContainer}>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{clientesEjemplo.length}</Text>
+          <Text style={styles.statNumber}>{clientes.length}</Text>
           <Text style={styles.statLabel}>Total Clientes</Text>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>5</Text>
-          <Text style={styles.statLabel}>Nuevos este mes</Text>
-        </View>
+     
       </View>
 
       <FlatList
         data={filteredClientes}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <ClienteCard 
             cliente={item} 
             onEdit={handleEditCliente}
+          
+          
           />
         )}
         contentContainerStyle={styles.listContainer}
@@ -216,7 +158,6 @@ const Clientes = ({ navigation }) => {
           setSelectedClient(null);
         }}
         clientData={selectedClient}
-        onUpdateClient={handleUpdateClient}
       />
     </SafeAreaView>
   );

@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import CountrySelector from './CountrySelector';
-
+import { countries } from './countries';
 const InputField = ({ icon, label, value, onChangeText, placeholder, keyboardType = "default" }) => (
     <View style={styles.inputContainer}>
         <View style={styles.inputContent}>
@@ -35,15 +35,11 @@ const InputField = ({ icon, label, value, onChangeText, placeholder, keyboardTyp
         </View>
     </View>
 );
+const getCountryByName = (name) => countries.find((country) => country.name === name);
 
-const EditClientModal = ({
-    isVisible,
-    onClose,
-    clientData,
-    onUpdateClient,
-}) => {
+const EditClientModal = ({ isVisible, onClose, clientData, onUpdateClient }) => {
     const [dni, setDni] = React.useState(clientData?.dni || '');
-    const [country, setCountry] = React.useState(clientData?.country || null);
+    const [country, setCountry] = React.useState(getCountryByName(clientData?.country) || null);
     const [name, setName] = React.useState(clientData?.name || '');
     const [email, setEmail] = React.useState(clientData?.email || '');
     const [phone, setPhone] = React.useState(clientData?.phone || '');
@@ -52,7 +48,7 @@ const EditClientModal = ({
     React.useEffect(() => {
         if (clientData && isVisible) {
             setDni(clientData.dni || '');
-            setCountry(clientData.country || null);
+            setCountry(getCountryByName(clientData.country) || null); // Aquí convertimos el país al formato correcto
             setName(clientData.name || '');
             setEmail(clientData.email || '');
             setPhone(clientData.phone || '');
@@ -63,7 +59,7 @@ const EditClientModal = ({
     const handleUpdate = () => {
         const updatedClient = {
             dni,
-            country,
+            country: country?.name || null,
             name,
             email,
             phone,
