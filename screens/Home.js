@@ -6,113 +6,244 @@ import { Feather } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useToast } from '../components/ToastContext';
 import { obtenerVentas, obtenerDetallesVenta, obtenerProductoPorId } from '../database';
+import { useFocusEffect } from '@react-navigation/native';
+import ModernBarChart from '../components/ModernBarchart';
 
 const screenWidth = Dimensions.get('window').width;
+
+const formatearFecha = (fecha) => {
+  const date = new Date(fecha);
+  return date.toLocaleDateString('es-ES', { 
+    day: '2-digit',
+    month: 'short'
+  });
+};
+
+const procesarGananciasPorMes = async (ventas, selectedMonth) => {
+  try {
+    if (!Array.isArray(ventas)) {
+      console.error('Las ventas deben ser un array');
+      return {
+        labels: [],
+        datasets: [{ data: [] }]
+      };
+    }
+
+    // Filtrar ventas del mes seleccionado
+    const ventasDelMes = ventas.filter(venta => {
+      const fechaVenta = new Date(venta.Fecha_venta);
+      return fechaVenta.getMonth() + 1 === selectedMonth;
+    });
+
+    // Obtener el año actual
+    const año = new Date().getFullYear();
+
+    // Crear estructura para acumular ganancias por día
+    const gananciasPorDia = {};
+    const ultimoDiaMes = new Date(año, selectedMonth, 0).getDate();
+    for (let dia = 1; dia <= ultimoDiaMes; dia++) {
+      const fecha = new Date(año, selectedMonth - 1, dia);
+      gananciasPorDia[formatearFecha(fecha)] = 0;
+    }
+
+    // Calcular las ganancias para cada día
+    for (const venta of ventasDelMes) {
+      const detallesVenta = await obtenerDetallesVenta(venta.Venta_id);
+
+      let gananciasVenta = 0;
+      for (const detalle of detallesVenta) {
+        const producto = await obtenerProductoPorId(detalle.Producto_id);
+        const precioCompra = parseFloat(producto.precio_compra) || 0;
+        const precioVenta = parseFloat(detalle.precio_unitario) || 0;
+        const cantidad = parseInt(detalle.cantidad) || 0;
+
+        // Calcular ganancia para cada producto
+        gananciasVenta += (precioVenta - precioCompra) * cantidad;
+      }
+
+      // Sumar ganancias al día correspondiente
+      const fechaFormateada = formatearFecha(venta.Fecha_venta);
+      gananciasPorDia[fechaFormateada] = (gananciasPorDia[fechaFormateada] || 0) + gananciasVenta;
+    }
+
+    return {
+      labels: Object.keys(gananciasPorDia),
+      datasets: [{
+        data: Object.values(gananciasPorDia).map(valor => Number(valor.toFixed(2)))
+      }]
+    };
+  } catch (error) {
+    console.error('Error al procesar ganancias por mes:', error);
+    return {
+      labels: [],
+      datasets: [{ data: [] }]
+    };
+  }
+};
+
+
+const procesarGananciasPorDia = async (ventas) => {
+  try {
+    if (!Array.isArray(ventas)) {
+      return {
+        labels: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
+        datasets: [{ data: [0, 0, 0, 0, 0, 0, 0] }]
+      };
+    }
+
+    const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+    const gananciasPorDia = new Array(7).fill(0);
+
+    for (const venta of ventas) {
+      const fechaVenta = new Date(venta.Fecha_venta);
+      const dia = fechaVenta.getDay();
+
+      const detallesVenta = await obtenerDetallesVenta(venta.Venta_id);
+      for (const detalle of detallesVenta) {
+        const producto = await obtenerProductoPorId(detalle.Producto_id);
+        const precioCompra = parseFloat(producto.precio_compra) || 0;
+        const precioVenta = parseFloat(detalle.precio_unitario) || 0;
+        const cantidad = parseInt(detalle.cantidad) || 0;
+
+        // Calcular ganancia para cada producto y sumarla al día correspondiente
+        gananciasPorDia[dia] += (precioVenta - precioCompra) * cantidad;
+      }
+    }
+
+    return {
+      labels: diasSemana,
+      datasets: [{
+        data: gananciasPorDia.map(valor => Number(valor.toFixed(2)))
+      }]
+    };
+  } catch (error) {
+    console.error('Error al procesar ganancias por día:', error);
+    return {
+      labels: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
+      datasets: [{ data: [0, 0, 0, 0, 0, 0, 0] }]
+    };
+  }
+};
+
 
 const Home = ({ navigation }) => {
   const [dateFilter, setDateFilter] = useState("Hoy");
   const [totalClientes, setTotalClientes] = useState(0);
   const [totalSalesAmount, setTotalSalesAmount] = useState(0);
-  const [historicalSalesAmount, setHistoricalSalesAmount] = useState(0); // Total histórico
+  const [historicalSalesAmount, setHistoricalSalesAmount] = useState(0);
   const [totalProductos, setTotalProductos] = useState(0);
   const [totalProfits, setTotalProfits] = useState(0);
-  const [userName,setUserName]=useState("");
+  const [userName, setUserName] = useState("");
+  const [chartFilter, setChartFilter] = useState('Semanal');
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+
+
+  const [datosGrafica, setDatosGrafica] = useState({
+    labels: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+    datasets: [{ data: [0, 0, 0, 0, 0, 0, 0] }]
+  });
+
   const db = useSQLiteContext();
   const { showToast } = useToast();
 
-  const chartConfig = {
-    backgroundGradientFrom: "#f5f5f5",
-    backgroundGradientTo: "#f5f5f5",
-    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-    barPercentage: 0.5,
-  };
-
   useEffect(() => {
     fetchUserName();
-    fetchProductos();
-    cargarVentasHistoricas();
     fetchClientes();
-    cargarVentas(dateFilter); // Cargar ventas según el filtro inicial
+    cargarVentasHistoricas();
+    fetchProductos();
+    cargarVentas(dateFilter);
   }, [dateFilter]);
+
+  useEffect(() => {
+    obtenerDatosGrafica();
+  }, [chartFilter, selectedMonth]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      cargarVentas(dateFilter);
+      fetchClientes();
+      fetchProductos();
+      obtenerDatosGrafica
+    }, [dateFilter])
+  );
+
+  const obtenerDatosGrafica = async () => {
+    try {
+      const ventasObtenidas = await obtenerVentas();
+  
+      if (chartFilter === 'Semanal') {
+        const datosSemanales = await procesarGananciasPorDia(ventasObtenidas);
+        setDatosGrafica(datosSemanales);
+      } else {
+        const datosMensuales = await procesarGananciasPorMes(ventasObtenidas, selectedMonth);
+        setDatosGrafica(datosMensuales);
+      }
+    } catch (error) {
+      console.error('Error al obtener datos para la gráfica:', error);
+      showToast('Error al cargar datos de la gráfica', 'error');
+    }
+  };
+  
 
   const fetchClientes = async () => {
     try {
       const result = await db.getAllAsync(`SELECT COUNT(*) as totalClientes FROM Cliente`);
-      if (result && result.length > 0) {
-        const totalClientes = result[0]?.totalClientes || 0;
-        setTotalClientes(totalClientes);
-      } else {
-        setTotalClientes(0);
-      }
+      setTotalClientes(result?.[0]?.totalClientes || 0);
     } catch (error) {
       console.error("Error al obtener clientes:", error);
+      showToast('Error al obtener clientes', 'error');
     }
   };
 
   const fetchUserName = async () => {
     try {
-      const result = await db.getAllAsync(`SELECT nombre_completo FROM Usuario LIMIT 1`); // Ajusta esta consulta según tu lógica de autenticación
-      if (result && result.length > 0) {
-        const fullName = result[0]?.nombre_completo || "Usuario";
-        // Obtener solo las dos primeras palabras del nombre
-        const firstTwoWords = fullName.split(" ").slice(0, 2).join(" ");
-        setUserName(firstTwoWords);
-
-      } else {
-        setUserName("Usuario");
-      }
+      const result = await db.getAllAsync(`SELECT nombre_completo FROM Usuario LIMIT 1`);
+      const fullName = result?.[0]?.nombre_completo || "Usuario";
+      const firstTwoWords = fullName.split(" ").slice(0, 2).join(" ");
+      setUserName(firstTwoWords);
     } catch (error) {
       console.error("Error al obtener el nombre del usuario:", error);
+      setUserName("Usuario");
     }
   };
 
   const fetchProductos = async () => {
     try {
       const result = await db.getAllAsync(`SELECT COUNT(*) as totalProductos FROM Productos`);
-      if (result && result.length > 0) {
-        const totalProductos = result[0]?.totalProductos || 0;
-        setTotalProductos(totalProductos);
-      } else {
-        setTotalProductos(0);
-      }
+      setTotalProductos(result?.[0]?.totalProductos || 0);
     } catch (error) {
-      console.error("Error al obtener clientes:", error);
+      console.error("Error al obtener productos:", error);
+      showToast('Error al obtener productos', 'error');
     }
   };
+
   const calcularFechaInicio = (intervalo) => {
     const hoy = new Date();
     switch (intervalo) {
       case 'Hoy':
         return new Date(hoy.setHours(0, 0, 0, 0));
       case 'Este Mes':
-        const inicioMes = new Date(hoy);
-        inicioMes.setDate(hoy.getDate() - 30);
-        return inicioMes;
+        return new Date(hoy.getFullYear(), hoy.getMonth(), 1);
       case 'Último Año':
-        const inicioAno = new Date(hoy);
-        inicioAno.setFullYear(hoy.getFullYear() - 1);
-        return inicioAno;
+        return new Date(hoy.getFullYear() - 1, hoy.getMonth(), hoy.getDate());
       default:
         return new Date(hoy.setHours(0, 0, 0, 0));
     }
   };
+
   const cargarVentasHistoricas = async () => {
     try {
       const ventasObtenidas = await obtenerVentas();
-      let totalHistorico = 0;
-
-      for (let venta of ventasObtenidas) {
-        totalHistorico += parseFloat(venta.Total) || 0;
-      }
-
-      setHistoricalSalesAmount(totalHistorico); // Guardar las ganancias totales históricas
+      const totalHistorico = ventasObtenidas.reduce((total, venta) => 
+        total + (parseFloat(venta.Total) || 0), 0);
+      setHistoricalSalesAmount(totalHistorico);
     } catch (error) {
       console.error('Error al cargar las ventas históricas:', error);
       showToast('Error al cargar las ganancias históricas', 'error');
     }
   };
-  const cargarVentas = async (filtro) => {
+
+  const cargarVentas = async (filtro = dateFilter) => {
     try {
       const ventasObtenidas = await obtenerVentas();
       const fechaInicio = calcularFechaInicio(filtro);
@@ -126,22 +257,19 @@ const Home = ({ navigation }) => {
       let totalVentas = 0;
       let totalGanancias = 0;
 
-      for (let venta of ventasFiltradas) {
+      for (const venta of ventasFiltradas) {
         const detallesVenta = await obtenerDetallesVenta(venta.Venta_id);
-        let gananciaVenta = 0;
-
-        for (let detalle of detallesVenta) {
+        
+        for (const detalle of detallesVenta) {
           const producto = await obtenerProductoPorId(detalle.Producto_id);
           const precioCompra = parseFloat(producto.precio_compra) || 0;
           const precioVenta = parseFloat(detalle.precio_unitario) || 0;
           const cantidad = parseInt(detalle.cantidad) || 0;
 
-          const gananciaProducto = (precioVenta - precioCompra) * cantidad;
-          gananciaVenta += gananciaProducto;
+          totalGanancias += (precioVenta - precioCompra) * cantidad;
         }
 
         totalVentas += parseFloat(venta.Total) || 0;
-        totalGanancias += gananciaVenta;
       }
 
       setTotalSalesAmount(totalVentas);
@@ -151,6 +279,7 @@ const Home = ({ navigation }) => {
       showToast('Error al cargar las ventas', 'error');
     }
   };
+  
   return (
     <ScrollView style={styles.container}>
       {/* Encabezado de bienvenida con icono de notificación */}
@@ -164,7 +293,7 @@ const Home = ({ navigation }) => {
       {/* Sección de Ganancias Totales */}
       <View style={styles.totalEarningsSection}>
         <Text style={styles.totalEarningsLabel}>Ganancias Totales</Text>
-        <Text style={styles.totalEarningsValue}>{`S/. ${historicalSalesAmount.toFixed(2)}`}</Text>
+        <Text style={styles.totalEarningsValue}>{`S/. ${totalProfits}`}</Text>
       </View>
 
       {/* Filtro de fecha */}
@@ -199,17 +328,13 @@ const Home = ({ navigation }) => {
       </View>
 
       {/* Gráfico de barras de ganancias por día */}
-      <Text style={styles.chartTitle}>Estadísticas de Ganancias</Text>
-      <BarChart
-        data={{
-          labels: ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"],
-          datasets: [{ data: [200, 500, 300, 800, 1200, 600, 1000] }]
-        }}
-        width={screenWidth - 40}
-        height={220}
-        chartConfig={chartConfig}
-        style={styles.chartStyle}
-        yAxisSuffix=" S/."
+        <Text style={styles.chartTitle}>Estadísticas de Ganancias</Text>
+        <ModernBarChart 
+        ventas={datosGrafica}
+        chartFilter={chartFilter}
+        selectedMonth={selectedMonth}
+        onFilterChange={setChartFilter}
+        onMonthChange={setSelectedMonth}
       />
     </ScrollView>
   );
@@ -235,7 +360,7 @@ const NavButton = ({ title, icon, color, onPress }) => (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#f5f5f5',
     padding: 20,
   },
   headerSection: {
@@ -354,16 +479,26 @@ const styles = StyleSheet.create({
     marginTop: 5,
     textAlign: 'center',
   },
-  chartTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginTop: 30,
-    marginBottom: 15,
+  chartContainer: {
+    marginTop: 24,
+    paddingHorizontal: 4,
   },
-  chartStyle: {
-    marginVertical: 20,
-    borderRadius: 10,
+  chartTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 20,
+    paddingHorizontal: 12,
+  },
+  chartCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+
+  },
+  chart: {
+    marginVertical: 8,
+    borderRadius: 16,
   },
 });
 

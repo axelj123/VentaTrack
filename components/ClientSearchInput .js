@@ -2,19 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, FlatList, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { getDBConnection } from '../database';
-import CountrySelector from './CountrySelector';
-import NewClientModal from './NewClientModal';
 import { useToast } from './ToastContext';
 import { useNavigation } from '@react-navigation/native';
-
+import { useSQLiteContext } from 'expo-sqlite';
+import eventEmitter from './eventEmitter';
 const ClientSearchInput = ({ onClientSelect, style }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [clients, setClients] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const navigation = useNavigation(); // Hook de navegación
 
-  const { showToast } = useToast(); // Usamos el hook para acceder al showToast
-  // Estados para los campos del nuevo cliente
+  const db=useSQLiteContext();
+  const { showToast } = useToast();
+
   const [newClientDNI, setNewClientDNI] = useState('');
   const [newClientCountry, setNewClientCountry] = useState('');
   const [newClientName, setNewClientName] = useState('');
@@ -33,7 +33,6 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
 
   const fetchClients = async (dni) => {
     try {
-      const db = await getDBConnection();
       const result = await db.getAllAsync(
         'SELECT * FROM Cliente WHERE dni LIKE ?',
         [`%${dni}%`]
@@ -59,11 +58,30 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
     setClients([]);
   };
 
-
   const handleAddNewClient = () => {
-    navigation.navigate('NuevoCliente', { dni: searchTerm });
-
+    navigation.navigate('NuevoCliente', {
+        dni: searchTerm, // Solo pasa el DNI
+    });
+};
+useEffect(() => {
+  const handleClientAdded = (newClient) => {
+    if (!newClient.Cliente_id) {
+      console.error("El cliente agregado no tiene un Cliente_id:", newClient);
+      return;
+    }
+    setSelectedClient(newClient); // Actualiza el cliente seleccionado
+    setSearchTerm(newClient.dni.toString()); // Muestra el DNI del cliente en el campo
+    onClientSelect(newClient); // Notifica al componente padre
   };
+
+  eventEmitter.on('clientAdded', handleClientAdded); // Suscribirse al evento
+
+  return () => {
+    eventEmitter.off('clientAdded', handleClientAdded); // Limpieza al desmontar
+  };
+}, [onClientSelect]);
+
+
   return (
     <View style={[styles.container, style]}>
       <View style={styles.searchContainer}>

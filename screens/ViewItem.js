@@ -61,6 +61,8 @@ function ViewItem({ route }) {
 
       if (success) {
         showToast('¡Operación exitosa!', 'Se ha guardado correctamente', 'success');
+        navigation.goBack(); // Regresa a la pantalla anterior
+
       } else {
         showToast('¡Error!', 'Hubo un problema al guardar los cambios', 'warning');
 

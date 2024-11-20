@@ -70,7 +70,7 @@ const CustomDatePicker = ({
   const labelStyle = {
     left: 10,
     paddingHorizontal: 5,
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
     top: labelPosition.interpolate({
       inputRange: [0, 1],
       outputRange: [14, -8],
@@ -89,6 +89,7 @@ const CustomDatePicker = ({
           styles.innerContainer,
           {
             borderColor: error ? 'red' : (isFocused ? focusedBorderColor : unfocusedBorderColor),
+            backgroundColor: 'white',
           },
         ]}
       >

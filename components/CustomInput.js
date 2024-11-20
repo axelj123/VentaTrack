@@ -64,7 +64,7 @@ const CustomInput = ({
   const labelStyle = {
     left: 10,
     paddingHorizontal: 5,
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
     top: labelPosition.interpolate({
       inputRange: [0, 1],
       outputRange: [isTextArea ? 12 : 12, -10],
@@ -84,6 +84,7 @@ const CustomInput = ({
           isTextArea && styles.textAreaContainer,
           {
             borderColor: showError ? 'red' : (isFocused ? focusedBorderColor : unfocusedBorderColor),
+            backgroundColor: 'white',
           },
         ]}
       >

@@ -1,7 +1,6 @@
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, SafeAreaView } from 'react-native';
 import React, { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import EditClientModal from '../components/EditClientModal';
 import { listClientes } from '../database';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useFocusEffect } from '@react-navigation/native';
@@ -41,7 +40,6 @@ const ClienteCard = ({ cliente, onEdit }) => (
 );
 
 const Clientes = ({ navigation }) => {
-
   const [searchQuery, setSearchQuery] = useState('');
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
@@ -62,7 +60,6 @@ const Clientes = ({ navigation }) => {
         direccion: cliente.direccion || 'Sin Dirección',
         pais: cliente.pais || 'Sin País',
       }));
-      console.log('Clientes obtenidos:', sanitizedClientes);
       setClientes(sanitizedClientes);
       
     } catch (error) {
@@ -75,18 +72,10 @@ useFocusEffect(
     fetchClientes();
   }, [])
 );
-  const handleEditCliente = (cliente) => {
-    setSelectedClient({
-      dni: cliente.dni,
-      name: cliente.nombre,
-      email: cliente.email,
-      phone: cliente.telefono,
-      address: cliente.direccion,
-      country: cliente.pais
-    });
-
-    setIsEditModalVisible(true);
-  };
+const handleEditCliente = (cliente) => {
+  // Navigate to EditClientScreen and pass the client data
+  navigation.navigate('EditClientScreen', { cliente });
+};
 
   const filteredClientes = clientes.filter(cliente =>
     (cliente.nombre?.toLowerCase().includes(searchQuery.toLowerCase()) || '') ||
@@ -151,14 +140,7 @@ useFocusEffect(
       >
         <Ionicons name="add" size={24} color="white" />
       </TouchableOpacity>
-      <EditClientModal
-        isVisible={isEditModalVisible}
-        onClose={() => {
-          setIsEditModalVisible(false);
-          setSelectedClient(null);
-        }}
-        clientData={selectedClient}
-      />
+    
     </SafeAreaView>
   );
 };
@@ -166,7 +148,7 @@ useFocusEffect(
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FF',
+    backgroundColor: '#FFF',
   },
   headerContainer: {
     padding: 20,

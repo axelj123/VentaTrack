@@ -15,7 +15,6 @@ const getDatabasePath = () => {
 export const getDBConnection = async () => {
   try {
     const db = await SQLite.openDatabaseAsync(DATABASE_NAME);
-    console.log('Conexión a la base de datos establecida.');
     return db;
   } catch (error) {
     console.error('Error al conectar con la base de datos:', error);
@@ -197,6 +196,48 @@ const insertarDatosIniciales = async (db) => {
   }
 };
 
+export const handleSaveCliente = async (db, formData, Cliente_id) => {
+  try {
+    console.log("Guardando cliente con los siguientes datos:", {
+      formData,
+      Cliente_id
+    });
+
+    // Realizar la actualización en la base de datos
+    const result = await db.runAsync(
+      `UPDATE Cliente SET 
+        dni = ?, 
+        pais = ?, 
+        nombre_completo = ?, 
+        email = ?, 
+        telefono = ?, 
+        direccion = ? 
+      WHERE Cliente_id = ?`,
+      [
+        parseInt(formData.dni),
+        formData.pais,
+        formData.nombre_completo,
+        formData.email,
+        parseInt(formData.telefono),
+        formData.direccion,
+        Cliente_id
+      ]
+    );
+
+    console.log("Resultado de la actualización:", result);
+
+    if (result.changes === 0) {
+      console.log("No se encontró el cliente con el id especificado");
+      return false;
+    }
+
+    console.log("Cliente guardado con éxito");
+    return true;
+  } catch (error) {
+    console.error("Error al guardar el cliente:", error);
+    return false;
+  }
+};
 
 
 export const handleSave = async (db,formData, selectedImage, Producto_id, currentImage) => {
@@ -262,6 +303,7 @@ export const handleSave = async (db,formData, selectedImage, Producto_id, curren
     return false;
   }
 };
+
 export const eliminarProducto = async (db,Producto_id) => {
   try {
 
@@ -302,7 +344,6 @@ export const obtenerDetallesVenta = async (ventaId) => {
 
     if (result && result.length > 0) {
       const detallesVenta = result.map((row) => row); // Acceder a los resultados
-      console.log(`Detalles de venta (ID ${ventaId}):`, detallesVenta);
       return detallesVenta;
     } else {
       console.log("No se encontraron detalles para la venta ID:", ventaId);
@@ -346,7 +387,6 @@ export const obtenerProductoPorId = async (productoId) => {
 
     if (result && result.length > 0) {
       const producto = result[0]; // Acceder al primer resultado
-      console.log(`Producto (ID ${productoId}):`, producto);
       return producto;
     } else {
       console.log("No se encontró el producto con ID:", productoId);
@@ -365,7 +405,6 @@ export const obtenerCantidadYVerificarStock = async (productoId, limiteStock = 5
 
       if (result && result.length > 0) {
           const producto = result[0]; // Acceder al primer resultado
-          console.log(`Producto (ID ${productoId}):`, producto);
 
           // Verifica si el stock está por debajo del límite establecido
           if (producto.cantidad <= limiteStock) {
@@ -423,18 +462,25 @@ export const createEmpresa = async (db, empresa) => {
   }
 };
 
-export const registrarCliente = async (db,cliente)=>{
+export const registrarCliente = async (db, cliente) => {
   try {
-    const result = await db.runAsync (
-      'INSERT INTO Cliente (dni, pais, nombre_completo, email, telefono, direccion) VALUES (?, ?, ?, ?, ?, ?)',
-    [cliente.dni, cliente.pais, cliente.nombre_completo, cliente.email,cliente.telefono]
-    );
-    return result;
-  } catch (error) {
-    console.error("Error al registrar el cliente:", error);
-    throw error;
-  }
+      const result = await db.runAsync(
+          `INSERT INTO Cliente (dni, nombre_completo, pais, email, telefono, direccion)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          [cliente.dni, cliente.nombre_completo, cliente.pais, cliente.email, cliente.telefono, cliente.direccion]
+      );
+ // Asegúrate de obtener el ID del cliente recién creado
+ if (result.lastInsertRowId) {
+  return result.lastInsertRowId; // Devuelve el ID del cliente
+} else {
+  throw new Error("No se pudo obtener el ID del cliente recién creado.");
 }
+  } catch (error) {
+      console.error("Error al registrar el cliente:", error);
+      throw error;
+  }
+};
+
 
 export const getAllUsuarios = async (db) => {
   try {
@@ -495,7 +541,6 @@ export const obtenerVentas = async () => {
        JOIN Tipo_Venta t ON v.tipoVenta_id = t.tipoVenta_id
        JOIN Courier co ON v.Courier_id = co.Courier_id`
     );
-    console.log("Ventas obtenidas sin detalles:", ventas);
 
     // Obtener los detalles de cada venta
     for (let venta of ventas) {
@@ -528,7 +573,6 @@ export const listaProducto = async (db) => {
 export const listClientes = async (db) => {
   try {
     const result = await db.getAllAsync(`SELECT * FROM Cliente`)
-    console.log("Clientes obtenidos", result);
     return result;
   } catch (error) {
     console.error("Error al obtener clientes:", error);
@@ -602,6 +646,7 @@ export const registrarVenta = async (db, ventaData, detallesVenta) => {
     return false; // Indicar fallo
   }
 };
+
 
 
 

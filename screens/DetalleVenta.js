@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Modal, Button } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import CustomInput from '../components/CustomInput';
@@ -11,6 +11,8 @@ import ClientSearchInput from '../components/ClientSearchInput ';
 import { useToast } from '../components/ToastContext'; // Importar el contexto
 import VentaFooter from '../components/VentaFooter';
 import { useSQLiteContext } from 'expo-sqlite';
+import { generarBoleta } from '../components/GenerarBoleta';
+import { useFocusEffect } from '@react-navigation/native';
 const DetalleVenta = ({ navigation }) => {
     const { showToast } = useToast(); // Usamos el hook para acceder al showToast
     const { cartItems, removeFromCart, updateQuantity } = useCart();  // Obtener cartItems y removeFromCart
@@ -25,6 +27,10 @@ const DetalleVenta = ({ navigation }) => {
     const [courierItems, setCourierItems] = useState([]);
     const [tipoItems, setTipoItems] = useState([]);
     const [descuento, setDescuento] = useState('');
+
+    const [showBoletaModal, setShowBoletaModal] = useState(false);
+    const [ventaActual, setVentaActual] = useState(null);
+    const [detallesVentaActual, setDetallesVentaActual] = useState([]);
 
     const db=useSQLiteContext();
 
@@ -71,7 +77,14 @@ const DetalleVenta = ({ navigation }) => {
         }
         return true;
     };
-    
+      // Redirigir si el carrito está vacío al enfocar la pantalla
+  useFocusEffect(
+    React.useCallback(() => {
+      if (cartItems.length === 0) {
+        navigation.navigate('VentaProducto'); // Redirige automáticamente
+      }
+    }, [cartItems, navigation])
+  );
     useEffect(() => {
         // Calcular subtotal del carrito
         const subtotalAmount = cartItems.reduce(
@@ -111,46 +124,57 @@ const DetalleVenta = ({ navigation }) => {
         setSelectedClient(client); // Asigna el cliente seleccionado
     };
 
-const handleNavigateVenta =() =>{
-    navigation.navigate('Reportes'); // Navegar a la pantalla deseada
 
-}
 
-    const handleRegistrarVenta = async () => {
-        // Validar el descuento antes de registrar la venta
-        if (!validarDescuento()) return;
-    
-        if (!selectedClient || !selectedTipo || !selectedCourier) {
-            showToast('Error', 'Por favor, complete todos los campos.', 'warning');
-            return;
-        }
-    
-        // Datos de la venta
-        const ventaData = {
-            Cliente_id: selectedClient.Cliente_id,
-            Total: total,
-            tipoVenta_id: selectedTipo,
-            Courier_id: selectedCourier,
-            descuento: parseFloat(descuento) || 0
-        };
-    
-        // Detalles de la venta
-        const detallesVenta = cartItems.map(item => ({
-            Producto_id: item.id,
-            cantidad: item.quantity,
-            precio_unitario: item.price,
-            subtotal: item.price * item.quantity
-        }));
-    
-        const success = await registrarVenta(db,ventaData, detallesVenta);
-        if (success) {
-            showToast('Success', 'Venta registrada correctamente', 'success',handleNavigateVenta);
-            cartItems.forEach(item => removeFromCart(item.id));
-            navigation.goBack(); // Regresar a la pantalla anterior
-        } else {
-            showToast('Error', 'Error al registrar la venta', 'error');
-        }
+const handleRegistrarVenta = async () => {
+    if (!validarDescuento()) return;
+  
+    if (!selectedClient || !selectedTipo || !selectedCourier) {
+      showToast('Error', 'Por favor, complete todos los campos.', 'warning');
+      return;
+    }
+  
+    const ventaData = {
+      Cliente_id: selectedClient.Cliente_id,
+      Total: total,
+      tipoVenta_id: selectedTipo,
+      Courier_id: selectedCourier,
+      descuento: parseFloat(descuento) || 0,
     };
+  
+    const detallesVenta = cartItems.map(item => ({
+      Producto_id: item.id,
+      cantidad: item.quantity,
+      precio_unitario: item.price,
+      subtotal: item.price * item.quantity,
+    }));
+  
+    console.log('Datos de la venta:', ventaData);
+    console.log('Detalles de la venta:', detallesVenta);
+  
+    const success = await registrarVenta(db, ventaData, detallesVenta);
+  
+    if (success) {
+  
+      
+      // Solo pasamos los datos necesarios
+      navigation.navigate('VentaExitosa', {
+        total: total,
+        descuento: descuento, // Incluye el descuento
+
+        items: cartItems, // Pasa los ítems vendidos
+        cliente: selectedClient, // Pasa el cliente seleccionado
+        descuento:descuento,
+      });
+
+
+            cartItems.forEach(item => removeFromCart(item.id));
+    } else {
+      showToast('Error', 'Error al registrar la venta.', 'error');
+    }
+  };
+  
+
     return (
         <View style={styles.container}>
             {/* Header */}
@@ -248,15 +272,23 @@ const handleNavigateVenta =() =>{
                 onCancelarVenta={() => navigation.goBack()}
                 onRegistrarVenta={handleRegistrarVenta}
             />
-
+<Modal visible={showBoletaModal} animationType="slide">
+  <View style={styles.modalContent}>
+    <Text style={styles.modalTitle}>¡Venta Registrada!</Text>
+    <Text>La boleta se ha generado correctamente.</Text>
+    <Button title="Ver Boleta" onPress={() => generarBoleta(ventaActual, detallesVentaActual)} />
+    <Button title="Cerrar" onPress={() => setShowBoletaModal(false)} />
+  </View>
+</Modal>
       
         </View>
+        
     );
 };
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F8F9FF',
+        backgroundColor: '#FFF',
     },
     header: {
         flexDirection: 'row',

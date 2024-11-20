@@ -10,7 +10,7 @@ const COLORS = {
   primary: '#5B21B6',      // Morado principal
   secondary: '#7C3AED',    // Morado secundario
   tertiary: '#A78BFA',     // Morado claro
-  background: '#F5F3FF',   // Fondo muy claro morado
+  background: '#f5f5f5',   // Fondo muy claro morado
   surface: '#FFFFFF',      // Blanco para tarjetas
   text: '#1F2937',        // Texto oscuro
   textSecondary: '#6B7280', // Texto secundario

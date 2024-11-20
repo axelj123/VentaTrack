@@ -11,8 +11,9 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import CountrySelector from '../components/CountrySelector';
 import { useToast } from '../components/ToastContext'; // Importar el contexto
-
-
+import { useSQLiteContext } from 'expo-sqlite';
+import { registrarCliente } from '../database';
+import eventEmitter from '../components/eventEmitter';
 const InputField = ({ icon, label, value, onChangeText, placeholder, keyboardType = 'default' }) => (
     <View style={styles.inputContainer}>
         <View style={styles.inputContent}>
@@ -43,35 +44,70 @@ const NuevoCliente = ({ navigation, route }) => {
     const [newClientAddress, setNewClientAddress] = useState('');
     const { showToast } = useToast(); // Usamos el hook para acceder al showToast
 
+    const db=useSQLiteContext();
     useEffect(() => {
         if (route.params?.dni) {
             setNewClientDNI(route.params.dni);
         }
     }, [route.params?.dni]);
 
-    const handleAddNewClient = () => {
-        // Validar que todos los campos estén completos
-        if (!newClientDNI || !newClientName || !newClientCountry ||newClientEmail ||newClientPhone ||newClientAddress) {
-            let missingFields = [];
-    
-            if (!newClientDNI) missingFields.push('DNI');
-            if (!newClientName) missingFields.push('Nombre Completo');
-            if (!newClientCountry) missingFields.push('País');
-            if (!newClientEmail) missingFields.push('Email');
-            if(!newClientPhone)missingFields.push('teléfono');
-            if(!newClientAddress)missingFields.push('Dirección');
-            
-    
-            const missingMessage = `Por favor complete los siguientes campos: ${missingFields.join(', ')}`;
-            showToast('error', missingMessage, 'info');
-            return;
-        }
-    
-        // Continuar con la lógica de guardado si la validación pasa
-        alert(`Cliente guardado: ${newClientName} (${newClientDNI}), País: ${newClientCountry.name}`);
-        navigation.goBack();
+  // Función para registrar el cliente
+const handleRegistrarCliente = async () => {
+    if (!newClientDNI || !newClientName || !newClientCountry || !newClientEmail || !newClientPhone || !newClientAddress) {
+        let missingFields = [];
+
+        if (!newClientDNI) missingFields.push('DNI');
+        if (!newClientName) missingFields.push('Nombre Completo');
+        if (!newClientCountry) missingFields.push('País');
+        if (!newClientEmail) missingFields.push('Email');
+        if (!newClientPhone) missingFields.push('Teléfono');
+        if (!newClientAddress) missingFields.push('Dirección');
+
+        const missingMessage = `Por favor complete los siguientes campos: ${missingFields.join(', ')}`;
+        showToast('Error', missingMessage, 'warning');
+        return;
+    }
+
+    const cliente = {
+        dni: newClientDNI,
+        nombre_completo: newClientName,
+        pais: newClientCountry.name || '',
+        email: newClientEmail,
+        telefono: newClientPhone,
+        direccion: newClientAddress
     };
-    
+
+    try {
+        // Registrar el cliente y obtener el ID generado
+        const clienteId = await registrarCliente(db, cliente);
+        
+        if (clienteId) {
+            cliente.Cliente_id = clienteId; // Asignar el ID al objeto cliente
+            eventEmitter.emit('clientAdded', cliente); // Emitir el cliente con el ID
+
+            console.log("Cliente registrado con ID:", clienteId);
+
+            // Limpia los campos después de registrar
+            setNewClientDNI('');
+            setNewClientName('');
+            setNewClientCountry(null);
+            setNewClientEmail('');
+            setNewClientPhone('');
+            setNewClientAddress('');
+
+            showToast('Éxito', 'Cliente registrado correctamente.', 'success');
+            navigation.goBack(); // Navegar de regreso
+        }
+    } catch (error) {
+        if (error.message.includes('UNIQUE constraint failed')) {
+            showToast('Error', 'El correo ya está registrado. Intente con otro.', 'error');
+        } else {
+            console.error("Error al registrar el cliente:", error);
+            showToast('Error', 'Hubo un problema al registrar el cliente.', 'error');
+        }
+    }
+};
+
 
     return (
         <SafeAreaView style={styles.container}>
@@ -168,7 +204,7 @@ const NuevoCliente = ({ navigation, route }) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={[styles.button, styles.saveButton]}
-                    onPress={handleAddNewClient}
+                    onPress={handleRegistrarCliente}
                 >
                     <Text style={styles.buttonText}>Guardar</Text>
                 </TouchableOpacity>
@@ -179,15 +215,19 @@ const NuevoCliente = ({ navigation, route }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white',
+        backgroundColor: '#FFF',
     },
     header: {
         backgroundColor: '#FFFFFF',
-     
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.05,
         shadowRadius: 1,
-        borderBottomWidth:0.2,
-        borderBottomColor: '#eee',
-        marginTop:30,
+        elevation: 2,
+        marginTop:40,
     },
     headerContent: {
         flexDirection: 'row',
@@ -247,7 +287,6 @@ const styles = StyleSheet.create({
         height: 32,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#F3F4F6',
         borderRadius: 8,
     },
     inputWrapper: {
@@ -297,7 +336,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         padding: 16,
         gap: 12,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#f5f5f5',
         borderTopWidth: 1,
         borderTopColor: '#E5E7EB',
     },

@@ -20,6 +20,9 @@ import Clientes from './screens/Clientes';
 import GetStarted  from './screens/GetStarted';
 import Register from './screens/Register';
 import OnboardingFlow from './screens/OnboardingFlow';
+import EditClientScreen from './components/EditClientScreen';
+import VentaExitosa from './screens/VentaExitosa';
+import TicketView from './screens/TicketView';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -149,6 +152,10 @@ const Navigation = () => {
             <Stack.Screen name="Notificaciones" component={Notificaciones} />
             <Stack.Screen name="NuevoCliente" component={NuevoCliente} />
             <Stack.Screen name="Clientes" component={Clientes} />
+            <Stack.Screen name="EditClientScreen" component={EditClientScreen} />
+            <Stack.Screen name="VentaExitosa" component={VentaExitosa} />
+            <Stack.Screen name="TicketView" component={TicketView} />
+
           </>
         ) : (
           <>
@@ -160,6 +167,11 @@ const Navigation = () => {
             <Stack.Screen name="Notificaciones" component={Notificaciones} />
             <Stack.Screen name="NuevoCliente" component={NuevoCliente} />
             <Stack.Screen name="Clientes" component={Clientes} />
+            <Stack.Screen name="EditClientScreen" component={EditClientScreen} />
+            <Stack.Screen name="VentaExitosa" component={VentaExitosa} />
+            <Stack.Screen name="TicketView" component={TicketView} />
+
+            
           </>
         )}
       </Stack.Navigator>
