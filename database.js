@@ -649,17 +649,12 @@ export const registrarVenta = async (db, ventaData, detallesVenta) => {
 
 export const getCriticalNotifications = async (db) => {
   try {
-    const currentDate = new Date();
-    const nextWeek = new Date();
-    nextWeek.setDate(currentDate.getDate() + 7); // 7 días desde hoy
-    
     const result = await db.getAllAsync(
-      `SELECT p.Producto_id, p.nombre AS product_name, p.cantidad AS stock, p.fecha_vencimiento
+      `SELECT p.Producto_id, p.nombre AS product_name, p.cantidad AS stock
        FROM Productos p
-       WHERE p.cantidad < 7 OR p.fecha_vencimiento BETWEEN ? AND ?`,
-      [currentDate.toISOString().split('T')[0], nextWeek.toISOString().split('T')[0]]
+       WHERE p.cantidad < 7` // Elimina la condición de fecha de vencimiento
     );
-    
+
     return result || [];
   } catch (error) {
     console.error("Error al obtener notificaciones críticas:", error);

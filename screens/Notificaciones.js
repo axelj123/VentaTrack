@@ -3,41 +3,88 @@ import React, { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { getCriticalNotifications } from '../database';
-import { sendLocalNotification } from '../components/NotificationsPush';
+import { registerForPushNotificationsAsync, sendLocalNotification, sendNotificationToBackend } from '../components/NotificationsPush';
+
 const Notificaciones = () => {
   const [notifications, setNotifications] = useState([]);
-  const db = useSQLiteContext();  // Asegúrate de que esto esté correctamente configurado.
+  const db = useSQLiteContext();
+  const [deviceToken, setDeviceToken] = useState(null);
+  const notificationInterval = 5 * 60 * 1000; // 5 minutos
 
-  const fetchNotifications = async () => {
+  const fetchDeviceToken = async () => {
     try {
-      const criticalNotifications = await getCriticalNotifications(db);  // Obtener las notificaciones críticas
-      if (!criticalNotifications || criticalNotifications.length === 0) {
-        console.log('No hay notificaciones críticas.');
-        setNotifications([]); // Asegúrate de manejar el caso donde no haya notificaciones
-        return;
+      const token = await registerForPushNotificationsAsync();
+      if (token) {
+        console.log('Token recibido:', token);
+        setDeviceToken(token);
+      } else {
+        console.log('No se pudo obtener el token de dispositivo');
       }
-
-      // Formatear las notificaciones
-      const formattedNotifications = criticalNotifications.map((notification, index) => ({
-        id: index + 1,
-        title: notification.stock < 5 ? 'Stock Bajo' : 'Producto por Vencer',
-        description: notification.stock < 5 
-          ? `El producto ${notification.product_name} tiene un stock de ${notification.stock} unidades.`
-          : `El producto ${notification.product_name} vence el ${notification.fecha_vencimiento}.`, // Corrección aquí
-        time: 'Ahora', // Actualizar con lógica más precisa si es necesario
-        read: false,
-        type: notification.stock < 5 ? 'inventory' : 'expiration',
-      }));
-      setNotifications(formattedNotifications); // Actualiza el estado con las notificaciones formateadas
     } catch (error) {
-      console.error('Error al cargar notificaciones:', error);
+      console.error('Error al obtener el token:', error);
     }
   };
 
+  const fetchAndSendNotifications = async () => {
+    try {
+      const criticalNotifications = await getCriticalNotifications(db);
 
+      if (!criticalNotifications || criticalNotifications.length === 0) {
+        console.log('No hay notificaciones críticas.');
+        return;
+      }
+
+      const now = new Date();
+
+      // Formatear notificaciones con hora única
+      const formattedNotifications = criticalNotifications.map((notification, index) => ({
+        id: notification.id || index + 1,
+        title: '⚠️ Bajo Stock',
+        description: `El producto ${notification.product_name} tiene un stock de ${notification.stock} unidades.`,
+        read: false,
+        time: `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`, // Hora única inicial
+      }));
+
+      setNotifications(formattedNotifications);
+
+      if (deviceToken) {
+        criticalNotifications.forEach((notification, index) => {
+          setTimeout(() => {
+            const sendTime = new Date(); // Registrar la hora exacta de envío
+
+            sendNotificationToBackend(
+              deviceToken,
+              '⚠️ Bajo Stock',
+              `El producto ${notification.product_name} tiene un stock de ${notification.stock} unidades.`
+            );
+
+            console.log(
+              `Notificación enviada para: ${notification.product_name} a las ${sendTime.getHours()}:${sendTime.getMinutes()}:${sendTime.getSeconds()}`
+            );
+
+            // Actualizar la notificación con la hora exacta
+            setNotifications((prev) =>
+              prev.map((n) =>
+                n.id === notification.id
+                  ? { ...n, time: `${sendTime.getHours()}:${sendTime.getMinutes()}:${sendTime.getSeconds()}` }
+                  : n
+              )
+            );
+          }, index * notificationInterval);
+        });
+      }
+    } catch (error) {
+      console.error('Error al cargar y enviar notificaciones:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDeviceToken();
+    fetchAndSendNotifications();
+  }, []);
 
   const getIconName = (type) => {
-    switch(type) {
+    switch (type) {
       case 'sale':
         return 'cash-outline';
       case 'inventory':
@@ -52,9 +99,6 @@ const Notificaciones = () => {
         return 'notifications-outline';
     }
   };
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
 
   return (
     <View style={styles.container}>
@@ -72,7 +116,7 @@ const Notificaciones = () => {
           <Ionicons name="notifications" size={24} color="#6B21A8" />
           <View style={styles.badge}>
             <Text style={styles.badgeText}>
-              {notifications.filter(n => !n.read).length}
+              {notifications.filter((n) => !n.read).length}
             </Text>
           </View>
         </View>
@@ -86,13 +130,15 @@ const Notificaciones = () => {
             key={notification.id}
             style={[
               styles.notificationItem,
-              !notification.read && styles.unreadNotification
+              !notification.read && styles.unreadNotification,
             ]}
           >
-            <View style={[
-              styles.iconContainer,
-              !notification.read && styles.unreadIconContainer
-            ]}>
+            <View
+              style={[
+                styles.iconContainer,
+                !notification.read && styles.unreadIconContainer,
+              ]}
+            >
               <Ionicons
                 name={getIconName(notification.type)}
                 size={24}
@@ -100,22 +146,20 @@ const Notificaciones = () => {
               />
             </View>
             <View style={styles.notificationContent}>
-              <Text style={[
-                styles.notificationTitle,
-                !notification.read && styles.unreadText
-              ]}>
+              <Text
+                style={[
+                  styles.notificationTitle,
+                  !notification.read && styles.unreadText,
+                ]}
+              >
                 {notification.title}
               </Text>
               <Text style={styles.notificationDescription}>
                 {notification.description}
               </Text>
-              <Text style={styles.notificationTime}>
-                {notification.time}
-              </Text>
+              <Text style={styles.notificationTime}>{notification.time}</Text>
             </View>
-            {!notification.read && (
-              <View style={styles.unreadDot} />
-            )}
+            {!notification.read && <View style={styles.unreadDot} />}
           </TouchableOpacity>
         ))}
       </ScrollView>
