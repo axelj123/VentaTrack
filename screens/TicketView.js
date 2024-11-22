@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { FontAwesome5, Feather } from '@expo/vector-icons';
+import { FontAwesome5, Feather,MaterialCommunityIcons  } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { StatusBar } from 'expo-status-bar';
 import { generarBoleta } from '../components/GenerarBoleta';
+
 const TicketView = ({ route, navigation }) => {
-    const { total, descuento = 0, items = [], clienteId } = route.params;
-    const db = useSQLiteContext();
+  const { total, descuento = 0, items = [], clienteId } = route.params;
+  const db = useSQLiteContext();
 
   const [cliente, setCliente] = useState(null);
   const [productos, setProductos] = useState([]);
@@ -40,44 +41,44 @@ const TicketView = ({ route, navigation }) => {
         setProductos([]);
         return;
       }
-  
+
       // Extraer IDs de los productos
       const ids = productos.map((item) => item.Producto_id);
-  
+
       if (ids.length === 0) {
         setProductos([]);
         return;
       }
-  
+
       // Construir marcadores dinámicos para la consulta SQL
       const placeholders = ids.map(() => '?').join(',');
-  
+
       // Consultar los nombres y precios de los productos
       const result = await db.getAllAsync(
         `SELECT Producto_id, nombre, precio_venta FROM Productos WHERE Producto_id IN (${placeholders})`,
         ids
       );
-  
+
       // Mapear los datos con las cantidades de `items`
       const productosMapeados = productos.map((item) => ({
         ...item,
         nombre: result.find((prod) => prod.Producto_id === item.Producto_id)?.nombre || 'N/A',
         precio_venta: result.find((prod) => prod.Producto_id === item.Producto_id)?.precio_venta || 0,
       }));
-  
+
       setProductos(productosMapeados);
     } catch (error) {
       console.error('Error al obtener nombres de productos:', error);
       setProductos([]);
     }
   };
-  
+
 
   const handleAction = (action) => {
     switch (action) {
       case 'pdf':
         handleGeneratePDF();
-                break;
+        break;
       case 'email':
         // Implementar envío por email
         break;
@@ -96,50 +97,51 @@ const TicketView = ({ route, navigation }) => {
 
     // Preparar el objeto venta con valores por defecto seguros
     const venta = {
-        Cliente_id: cliente?.nombre || 'Consumidor Final',
-        Total: totalNumerico,
-        descuento: descuentoNumerico // Aseguramos que sea número
+      Cliente_id: cliente?.nombre || 'Consumidor Final',
+      Total: totalNumerico,
+      descuento: descuentoNumerico // Aseguramos que sea número
     };
 
     // Preparar los detalles de venta asegurándonos que todos los valores sean números
     const detallesVenta = productos.map(producto => ({
-        cantidad: parseInt(producto.cantidad) || 0,
-        descripcion: producto.nombre || 'Producto sin nombre',
-        precio_unitario: parseFloat(producto.precio_venta) || 0
+      cantidad: parseInt(producto.cantidad) || 0,
+      descripcion: producto.nombre || 'Producto sin nombre',
+      precio_unitario: parseFloat(producto.precio_venta) || 0
     }));
 
     try {
-        // Llamar a la función generarBoleta
-        await generarBoleta(venta, detallesVenta);
+      // Llamar a la función generarBoleta
+      await generarBoleta(venta, detallesVenta);
     } catch (error) {
-        console.error('Error específico al generar la boleta:', error);
-        // Opcionalmente, puedes mostrar un mensaje al usuario
-        Alert.alert(
-            'Error',
-            'No se pudo generar la boleta. Por favor, intente nuevamente.'
-        );
+      console.error('Error específico al generar la boleta:', error);
+      // Opcionalmente, puedes mostrar un mensaje al usuario
+      Alert.alert(
+        'Error',
+        'No se pudo generar la boleta. Por favor, intente nuevamente.'
+      );
     }
-};
+  };
 
   return (
     <View style={styles.container}>
- 
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Feather name="x" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Editar mi recibo</Text>
-        <View style={{ width: 24 }}>
-          <Text> </Text>
-        </View>
+    <View style={styles.header}>
+      <TouchableOpacity onPress={() => navigation.goBack()}>
+        <Feather name="x" size={24} color="#000" />
+      </TouchableOpacity>
+      <Text style={styles.headerTitle}>Editar mi recibo</Text>
+      <View style={{ width: 24 }}>
+        <Text> </Text>
       </View>
-
+    </View>
       {/* Ticket Content */}
       <ScrollView style={styles.ticketContainer}>
         <View style={styles.ticketContent}>
-          <View style={styles.businessInfo}>
-            <Text style={styles.businessName}>Tiendas S.A.C</Text>
-            <Text style={styles.receiptNumber}>RECIBO#1</Text>
+        <View style={styles.businessHeader}>
+            <MaterialCommunityIcons name="cart" size={40} color="#211132" style={styles.logo} />
+            <View style={styles.businessInfoContainer}>
+              <Text style={styles.businessName}>TIENDAS S.A.C</Text>
+              <Text style={styles.receiptNumber}>RECIBO#1</Text>
+            </View>
           </View>
           <Text style={styles.businessAddress}>Mz G LOTE 1 • +51 (910) 241-651</Text>
 
@@ -158,34 +160,34 @@ const TicketView = ({ route, navigation }) => {
           <View style={styles.separator} />
 
           {/* Lista de productos */}
-          <Text style={styles.itemsHeader}>
-            Productos ({productos?.length || 0})
-          </Text>
+          <Text style={styles.itemsHeader}>Productos ({productos?.length || 0})</Text>
           {productos.map((producto, index) => (
             <View style={styles.itemRow} key={index}>
               <Text style={styles.itemQuantity}>{producto.cantidad}x</Text>
               <Text style={styles.itemName}>{producto.nombre || 'Producto sin nombre'}</Text>
-              <Text style={styles.itemPrice}>${producto.precio_venta.toFixed(2)}</Text>
+              <Text style={styles.itemUnitPrice}>${producto.precio_venta.toFixed(2)}</Text>
+              <Text style={styles.itemTotalPrice}>${(producto.cantidad * producto.precio_venta).toFixed(2)}</Text>
             </View>
-          ))}
+          ))} 
 
           <View style={styles.separator} />
 
           {/* Totales */}
           <View style={styles.totalsSection}>
-  <View style={styles.totalRow}>
-    <Text style={styles.totalLabel}>Subtotal:</Text>
-    <Text style={styles.totalAmount}>${(total + parseFloat(descuento)).toFixed(2)}</Text>
-  </View>
-  <View style={styles.totalRow}>
-    <Text style={styles.totalLabel}>Descuento:</Text>
-    <Text style={styles.totalAmount}>-${parseFloat(descuento).toFixed(2)}</Text>
-  </View>
-  <View style={styles.totalRow}>
-    <Text style={styles.totalLabel}>Total:</Text>
-    <Text style={styles.totalAmount}>${total.toFixed(2)}</Text>
-  </View>
-</View>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Subtotal:</Text>
+              <Text style={styles.totalAmount}>    ${descuento > 0 ? (total + parseFloat(descuento)).toFixed(2) : total.toFixed(2)}
+              </Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Descuento:</Text>
+              <Text style={styles.totalAmount}>   -${descuento > 0 ? parseFloat(descuento).toFixed(2) : '0.00'}</Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Total:</Text>
+              <Text style={styles.totalAmountFinal}>${total.toFixed(2)}</Text>
+            </View>
+          </View>
 
           <Text style={styles.timestamp}>20 de noviembre de 2024 1:35</Text>
         </View>
@@ -193,164 +195,184 @@ const TicketView = ({ route, navigation }) => {
 
       {/* Action Buttons */}
       <View style={styles.actionBar}>
-      <TouchableOpacity style={styles.actionButton} onPress={handleGeneratePDF}>
-  <FontAwesome5 name="file-pdf" size={20} color="#211132" />
-  <Text style={styles.actionText}>PDF</Text>
-</TouchableOpacity>
-
-
-        <TouchableOpacity style={styles.actionButton} onPress={() => handleAction('email')}>
-          <Feather name="mail" size={20} color="#211132" />
-          <Text style={styles.actionText}>Email</Text>
+        <TouchableOpacity style={styles.actionButton} onPress={handleGeneratePDF}>
+        <Feather name="share-2" size={20} color="#211132" />
+        <Text style={styles.actionText}>Compartir</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.actionButton} onPress={() => handleAction('print')}>
-          <Feather name="printer" size={20} color="#211132" />
-          <Text style={styles.actionText}>Imprimir</Text>
-        </TouchableOpacity>
 
-        <TouchableOpacity style={styles.actionButton} onPress={() => handleAction('share')}>
-          <Feather name="share-2" size={20} color="#211132" />
-          <Text style={styles.actionText}>Compartir</Text>
-        </TouchableOpacity>
+        
       </View>
     </View>
   );
 };
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f5f5f5',
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: 16,
-        backgroundColor: '#fff',
-        borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
-        marginTop:30,
-    },
-    headerTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#000',
-    },
-    ticketContainer: {
-        flex: 1,
-        padding: 16,
-    },
-    ticketContent: {
-        backgroundColor: '#fff',
-        borderRadius: 8,
-        padding: 16,
-        marginBottom: 16,
-    },
-    businessInfo: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 4,
-    },
-    businessName: {
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    receiptNumber: {
-        fontSize: 14,
-        color: '#666',
-    },
-    businessAddress: {
-        fontSize: 12,
-        color: '#666',
-        marginBottom: 16,
-    },
-    clientInfo: {
-        marginBottom: 16,
-    },
-    clientName: {
-        fontSize: 14,
-        fontWeight: '600',
-    },
-    clientID: {
-        fontSize: 12,
-        color: '#666',
-    },
-    separator: {
-        height: 1,
-        backgroundColor: '#e0e0e0',
-        marginVertical: 16,
-    },
-    itemsHeader: {
-        fontSize: 14,
-        color: '#666',
-        marginBottom: 8,
-    },
-    itemRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    itemQuantity: {
-        width: 30,
-        fontSize: 14,
-    },
-    itemName: {
-        flex: 1,
-        fontSize: 14,
-    },
-    itemPrice: {
-        fontSize: 14,
-        fontWeight: '500',
-    },
-    totalsSection: {
-        marginTop: 16,
-    },
-    totalRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 4,
-    },
-    totalLabel: {
-        fontSize: 14,
-        fontWeight: '600',
-    },
-    totalAmount: {
-        fontSize: 14,
-        fontWeight: '600',
-    },
-    paymentLabel: {
-        fontSize: 14,
-        color: '#666',
-    },
-    paymentAmount: {
-        fontSize: 14,
-        color: '#666',
-    },
-    timestamp: {
-        fontSize: 12,
-        color: '#666',
-        marginTop: 16,
-        textAlign: 'center',
-    },
-    actionBar: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        padding: 16,
-        backgroundColor: '#fff',
-        borderTopWidth: 1,
-        borderTopColor: '#e0e0e0',
-    },
-    actionButton: {
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    actionText: {
-        fontSize: 12,
-        color: '#211132',
-        marginTop: 4,
-    },
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+    marginTop: 30,
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+  },
+  businessHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  logo: {
+    marginRight: 12,
+  },
+  businessInfoContainer: {
+    flex: 1,
+  },
+  businessName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#211132',
+    textTransform: 'uppercase',
+  },
+  ticketContainer: {
+    flex: 1,
+    padding: 16,
+  },
+  ticketContent: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+  },
+  businessInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  businessName: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  receiptNumber: {
+    fontSize: 14,
+    color: '#666',
+  },
+  businessAddress: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 16,
+  },
+  clientInfo: {
+    marginBottom: 16,
+  },
+  clientName: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  clientID: {
+    fontSize: 12,
+    color: '#666',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#e0e0e0',
+    marginVertical: 16,
+  },
+  itemsHeader: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 8,
+  },
+  itemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  itemQuantity: {
+    width: 30,
+    fontSize: 14,
+  },
+  itemName: {
+    flex: 1,
+    fontSize: 14,
+  },
+  itemPrice: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  totalsSection: {
+    marginTop: 16,
+  },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  totalLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  itemUnitPrice: {
+    fontSize: 14,
+    width: 70,
+    textAlign: 'right',
+  },
+  itemTotalPrice: {
+    fontSize: 14,
+    fontWeight: '500',
+    width: 70,
+    textAlign: 'right',
+  },
+  totalAmount: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  totalAmountFinal:{
+    fontSize: 24,
+    fontWeight: 'bold',
+
+  },
+  paymentLabel: {
+    fontSize: 14,
+    color: '#666',
+  },
+  paymentAmount: {
+    fontSize: 14,
+    color: '#666',
+  },
+  timestamp: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  actionBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 16,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+  },
+  actionButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionText: {
+    fontSize: 12,
+    color: '#211132',
+    marginTop: 4,
+  },
 });
 
 export default TicketView;

@@ -1,50 +1,40 @@
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-
+import { useSQLiteContext } from 'expo-sqlite';
+import { getCriticalNotifications } from '../database';
+import { sendLocalNotification } from '../components/NotificationsPush';
 const Notificaciones = () => {
-  const [notifications] = useState([
-    {
-      id: 1,
-      title: 'Nueva Venta Registrada',
-      description: 'Venta de S/. 150.00 del Producto A',
-      time: '2 min',
-      read: false,
-      type: 'sale'
-    },
-    {
-      id: 2,
-      title: 'Stock Bajo',
-      description: 'El Producto B tiene menos de 5 unidades',
-      time: '1h',
-      read: false,
-      type: 'inventory'
-    },
-    {
-      id: 3,
-      title: 'Nuevo Cliente',
-      description: 'Juan Pérez se ha registrado como cliente',
-      time: '3h',
-      read: false,
-      type: 'client'
-    },
-    {
-      id: 4,
-      title: 'Meta Alcanzada',
-      description: '¡Felicitaciones! Has alcanzado la meta de ventas diaria',
-      time: '4h',
-      read: true,
-      type: 'achievement'
-    },
-    {
-      id: 5,
-      title: 'Recordatorio de Pedido',
-      description: 'Tienes un pedido pendiente de entrega para hoy',
-      time: '5h',
-      read: true,
-      type: 'reminder'
+  const [notifications, setNotifications] = useState([]);
+  const db = useSQLiteContext();  // Asegúrate de que esto esté correctamente configurado.
+
+  const fetchNotifications = async () => {
+    try {
+      const criticalNotifications = await getCriticalNotifications(db);  // Obtener las notificaciones críticas
+      if (!criticalNotifications || criticalNotifications.length === 0) {
+        console.log('No hay notificaciones críticas.');
+        setNotifications([]); // Asegúrate de manejar el caso donde no haya notificaciones
+        return;
+      }
+
+      // Formatear las notificaciones
+      const formattedNotifications = criticalNotifications.map((notification, index) => ({
+        id: index + 1,
+        title: notification.stock < 5 ? 'Stock Bajo' : 'Producto por Vencer',
+        description: notification.stock < 5 
+          ? `El producto ${notification.product_name} tiene un stock de ${notification.stock} unidades.`
+          : `El producto ${notification.product_name} vence el ${notification.fecha_vencimiento}.`, // Corrección aquí
+        time: 'Ahora', // Actualizar con lógica más precisa si es necesario
+        read: false,
+        type: notification.stock < 5 ? 'inventory' : 'expiration',
+      }));
+      setNotifications(formattedNotifications); // Actualiza el estado con las notificaciones formateadas
+    } catch (error) {
+      console.error('Error al cargar notificaciones:', error);
     }
-  ]);
+  };
+
+
 
   const getIconName = (type) => {
     switch(type) {
@@ -62,13 +52,16 @@ const Notificaciones = () => {
         return 'notifications-outline';
     }
   };
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Notificaciones</Text>
-        <TouchableOpacity style={styles.clearButton}>
+        <TouchableOpacity style={styles.clearButton} onPress={sendLocalNotification}>
           <Text style={styles.clearButtonText}>Limpiar todo</Text>
         </TouchableOpacity>
       </View>

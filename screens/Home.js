@@ -13,7 +13,7 @@ const screenWidth = Dimensions.get('window').width;
 
 const formatearFecha = (fecha) => {
   const date = new Date(fecha);
-  return date.toLocaleDateString('es-ES', { 
+  return date.toLocaleDateString('es-ES', {
     day: '2-digit',
     month: 'short'
   });
@@ -136,7 +136,7 @@ const Home = ({ navigation }) => {
   const [userName, setUserName] = useState("");
   const [chartFilter, setChartFilter] = useState('Semanal');
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-
+  const [GananciaTotal, setGananciaTotal] = useState(0);
 
   const [datosGrafica, setDatosGrafica] = useState({
     labels: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
@@ -170,7 +170,7 @@ const Home = ({ navigation }) => {
   const obtenerDatosGrafica = async () => {
     try {
       const ventasObtenidas = await obtenerVentas();
-  
+
       if (chartFilter === 'Semanal') {
         const datosSemanales = await procesarGananciasPorDia(ventasObtenidas);
         setDatosGrafica(datosSemanales);
@@ -183,7 +183,7 @@ const Home = ({ navigation }) => {
       showToast('Error al cargar datos de la gráfica', 'error');
     }
   };
-  
+
 
   const fetchClientes = async () => {
     try {
@@ -234,9 +234,22 @@ const Home = ({ navigation }) => {
   const cargarVentasHistoricas = async () => {
     try {
       const ventasObtenidas = await obtenerVentas();
-      const totalHistorico = ventasObtenidas.reduce((total, venta) => 
-        total + (parseFloat(venta.Total) || 0), 0);
-      setHistoricalSalesAmount(totalHistorico);
+      let totalVentas = 0;
+      let totalGanancias = 0;
+      for (const venta of ventasObtenidas) {
+        const detallesVenta = await obtenerDetallesVenta(venta.Venta_id);
+        for (const detalle of detallesVenta) {
+          const producto = await obtenerProductoPorId(detalle.Producto_id);
+          const precioCompra = parseFloat(producto.precio_compra) || 0;
+          const precioVenta = parseFloat(detalle.precio_unitario) || 0;
+          const cantidad = parseInt(detalle.cantidad) || 0;
+
+          totalGanancias += (precioVenta - precioCompra) * cantidad;
+        }
+
+      }
+setGananciaTotal(totalGanancias);
+
     } catch (error) {
       console.error('Error al cargar las ventas históricas:', error);
       showToast('Error al cargar las ganancias históricas', 'error');
@@ -259,7 +272,7 @@ const Home = ({ navigation }) => {
 
       for (const venta of ventasFiltradas) {
         const detallesVenta = await obtenerDetallesVenta(venta.Venta_id);
-        
+
         for (const detalle of detallesVenta) {
           const producto = await obtenerProductoPorId(detalle.Producto_id);
           const precioCompra = parseFloat(producto.precio_compra) || 0;
@@ -279,7 +292,7 @@ const Home = ({ navigation }) => {
       showToast('Error al cargar las ventas', 'error');
     }
   };
-  
+
   return (
     <ScrollView style={styles.container}>
       {/* Encabezado de bienvenida con icono de notificación */}
@@ -293,7 +306,7 @@ const Home = ({ navigation }) => {
       {/* Sección de Ganancias Totales */}
       <View style={styles.totalEarningsSection}>
         <Text style={styles.totalEarningsLabel}>Ganancias Totales</Text>
-        <Text style={styles.totalEarningsValue}>{`S/. ${totalProfits}`}</Text>
+        <Text style={styles.totalEarningsValue}>{`S/. ${GananciaTotal}`}</Text>
       </View>
 
       {/* Filtro de fecha */}
@@ -328,8 +341,8 @@ const Home = ({ navigation }) => {
       </View>
 
       {/* Gráfico de barras de ganancias por día */}
-        <Text style={styles.chartTitle}>Estadísticas de Ganancias</Text>
-        <ModernBarChart 
+      <Text style={styles.chartTitle}>Estadísticas de Ganancias</Text>
+      <ModernBarChart
         ventas={datosGrafica}
         chartFilter={chartFilter}
         selectedMonth={selectedMonth}
