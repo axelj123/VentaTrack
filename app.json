@@ -9,11 +9,30 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "notification": {
+      "androidMode": "default",
+      "androidCollapsedTitle": "Alertas de Stock",
+      "iosDisplayInForeground": true
+    },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.axeljhosmell123.herferapp"
+      "bundleIdentifier": "com.axeljhosmell123.herferapp",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "fetch",
+          "remote-notification"
+        ]
+      }
     },
     "android": {
+      "permissions": [
+        "NOTIFICATIONS",
+        "RECEIVE_BOOT_COMPLETED",
+        "SCHEDULE_EXACT_ALARM",
+        "USE_EXACT_ALARM",
+        "WAKE_LOCK",
+        "POST_NOTIFICATIONS"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
       },
@@ -21,7 +40,21 @@
     },
     "web": {},
     "plugins": [
-      "expo-font"
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "androidMode": "default",
+          "androidCollapsedTitle": "Alertas de Stock",
+          "iosDisplayInForeground": true
+        }
+      ],
+      [
+        "expo-background-fetch",
+        {
+          "backgroundFetchInterval": 10
+        }
+      ]
     ],
     "extra": {
       "eas": {

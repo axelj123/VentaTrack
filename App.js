@@ -6,6 +6,7 @@ import { ToastProvider } from './components/ToastContext';
 import Navigation from './Navigation'; // Suponiendo que tienes un archivo de navegación
 import { CartProvider } from './components/CartContext';
 import { initDatabase } from './database';
+import NotificationInitializer from './components/NotificationInitializer';
 
 export default function App() {
 
@@ -13,6 +14,8 @@ export default function App() {
 
   return (
     <SQLiteProvider databaseName="VentasDB.db" onInit={initDatabase}>
+            <NotificationInitializer />
+
       <CartProvider>
         <ToastProvider>
           <Navigation />

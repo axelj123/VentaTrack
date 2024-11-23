@@ -161,6 +161,7 @@ const Home = ({ navigation }) => {
   useFocusEffect(
     React.useCallback(() => {
       cargarVentas(dateFilter);
+      cargarVentasHistoricas();
       fetchClientes();
       fetchProductos();
       obtenerDatosGrafica
@@ -248,7 +249,7 @@ const Home = ({ navigation }) => {
         }
 
       }
-setGananciaTotal(totalGanancias);
+      setGananciaTotal(totalGanancias);
 
     } catch (error) {
       console.error('Error al cargar las ventas históricas:', error);

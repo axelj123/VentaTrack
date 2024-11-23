@@ -30,7 +30,7 @@
     "expo-sharing": "~12.0.1",
     "expo-sqlite": "~14.0.6",
     "expo-status-bar": "~1.12.1",
-    "expo-task-manager": "^12.0.3",
+    "expo-task-manager": "~11.8.2",
     "firebase": "^11.0.2",
     "moment": "^2.30.1",
     "react": "18.2.0",
@@ -44,7 +44,8 @@
     "react-native-screens": "^3.34.0",
     "react-native-svg": "15.2.0",
     "react-native-svg-transformer": "^1.5.0",
-    "react-native-vector-icons": "^10.2.0"
+    "react-native-vector-icons": "^10.2.0",
+    "expo-background-fetch": "~12.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

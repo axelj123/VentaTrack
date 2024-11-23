@@ -133,6 +133,15 @@ export const createTables = async (db) => {
       FOREIGN KEY (Producto_id) REFERENCES Productos(Producto_id)
     )`,
 
+    `CREATE TABLE IF NOT EXISTS Notificaciones (
+    Notificacion_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Usuario_id INTEGER NOT NULL, 
+    titulo TEXT NOT NULL,
+    descripcion TEXT NOT NULL,
+    fecha_hora TEXT NOT NULL, 
+    leida INTEGER DEFAULT 0, 
+    FOREIGN KEY (Usuario_id) REFERENCES Usuario(id)
+);`,
 
   ];
   try {
@@ -196,6 +205,7 @@ const insertarDatosIniciales = async (db) => {
   }
 };
 
+
 export const handleSaveCliente = async (db, formData, Cliente_id) => {
   try {
     console.log("Guardando cliente con los siguientes datos:", {
@@ -239,8 +249,39 @@ export const handleSaveCliente = async (db, formData, Cliente_id) => {
   }
 };
 
+export const guardarNotificacion = async (db, formNotification) => {
+  try {
+    console.log("Guardando notificación con los siguientes datos:", formNotification);
 
-export const handleSave = async (db,formData, selectedImage, Producto_id, currentImage) => {
+    const result = await db.runAsync(
+      `
+      INSERT INTO Notificaciones (Usuario_id, titulo, descripcion, fecha_hora)
+      VALUES (?, ?, ?, ?);
+      `,
+      [
+        formNotification.Usuario_id, // ID del usuario relacionado con la notificación
+        formNotification.title, // Título de la notificación
+        formNotification.description, // Descripción de la notificación
+        new Date().toISOString() // Fecha y hora actual en formato ISO
+      ]
+    );
+
+    console.log("Resultado de la inserción:", result);
+
+    if (result.insertId) {
+      console.log("Notificación guardada con éxito con ID:", result.insertId);
+      return true;
+    } else {
+      console.log("No se pudo guardar la notificación");
+      return false;
+    }
+  } catch (error) {
+    console.error("Error al guardar la notificación:", error);
+    return false;
+  }
+};
+
+export const handleSave = async (db, formData, selectedImage, Producto_id, currentImage) => {
   try {
     console.log("Guardando producto con los siguientes datos:", {
       formData,
@@ -304,7 +345,7 @@ export const handleSave = async (db,formData, selectedImage, Producto_id, curren
   }
 };
 
-export const eliminarProducto = async (db,Producto_id) => {
+export const eliminarProducto = async (db, Producto_id) => {
   try {
 
     const result = await db.runAsync(
@@ -399,40 +440,40 @@ export const obtenerProductoPorId = async (productoId) => {
 };
 export const obtenerCantidadYVerificarStock = async (productoId, limiteStock = 5) => {
   try {
-      const db = await getDBConnection();
-      const query = `SELECT cantidad, nombre FROM Productos WHERE Producto_id = ?`;
-      const result = await db.getAllAsync(query, [productoId]);
+    const db = await getDBConnection();
+    const query = `SELECT cantidad, nombre FROM Productos WHERE Producto_id = ?`;
+    const result = await db.getAllAsync(query, [productoId]);
 
-      if (result && result.length > 0) {
-          const producto = result[0]; // Acceder al primer resultado
+    if (result && result.length > 0) {
+      const producto = result[0]; // Acceder al primer resultado
 
-          // Verifica si el stock está por debajo del límite establecido
-          if (producto.cantidad <= limiteStock) {
-              console.log(`⚠️ El stock de "${producto.nombre}" es bajo (${producto.cantidad} unidades).`);
-              await enviarNotificacionStockBajo(producto); // Enviar notificación
-          } else {
-              console.log(`El stock de "${producto.nombre}" es suficiente (${producto.cantidad} unidades).`);
-          }
-
-          return producto;
+      // Verifica si el stock está por debajo del límite establecido
+      if (producto.cantidad <= limiteStock) {
+        console.log(`⚠️ El stock de "${producto.nombre}" es bajo (${producto.cantidad} unidades).`);
+        await enviarNotificacionStockBajo(producto); // Enviar notificación
       } else {
-          console.log("No se encontró el producto con ID:", productoId);
-          return null;
+        console.log(`El stock de "${producto.nombre}" es suficiente (${producto.cantidad} unidades).`);
       }
+
+      return producto;
+    } else {
+      console.log("No se encontró el producto con ID:", productoId);
+      return null;
+    }
   } catch (error) {
-      console.error("Error al obtener producto:", error);
-      throw error;
+    console.error("Error al obtener producto:", error);
+    throw error;
   }
 };
 // Función para enviar notificación de stock bajo
 const enviarNotificacionStockBajo = async (producto) => {
   await Notifications.scheduleNotificationAsync({
-      content: {
-          title: '⚠️ Stock Bajo',
-          body: `El stock de "${producto.nombre}" es de ${producto.cantidad} unidades.`,
-          data: { productoId: producto.Producto_id }, // Información adicional opcional
-      },
-      trigger: null, // Notificación inmediata
+    content: {
+      title: '⚠️ Stock Bajo',
+      body: `El stock de "${producto.nombre}" es de ${producto.cantidad} unidades.`,
+      data: { productoId: producto.Producto_id }, // Información adicional opcional
+    },
+    trigger: null, // Notificación inmediata
   });
 };
 // Funciones CRUD para Usuario
@@ -464,20 +505,20 @@ export const createEmpresa = async (db, empresa) => {
 
 export const registrarCliente = async (db, cliente) => {
   try {
-      const result = await db.runAsync(
-          `INSERT INTO Cliente (dni, nombre_completo, pais, email, telefono, direccion)
+    const result = await db.runAsync(
+      `INSERT INTO Cliente (dni, nombre_completo, pais, email, telefono, direccion)
            VALUES (?, ?, ?, ?, ?, ?)`,
-          [cliente.dni, cliente.nombre_completo, cliente.pais, cliente.email, cliente.telefono, cliente.direccion]
-      );
- // Asegúrate de obtener el ID del cliente recién creado
- if (result.lastInsertRowId) {
-  return result.lastInsertRowId; // Devuelve el ID del cliente
-} else {
-  throw new Error("No se pudo obtener el ID del cliente recién creado.");
-}
+      [cliente.dni, cliente.nombre_completo, cliente.pais, cliente.email, cliente.telefono, cliente.direccion]
+    );
+    // Asegúrate de obtener el ID del cliente recién creado
+    if (result.lastInsertRowId) {
+      return result.lastInsertRowId; // Devuelve el ID del cliente
+    } else {
+      throw new Error("No se pudo obtener el ID del cliente recién creado.");
+    }
   } catch (error) {
-      console.error("Error al registrar el cliente:", error);
-      throw error;
+    console.error("Error al registrar el cliente:", error);
+    throw error;
   }
 };
 
@@ -683,10 +724,10 @@ export const getProductos = async (db) => {
 export const initDatabase = async (db) => {
   try {
     console.log("Conexión a la base de datos establecida.");
-    
+
     // Configuración de PRAGMA
     await db.execAsync('PRAGMA journal_mode = WAL;');
-    
+
     await createTables(db);
 
     console.log("Base de datos inicializada correctamente");

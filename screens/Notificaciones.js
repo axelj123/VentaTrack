@@ -3,85 +3,17 @@ import React, { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { getCriticalNotifications } from '../database';
-import { registerForPushNotificationsAsync, sendLocalNotification, sendNotificationToBackend } from '../components/NotificationsPush';
+import { registerBackgroundFetch, registerForPushNotificationsAsync, scheduleTestNotifications, sendLocalNotification, sendNotificationToBackend } from '../components/NotificationsPush';
+import * as Notifications from 'expo-notifications';
 
 const Notificaciones = () => {
   const [notifications, setNotifications] = useState([]);
   const db = useSQLiteContext();
   const [deviceToken, setDeviceToken] = useState(null);
-  const notificationInterval = 5 * 60 * 1000; // 5 minutos
+  const notificationInterval = 1 * 60 * 1000; // 5 minutos
 
-  const fetchDeviceToken = async () => {
-    try {
-      const token = await registerForPushNotificationsAsync();
-      if (token) {
-        console.log('Token recibido:', token);
-        setDeviceToken(token);
-      } else {
-        console.log('No se pudo obtener el token de dispositivo');
-      }
-    } catch (error) {
-      console.error('Error al obtener el token:', error);
-    }
-  };
 
-  const fetchAndSendNotifications = async () => {
-    try {
-      const criticalNotifications = await getCriticalNotifications(db);
 
-      if (!criticalNotifications || criticalNotifications.length === 0) {
-        console.log('No hay notificaciones críticas.');
-        return;
-      }
-
-      const now = new Date();
-
-      // Formatear notificaciones con hora única
-      const formattedNotifications = criticalNotifications.map((notification, index) => ({
-        id: notification.id || index + 1,
-        title: '⚠️ Bajo Stock',
-        description: `El producto ${notification.product_name} tiene un stock de ${notification.stock} unidades.`,
-        read: false,
-        time: `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`, // Hora única inicial
-      }));
-
-      setNotifications(formattedNotifications);
-
-      if (deviceToken) {
-        criticalNotifications.forEach((notification, index) => {
-          setTimeout(() => {
-            const sendTime = new Date(); // Registrar la hora exacta de envío
-
-            sendNotificationToBackend(
-              deviceToken,
-              '⚠️ Bajo Stock',
-              `El producto ${notification.product_name} tiene un stock de ${notification.stock} unidades.`
-            );
-
-            console.log(
-              `Notificación enviada para: ${notification.product_name} a las ${sendTime.getHours()}:${sendTime.getMinutes()}:${sendTime.getSeconds()}`
-            );
-
-            // Actualizar la notificación con la hora exacta
-            setNotifications((prev) =>
-              prev.map((n) =>
-                n.id === notification.id
-                  ? { ...n, time: `${sendTime.getHours()}:${sendTime.getMinutes()}:${sendTime.getSeconds()}` }
-                  : n
-              )
-            );
-          }, index * notificationInterval);
-        });
-      }
-    } catch (error) {
-      console.error('Error al cargar y enviar notificaciones:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchDeviceToken();
-    fetchAndSendNotifications();
-  }, []);
 
   const getIconName = (type) => {
     switch (type) {
@@ -105,7 +37,7 @@ const Notificaciones = () => {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Notificaciones</Text>
-        <TouchableOpacity style={styles.clearButton} onPress={sendLocalNotification}>
+        <TouchableOpacity style={styles.clearButton}  >
           <Text style={styles.clearButtonText}>Limpiar todo</Text>
         </TouchableOpacity>
       </View>
