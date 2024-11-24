@@ -1,42 +1,43 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert, TouchableWithoutFeedback } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert, TouchableWithoutFeedback, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
 const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) => {
-  // Función para manejar la selección de imagen
-  const checkAndRequestPermissions = async (permissionType) => {
-    try {
-      if (permissionType === 'camera') {
-        const { status } = await ImagePicker.requestCameraPermissionsAsync();
-        return status === 'granted';
-      } else {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        return status === 'granted';
-      }
-    } catch (error) {
-      console.error('Error al solicitar permisos:', error);
-      return false;
-    }
-  };
 
+  useEffect(() => {
+    (async () => {
+      if (Platform.OS !== 'web') {
+        // Solicitar permisos al iniciar el componente
+        const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
+        const { status: libraryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        
+        if (cameraStatus !== 'granted' || libraryStatus !== 'granted') {
+          Alert.alert(
+            'Permisos necesarios',
+            'La aplicación necesita permisos para acceder a la cámara y la galería.',
+            [{ text: 'OK' }]
+          );
+        }
+      }
+    })();
+  }, []);
   const handleImagePick = async () => {
     try {
-      const hasPermission = await checkAndRequestPermissions('media');
+      const { status } = await ImagePicker.getMediaLibraryPermissionsAsync();
       
-      if (!hasPermission) {
-        Alert.alert(
-          'Permisos requeridos',
-          'Para seleccionar imágenes, necesitas otorgar permiso de acceso a la galería',
-          [
-            {
-              text: 'Ir a Configuración',
-              onPress: () => Platform.OS === 'ios' ? Linking.openURL('app-settings:') : Linking.openSettings()
-            },
-            { text: 'Cancelar', style: 'cancel' }
-          ]
-        );
-        return;
+      if (status !== 'granted') {
+        const { status: newStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (newStatus !== 'granted') {
+          Alert.alert(
+            'Permiso denegado',
+            'Por favor, habilita los permisos de galería en la configuración de tu dispositivo.',
+            [
+              { text: 'OK' }
+            ]
+          );
+          return;
+        }
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -46,33 +47,32 @@ const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) =
         quality: 1,
       });
 
-      if (!result.canceled && result.assets && result.assets[0]) {
+      if (!result.canceled && result.assets && result.assets.length > 0) {
         setSelectedImage(result.assets[0].uri);
         setModalVisible(false);
       }
     } catch (error) {
       console.error('Error al seleccionar imagen:', error);
-      Alert.alert('Error', 'No se pudo acceder a la galería');
+      Alert.alert('Error', 'Hubo un problema al seleccionar la imagen');
     }
   };
 
   const handleTakePhoto = async () => {
     try {
-      const hasPermission = await checkAndRequestPermissions('camera');
+      const { status } = await ImagePicker.getCameraPermissionsAsync();
       
-      if (!hasPermission) {
-        Alert.alert(
-          'Permisos requeridos',
-          'Para tomar fotos, necesitas otorgar permiso de acceso a la cámara',
-          [
-            {
-              text: 'Ir a Configuración',
-              onPress: () => Platform.OS === 'ios' ? Linking.openURL('app-settings:') : Linking.openSettings()
-            },
-            { text: 'Cancelar', style: 'cancel' }
-          ]
-        );
-        return;
+      if (status !== 'granted') {
+        const { status: newStatus } = await ImagePicker.requestCameraPermissionsAsync();
+        if (newStatus !== 'granted') {
+          Alert.alert(
+            'Permiso denegado',
+            'Por favor, habilita los permisos de cámara en la configuración de tu dispositivo.',
+            [
+              { text: 'OK' }
+            ]
+          );
+          return;
+        }
       }
 
       const result = await ImagePicker.launchCameraAsync({
@@ -81,16 +81,15 @@ const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) =
         quality: 1,
       });
 
-      if (!result.canceled && result.assets && result.assets[0]) {
+      if (!result.canceled && result.assets && result.assets.length > 0) {
         setSelectedImage(result.assets[0].uri);
         setModalVisible(false);
       }
     } catch (error) {
       console.error('Error al tomar foto:', error);
-      Alert.alert('Error', 'No se pudo acceder a la cámara');
+      Alert.alert('Error', 'Hubo un problema al tomar la foto');
     }
   };
-
   // Función para manejar el cierre del modal al tocar fuera del contenido
   const handleCloseModal = () => {
     setModalVisible(false);
