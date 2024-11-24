@@ -1,60 +1,137 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert, TouchableWithoutFeedback, PermissionsAndroid, Platform, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
 const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) => {
-  // Función para manejar la selección de imagen
+  const requestGalleryPermission = async () => {
+    try {
+      // Para Android 13 y superior (API 33+)
+      if (Platform.Version >= 33) {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
+          {
+            title: "Permiso para acceder a la galería",
+            message: "Necesitamos acceder a tus fotos para que puedas seleccionar una imagen.",
+            buttonNeutral: "Preguntar después",
+            buttonNegative: "Cancelar",
+            buttonPositive: "OK"
+          }
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      } else {
+        // Para Android 12 y anterior
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+          {
+            title: "Permiso para acceder a la galería",
+            message: "Necesitamos acceder a tus fotos para que puedas seleccionar una imagen.",
+            buttonNeutral: "Preguntar después",
+            buttonNegative: "Cancelar",
+            buttonPositive: "OK"
+          }
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      }
+    } catch (err) {
+      console.warn(err);
+      return false;
+    }
+  };
+
+  const requestCameraPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        {
+          title: "Permiso para usar la cámara",
+          message: "Necesitamos acceder a tu cámara para que puedas tomar una foto.",
+          buttonNeutral: "Preguntar después",
+          buttonNegative: "Cancelar",
+          buttonPositive: "OK"
+        }
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    } catch (err) {
+      console.warn(err);
+      return false;
+    }
+  };
+
   const handleImagePick = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    try {
+      const hasPermission = await requestGalleryPermission();
+      
+      if (!hasPermission) {
+        Alert.alert(
+          'Permiso denegado',
+          'Necesitas permitir el acceso a la galería para seleccionar imágenes.',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            { 
+              text: 'Ir a Configuración',
+              onPress: () => Linking.openSettings()
+            }
+          ]
+        );
+        return;
+      }
 
-    if (permissionResult.granted === false) {
-      Alert.alert('¡Permiso denegado!', 'Necesitas permitir el acceso a la galería para seleccionar una imagen.');
-      return;
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 4],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        setSelectedImage(result.assets[0].uri);
+        setModalVisible(false);
+      }
+    } catch (error) {
+      console.error('Error al seleccionar imagen:', error);
+      Alert.alert('Error', 'No se pudo acceder a la galería');
     }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      allowsEditing: true,
-      aspect: [4, 4],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      console.log(result.assets[0].uri); // Verifica el URI de la imagen
-      setSelectedImage(result.assets[0].uri);
-    }
-
-    setModalVisible(false); // Cerrar el modal al seleccionar
   };
 
-  // Función para manejar la toma de foto
   const handleTakePhoto = async () => {
-    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    try {
+      const hasPermission = await requestCameraPermission();
+      
+      if (!hasPermission) {
+        Alert.alert(
+          'Permiso denegado',
+          'Necesitas permitir el acceso a la cámara para tomar fotos.',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            { 
+              text: 'Ir a Configuración',
+              onPress: () => Linking.openSettings()
+            }
+          ]
+        );
+        return;
+      }
 
-    if (permissionResult.granted === false) {
-      Alert.alert('¡Permiso denegado!', 'Necesitas permitir el acceso a la cámara para tomar una foto.');
-      return;
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [4, 4],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        setSelectedImage(result.assets[0].uri);
+        setModalVisible(false);
+      }
+    } catch (error) {
+      console.error('Error al tomar foto:', error);
+      Alert.alert('Error', 'No se pudo acceder a la cámara');
     }
-
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 4],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      console.log(result.assets[0].uri); // Verifica el URI de la imagen
-      setSelectedImage(result.assets[0].uri);
-    }
-
-    setModalVisible(false); // Cerrar el modal al seleccionar
   };
 
-  // Función para manejar el cierre del modal al tocar fuera del contenido
   const handleCloseModal = () => {
     setModalVisible(false);
   };
-
 
   return (
     <Modal
@@ -90,7 +167,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo oscuro para toda la pantalla
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
     backgroundColor: '#FFFFFF',
