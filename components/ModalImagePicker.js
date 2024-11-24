@@ -4,7 +4,6 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
 const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) => {
-
   useEffect(() => {
     (async () => {
       if (Platform.OS !== 'web') {
@@ -22,6 +21,7 @@ const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) =
       }
     })();
   }, []);
+
   const handleImagePick = async () => {
     try {
       const { status } = await ImagePicker.getMediaLibraryPermissionsAsync();
@@ -90,11 +90,6 @@ const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) =
       Alert.alert('Error', 'Hubo un problema al tomar la foto');
     }
   };
-  // Función para manejar el cierre del modal al tocar fuera del contenido
-  const handleCloseModal = () => {
-    setModalVisible(false);
-  };
-
 
   return (
     <Modal
@@ -103,20 +98,31 @@ const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) =
       visible={modalVisible}
       onRequestClose={() => setModalVisible(false)}
     >
-      <TouchableWithoutFeedback onPress={handleCloseModal}>
-        <View style={styles.modalContainer}>
+      <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+        <View style={styles.modalOverlay}>
           <TouchableWithoutFeedback>
             <View style={styles.modalContent}>
-              <TouchableOpacity onPress={handleTakePhoto} style={styles.modalButton}>
-                <Ionicons name="camera-outline" size={24} color="#000" style={styles.modalIcon} />
-                <Text style={styles.modalButtonText}>Tomar Foto</Text>
+              <TouchableOpacity
+                style={styles.option}
+                onPress={handleTakePhoto}
+              >
+                <Ionicons name="camera" size={24} color="#000" />
+                <Text style={styles.optionText}>Tomar Foto</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleImagePick} style={styles.modalButton}>
-                <Ionicons name="image-outline" size={24} color="#000" style={styles.modalIcon} />
-                <Text style={styles.modalButtonText}>Seleccionar de Galería</Text>
+
+              <TouchableOpacity
+                style={styles.option}
+                onPress={handleImagePick}
+              >
+                <Ionicons name="images" size={24} color="#000" />
+                <Text style={styles.optionText}>Seleccionar de Galería</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleCloseModal} style={styles.modalCloseButton}>
-                <Text style={styles.modalButtonText}>Cancelar</Text>
+
+              <TouchableOpacity
+                style={[styles.option, styles.cancelOption]}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={[styles.optionText, styles.cancelText]}>Cancelar</Text>
               </TouchableOpacity>
             </View>
           </TouchableWithoutFeedback>
