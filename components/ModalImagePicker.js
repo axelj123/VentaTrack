@@ -1,93 +1,53 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert, TouchableWithoutFeedback, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { Ionicons } from '@expo/vector-icons';
 
 const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) => {
-  useEffect(() => {
-    (async () => {
-      if (Platform.OS !== 'web') {
-        // Solicitar permisos al iniciar el componente
-        const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
-        const { status: libraryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        
-        if (cameraStatus !== 'granted' || libraryStatus !== 'granted') {
-          Alert.alert(
-            'Permisos necesarios',
-            'La aplicación necesita permisos para acceder a la cámara y la galería.',
-            [{ text: 'OK' }]
-          );
-        }
-      }
-    })();
-  }, []);
-
-  const handleImagePick = async () => {
+  const pickImage = async (useCamera = false) => {
     try {
-      const { status } = await ImagePicker.getMediaLibraryPermissionsAsync();
-      
-      if (status !== 'granted') {
-        const { status: newStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (newStatus !== 'granted') {
-          Alert.alert(
-            'Permiso denegado',
-            'Por favor, habilita los permisos de galería en la configuración de tu dispositivo.',
-            [
-              { text: 'OK' }
-            ]
-          );
-          return;
-        }
+      let permissionResult;
+      if (useCamera) {
+        permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+      } else {
+        permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
       }
 
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 4],
-        quality: 1,
-      });
+      if (!permissionResult.granted) {
+        Alert.alert(
+          'Permiso requerido',
+          useCamera 
+            ? 'Se necesita permiso para usar la cámara.' 
+            : 'Se necesita permiso para acceder a las fotos.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+
+      const result = await (useCamera 
+        ? ImagePicker.launchCameraAsync({
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+          })
+        : ImagePicker.launchImageLibraryAsync({
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+          }));
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         setSelectedImage(result.assets[0].uri);
         setModalVisible(false);
       }
     } catch (error) {
-      console.error('Error al seleccionar imagen:', error);
-      Alert.alert('Error', 'Hubo un problema al seleccionar la imagen');
-    }
-  };
-
-  const handleTakePhoto = async () => {
-    try {
-      const { status } = await ImagePicker.getCameraPermissionsAsync();
-      
-      if (status !== 'granted') {
-        const { status: newStatus } = await ImagePicker.requestCameraPermissionsAsync();
-        if (newStatus !== 'granted') {
-          Alert.alert(
-            'Permiso denegado',
-            'Por favor, habilita los permisos de cámara en la configuración de tu dispositivo.',
-            [
-              { text: 'OK' }
-            ]
-          );
-          return;
-        }
-      }
-
-      const result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
-        aspect: [4, 4],
-        quality: 1,
-      });
-
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        setSelectedImage(result.assets[0].uri);
-        setModalVisible(false);
-      }
-    } catch (error) {
-      console.error('Error al tomar foto:', error);
-      Alert.alert('Error', 'Hubo un problema al tomar la foto');
+      console.error('Error:', error);
+      Alert.alert(
+        'Error',
+        useCamera 
+          ? 'No se pudo abrir la cámara' 
+          : 'No se pudo abrir la galería'
+      );
     }
   };
 
@@ -99,30 +59,19 @@ const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) =
       onRequestClose={() => setModalVisible(false)}
     >
       <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-        <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
           <TouchableWithoutFeedback>
             <View style={styles.modalContent}>
-              <TouchableOpacity
-                style={styles.option}
-                onPress={handleTakePhoto}
-              >
-                <Ionicons name="camera" size={24} color="#000" />
-                <Text style={styles.optionText}>Tomar Foto</Text>
+              <TouchableOpacity onPress={() => pickImage(true)} style={styles.modalButton}>
+                <Ionicons name="camera-outline" size={24} color="#000" style={styles.modalIcon} />
+                <Text style={styles.modalButtonText}>Tomar Foto</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.option}
-                onPress={handleImagePick}
-              >
-                <Ionicons name="images" size={24} color="#000" />
-                <Text style={styles.optionText}>Seleccionar de Galería</Text>
+              <TouchableOpacity onPress={() => pickImage(false)} style={styles.modalButton}>
+                <Ionicons name="image-outline" size={24} color="#000" style={styles.modalIcon} />
+                <Text style={styles.modalButtonText}>Seleccionar de Galería</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.option, styles.cancelOption]}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={[styles.optionText, styles.cancelText]}>Cancelar</Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.modalCloseButton}>
+                <Text style={styles.modalButtonText}>Cancelar</Text>
               </TouchableOpacity>
             </View>
           </TouchableWithoutFeedback>
@@ -131,7 +80,6 @@ const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) =
     </Modal>
   );
 };
-
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,

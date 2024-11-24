@@ -15,8 +15,10 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "La aplicación necesita acceso a tus fotos para permitirte seleccionar imágenes.",
-          "cameraPermission": "La aplicación necesita acceso a tu cámara para permitirte tomar fotos."
+          "photosPermission": "La aplicación necesita acceso a tus fotos para seleccionar una imagen.",
+          "cameraPermission": "La aplicación necesita acceso a la cámara para tomar una foto.",
+          "microphonePermission": false,
+          "savePhotosPermission": false
         }
       ]
     ],
@@ -27,17 +29,14 @@
       "package": "com.axeljhosmell123.herferapp",
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.READ_MEDIA_IMAGES",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.READ_MEDIA_IMAGES"
       ]
     },
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "La aplicación necesita acceso a tu cámara para permitirte tomar fotos.",
-        "NSPhotoLibraryUsageDescription": "La aplicación necesita acceso a tus fotos para permitirte seleccionar imágenes."
+        "NSCameraUsageDescription": "La aplicación necesita acceso a la cámara para tomar una foto.",
+        "NSPhotoLibraryUsageDescription": "La aplicación necesita acceso a las fotos para seleccionar una imagen."
       }
     },
     "web": {
