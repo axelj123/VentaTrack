@@ -1,41 +1,49 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert, TouchableWithoutFeedback, Platform } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert, TouchableWithoutFeedback } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
 const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) => {
-  // Solicitar permisos al montar el componente
-  useEffect(() => {
-    (async () => {
-      if (Platform.OS === 'android') {
-        const { status: mediaStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
-        
-        if (mediaStatus !== 'granted' || cameraStatus !== 'granted') {
-          Alert.alert(
-            'Permisos requeridos',
-            'Para usar esta funcionalidad, necesitas otorgar permisos de cámara y galería',
-            [
-              {
-                text: 'Ir a Configuración',
-                onPress: () => Platform.OS === 'ios' ? Linking.openURL('app-settings:') : Linking.openSettings(),
-              },
-              { text: 'Cancelar', style: 'cancel' },
-            ]
-          );
-        }
+  // Función para manejar la selección de imagen
+  const checkAndRequestPermissions = async (permissionType) => {
+    try {
+      if (permissionType === 'camera') {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        return status === 'granted';
+      } else {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        return status === 'granted';
       }
-    })();
-  }, []);
+    } catch (error) {
+      console.error('Error al solicitar permisos:', error);
+      return false;
+    }
+  };
 
   const handleImagePick = async () => {
     try {
+      const hasPermission = await checkAndRequestPermissions('media');
+      
+      if (!hasPermission) {
+        Alert.alert(
+          'Permisos requeridos',
+          'Para seleccionar imágenes, necesitas otorgar permiso de acceso a la galería',
+          [
+            {
+              text: 'Ir a Configuración',
+              onPress: () => Platform.OS === 'ios' ? Linking.openURL('app-settings:') : Linking.openSettings()
+            },
+            { text: 'Cancelar', style: 'cancel' }
+          ]
+        );
+        return;
+      }
+
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 4],
         quality: 1,
-        presentationStyle: Platform.OS === 'ios' ? 'pageSheet' : undefined,
       });
 
       if (!result.canceled && result.assets && result.assets[0]) {
@@ -44,20 +52,33 @@ const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) =
       }
     } catch (error) {
       console.error('Error al seleccionar imagen:', error);
-      Alert.alert(
-        'Error',
-        'No se pudo acceder a la galería. Por favor, verifica los permisos en la configuración de tu dispositivo.'
-      );
+      Alert.alert('Error', 'No se pudo acceder a la galería');
     }
   };
 
   const handleTakePhoto = async () => {
     try {
+      const hasPermission = await checkAndRequestPermissions('camera');
+      
+      if (!hasPermission) {
+        Alert.alert(
+          'Permisos requeridos',
+          'Para tomar fotos, necesitas otorgar permiso de acceso a la cámara',
+          [
+            {
+              text: 'Ir a Configuración',
+              onPress: () => Platform.OS === 'ios' ? Linking.openURL('app-settings:') : Linking.openSettings()
+            },
+            { text: 'Cancelar', style: 'cancel' }
+          ]
+        );
+        return;
+      }
+
       const result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
         aspect: [4, 4],
         quality: 1,
-        presentationStyle: Platform.OS === 'ios' ? 'pageSheet' : undefined,
       });
 
       if (!result.canceled && result.assets && result.assets[0]) {
@@ -66,12 +87,15 @@ const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) =
       }
     } catch (error) {
       console.error('Error al tomar foto:', error);
-      Alert.alert(
-        'Error',
-        'No se pudo acceder a la cámara. Por favor, verifica los permisos en la configuración de tu dispositivo.'
-      );
+      Alert.alert('Error', 'No se pudo acceder a la cámara');
     }
   };
+
+  // Función para manejar el cierre del modal al tocar fuera del contenido
+  const handleCloseModal = () => {
+    setModalVisible(false);
+  };
+
 
   return (
     <Modal
@@ -80,31 +104,20 @@ const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) =
       visible={modalVisible}
       onRequestClose={() => setModalVisible(false)}
     >
-      <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-        <View style={styles.modalOverlay}>
+      <TouchableWithoutFeedback onPress={handleCloseModal}>
+        <View style={styles.modalContainer}>
           <TouchableWithoutFeedback>
             <View style={styles.modalContent}>
-              <TouchableOpacity
-                style={styles.option}
-                onPress={handleTakePhoto}
-              >
-                <Ionicons name="camera" size={24} color="#000" />
-                <Text style={styles.optionText}>Tomar Foto</Text>
+              <TouchableOpacity onPress={handleTakePhoto} style={styles.modalButton}>
+                <Ionicons name="camera-outline" size={24} color="#000" style={styles.modalIcon} />
+                <Text style={styles.modalButtonText}>Tomar Foto</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.option}
-                onPress={handleImagePick}
-              >
-                <Ionicons name="images" size={24} color="#000" />
-                <Text style={styles.optionText}>Seleccionar de Galería</Text>
+              <TouchableOpacity onPress={handleImagePick} style={styles.modalButton}>
+                <Ionicons name="image-outline" size={24} color="#000" style={styles.modalIcon} />
+                <Text style={styles.modalButtonText}>Seleccionar de Galería</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.option, styles.cancelOption]}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={[styles.optionText, styles.cancelText]}>Cancelar</Text>
+              <TouchableOpacity onPress={handleCloseModal} style={styles.modalCloseButton}>
+                <Text style={styles.modalButtonText}>Cancelar</Text>
               </TouchableOpacity>
             </View>
           </TouchableWithoutFeedback>
