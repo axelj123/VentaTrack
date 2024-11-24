@@ -1,136 +1,76 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert, TouchableWithoutFeedback, PermissionsAndroid, Platform, Linking } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert, TouchableWithoutFeedback, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
 const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) => {
-  const requestGalleryPermission = async () => {
-    try {
-      // Para Android 13 y superior (API 33+)
-      if (Platform.Version >= 33) {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
-          {
-            title: "Permiso para acceder a la galería",
-            message: "Necesitamos acceder a tus fotos para que puedas seleccionar una imagen.",
-            buttonNeutral: "Preguntar después",
-            buttonNegative: "Cancelar",
-            buttonPositive: "OK"
-          }
-        );
-        return granted === PermissionsAndroid.RESULTS.GRANTED;
-      } else {
-        // Para Android 12 y anterior
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-          {
-            title: "Permiso para acceder a la galería",
-            message: "Necesitamos acceder a tus fotos para que puedas seleccionar una imagen.",
-            buttonNeutral: "Preguntar después",
-            buttonNegative: "Cancelar",
-            buttonPositive: "OK"
-          }
-        );
-        return granted === PermissionsAndroid.RESULTS.GRANTED;
-      }
-    } catch (err) {
-      console.warn(err);
-      return false;
-    }
-  };
-
-  const requestCameraPermission = async () => {
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.CAMERA,
-        {
-          title: "Permiso para usar la cámara",
-          message: "Necesitamos acceder a tu cámara para que puedas tomar una foto.",
-          buttonNeutral: "Preguntar después",
-          buttonNegative: "Cancelar",
-          buttonPositive: "OK"
+  // Solicitar permisos al montar el componente
+  useEffect(() => {
+    (async () => {
+      if (Platform.OS === 'android') {
+        const { status: mediaStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
+        
+        if (mediaStatus !== 'granted' || cameraStatus !== 'granted') {
+          Alert.alert(
+            'Permisos requeridos',
+            'Para usar esta funcionalidad, necesitas otorgar permisos de cámara y galería',
+            [
+              {
+                text: 'Ir a Configuración',
+                onPress: () => Platform.OS === 'ios' ? Linking.openURL('app-settings:') : Linking.openSettings(),
+              },
+              { text: 'Cancelar', style: 'cancel' },
+            ]
+          );
         }
-      );
-      return granted === PermissionsAndroid.RESULTS.GRANTED;
-    } catch (err) {
-      console.warn(err);
-      return false;
-    }
-  };
+      }
+    })();
+  }, []);
 
   const handleImagePick = async () => {
     try {
-      const hasPermission = await requestGalleryPermission();
-      
-      if (!hasPermission) {
-        Alert.alert(
-          'Permiso denegado',
-          'Necesitas permitir el acceso a la galería para seleccionar imágenes.',
-          [
-            { text: 'Cancelar', style: 'cancel' },
-            { 
-              text: 'Ir a Configuración',
-              onPress: () => Linking.openSettings()
-            }
-          ]
-        );
-        return;
-      }
-
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 4],
         quality: 1,
+        presentationStyle: Platform.OS === 'ios' ? 'pageSheet' : undefined,
       });
 
-      if (!result.canceled) {
+      if (!result.canceled && result.assets && result.assets[0]) {
         setSelectedImage(result.assets[0].uri);
         setModalVisible(false);
       }
     } catch (error) {
       console.error('Error al seleccionar imagen:', error);
-      Alert.alert('Error', 'No se pudo acceder a la galería');
+      Alert.alert(
+        'Error',
+        'No se pudo acceder a la galería. Por favor, verifica los permisos en la configuración de tu dispositivo.'
+      );
     }
   };
 
   const handleTakePhoto = async () => {
     try {
-      const hasPermission = await requestCameraPermission();
-      
-      if (!hasPermission) {
-        Alert.alert(
-          'Permiso denegado',
-          'Necesitas permitir el acceso a la cámara para tomar fotos.',
-          [
-            { text: 'Cancelar', style: 'cancel' },
-            { 
-              text: 'Ir a Configuración',
-              onPress: () => Linking.openSettings()
-            }
-          ]
-        );
-        return;
-      }
-
       const result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
         aspect: [4, 4],
         quality: 1,
+        presentationStyle: Platform.OS === 'ios' ? 'pageSheet' : undefined,
       });
 
-      if (!result.canceled) {
+      if (!result.canceled && result.assets && result.assets[0]) {
         setSelectedImage(result.assets[0].uri);
         setModalVisible(false);
       }
     } catch (error) {
       console.error('Error al tomar foto:', error);
-      Alert.alert('Error', 'No se pudo acceder a la cámara');
+      Alert.alert(
+        'Error',
+        'No se pudo acceder a la cámara. Por favor, verifica los permisos en la configuración de tu dispositivo.'
+      );
     }
-  };
-
-  const handleCloseModal = () => {
-    setModalVisible(false);
   };
 
   return (
@@ -140,20 +80,31 @@ const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) =
       visible={modalVisible}
       onRequestClose={() => setModalVisible(false)}
     >
-      <TouchableWithoutFeedback onPress={handleCloseModal}>
-        <View style={styles.modalContainer}>
+      <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+        <View style={styles.modalOverlay}>
           <TouchableWithoutFeedback>
             <View style={styles.modalContent}>
-              <TouchableOpacity onPress={handleTakePhoto} style={styles.modalButton}>
-                <Ionicons name="camera-outline" size={24} color="#000" style={styles.modalIcon} />
-                <Text style={styles.modalButtonText}>Tomar Foto</Text>
+              <TouchableOpacity
+                style={styles.option}
+                onPress={handleTakePhoto}
+              >
+                <Ionicons name="camera" size={24} color="#000" />
+                <Text style={styles.optionText}>Tomar Foto</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleImagePick} style={styles.modalButton}>
-                <Ionicons name="image-outline" size={24} color="#000" style={styles.modalIcon} />
-                <Text style={styles.modalButtonText}>Seleccionar de Galería</Text>
+
+              <TouchableOpacity
+                style={styles.option}
+                onPress={handleImagePick}
+              >
+                <Ionicons name="images" size={24} color="#000" />
+                <Text style={styles.optionText}>Seleccionar de Galería</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleCloseModal} style={styles.modalCloseButton}>
-                <Text style={styles.modalButtonText}>Cancelar</Text>
+
+              <TouchableOpacity
+                style={[styles.option, styles.cancelOption]}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={[styles.optionText, styles.cancelText]}>Cancelar</Text>
               </TouchableOpacity>
             </View>
           </TouchableWithoutFeedback>
@@ -167,7 +118,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo oscuro para toda la pantalla
   },
   modalContent: {
     backgroundColor: '#FFFFFF',

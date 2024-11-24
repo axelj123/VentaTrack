@@ -5,41 +5,55 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    
     "splash": {
       "image": "./assets/logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#FFFFFF"
     },
-    "notification": {
-      "androidMode": "default",
-      "androidCollapsedTitle": "Alertas de Stock",
-      "iosDisplayInForeground": true
-    },
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.axeljhosmell123.herferapp",
-      "infoPlist": {
-        "UIBackgroundModes": [
-          "fetch",
-          "remote-notification"
-        ]
-      }
-    },
+
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "La aplicación necesita acceso a tus fotos para permitirte seleccionar imágenes.",
+          "cameraPermission": "La aplicación necesita acceso a tu cámara para permitirte tomar fotos."
+        }
+      ]
+    ],
+
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
       },
-      "package": "com.axeljhosmell123.herferapp"
+      "package": "com.axeljhosmell123.herferapp",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES"
+      ]
     },
-    "web": {},
-    "plugins": [
-      "expo-font"
-    ],
+
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "La aplicación necesita acceso a tu cámara para permitirte tomar fotos.",
+        "NSPhotoLibraryUsageDescription": "La aplicación necesita acceso a tus fotos para permitirte seleccionar imágenes."
+      }
+    },
+
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+
     "extra": {
       "eas": {
         "projectId": "30d8f052-b94b-4003-a6d3-a1aa059b9c04"
       }
     },
+
     "owner": "lunalunera"
   }
 }
