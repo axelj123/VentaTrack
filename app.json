@@ -5,10 +5,6 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "splash": {
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "notification": {
       "androidMode": "default",
       "androidCollapsedTitle": "Alertas de Stock",
@@ -25,14 +21,6 @@
       }
     },
     "android": {
-      "permissions": [
-        "NOTIFICATIONS",
-        "RECEIVE_BOOT_COMPLETED",
-        "SCHEDULE_EXACT_ALARM",
-        "USE_EXACT_ALARM",
-        "WAKE_LOCK",
-        "POST_NOTIFICATIONS"
-      ],
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
       },
@@ -40,26 +28,13 @@
     },
     "web": {},
     "plugins": [
-      "expo-font",
-      [
-        "expo-notifications",
-        {
-          "androidMode": "default",
-          "androidCollapsedTitle": "Alertas de Stock",
-          "iosDisplayInForeground": true
-        }
-      ],
-      [
-        "expo-background-fetch",
-        {
-          "backgroundFetchInterval": 10
-        }
-      ]
+      "expo-font"
     ],
     "extra": {
       "eas": {
-        "projectId": "9194895c-a18c-42ce-90fe-2cd6d1d20945"
+        "projectId": "30d8f052-b94b-4003-a6d3-a1aa059b9c04"
       }
-    }
+    },
+    "owner": "lunalunera"
   }
 }

@@ -1,4 +1,3 @@
-// ModalImagePicker.js
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert, TouchableWithoutFeedback } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,7 +14,6 @@ const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) =
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 4],
       quality: 1,
@@ -25,8 +23,8 @@ const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) =
       console.log(result.assets[0].uri); // Verifica el URI de la imagen
       setSelectedImage(result.assets[0].uri);
     }
-    
-    setModalVisible(false); // Cerrar el menú al seleccionar
+
+    setModalVisible(false); // Cerrar el modal al seleccionar
   };
 
   // Función para manejar la toma de foto
@@ -49,13 +47,14 @@ const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) =
       setSelectedImage(result.assets[0].uri);
     }
 
-    setModalVisible(false); // Cerrar el menú al seleccionar
+    setModalVisible(false); // Cerrar el modal al seleccionar
   };
 
   // Función para manejar el cierre del modal al tocar fuera del contenido
   const handleCloseModal = () => {
     setModalVisible(false);
   };
+
 
   return (
     <Modal
