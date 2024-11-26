@@ -248,6 +248,64 @@ export const handleSaveCliente = async (db, formData, Cliente_id) => {
     return false;
   }
 };
+export const handleSaveEmpresa = async (db, formData, Empresa_id) => {
+  try {
+    console.log("Guardando empresa con los siguientes datos:", {
+      formData,
+      Empresa_id,
+    });
+
+    // Validar datos antes de enviarlos
+    const dataToUpdate = {
+      nombre: formData.nombre || null, // Usa null si el valor está vacío
+      direccion: formData.direccion || null,
+      telefono: formData.telefono ? parseInt(formData.telefono) : null, // Convertir a número o null
+      ruc: formData.ruc ? parseInt(formData.ruc) : null, // Convertir a número o null
+      correo_contacto: formData.correo_contacto || null,
+    };
+
+    // Asegurarse de que se pasa un ID válido
+    if (!Empresa_id) {
+      console.error("El ID de la empresa es inválido o no está definido.");
+      return false;
+    }
+
+    console.log("Datos procesados para la actualización:", dataToUpdate);
+
+    // Realizar la actualización en la base de datos
+    const result = await db.runAsync(
+      `UPDATE Empresa SET 
+        nombre = ?, 
+        direccion = ?, 
+        telefono = ?, 
+        ruc = ?, 
+        correo_contacto = ? 
+      WHERE Empresa_id = ?`,
+      [
+        dataToUpdate.nombre,
+        dataToUpdate.direccion,
+        dataToUpdate.telefono,
+        dataToUpdate.ruc,
+        dataToUpdate.correo_contacto,
+        Empresa_id,
+      ]
+    );
+
+    console.log("Resultado de la actualización:", result);
+
+    if (result.changes === 0) {
+      console.log("No se encontró la empresa con el ID especificado.");
+      return false;
+    }
+
+    console.log("Empresa guardada con éxito.");
+    return true;
+  } catch (error) {
+    console.error("Error al guardar los datos de la empresa:", error);
+    return false;
+  }
+};
+
 
 export const guardarNotificacion = async (db, formNotification) => {
   try {
@@ -523,7 +581,7 @@ export const registrarCliente = async (db, cliente) => {
 };
 
 
-export const getAllUsuarios = async (db) => {
+export const getUsuario = async (db) => {
   try {
     const result = await db.getAllAsync('SELECT * FROM Usuario');
     console.log('Usuarios registrados:', result);
@@ -533,7 +591,7 @@ export const getAllUsuarios = async (db) => {
     throw error;
   }
 };
-export const getAllEmpresa = async (db) => {
+export const getEmpresa = async (db) => {
   try {
     const result = await db.getAllAsync('SELECT * FROM Empresa');
     console.log('Empresa Registrada:', result);

@@ -5,9 +5,9 @@ import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import ModalImagePicker from '../components/ModalImagePicker';
-import { handleSave, eliminarProducto } from '../database';  // Importa el método handleSave de la base de datos
+import { handleSave, eliminarProducto } from '../database';  
 import ModalConfirm from '../components/ModalConfirm';
-import { useToast } from '../components/ToastContext'; // Importar el contexto
+import { useToast } from '../components/ToastContext';
 import CustomInput from '../components/CustomInput';
 import { useSQLiteContext } from 'expo-sqlite';
 
@@ -15,26 +15,26 @@ function ViewItem({ route }) {
   const navigation = useNavigation();
   const { Producto_id, title, price, purchasePrice,image, descripcion, stock } = route.params;
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
-  const { showToast } = useToast(); // Usamos el hook para acceder al showToast
+  const { showToast } = useToast(); 
   const db = useSQLiteContext();
 
   const [formData, setFormData] = useState({
     title: title,
     price: price.toString(),
-    purchasePrice: purchasePrice ? purchasePrice.toString() : '', // Asegúrate de asignar purchasePrice aquí
+    purchasePrice: purchasePrice ? purchasePrice.toString() : '', 
     description: descripcion,
     stock: stock.toString()
   });
 
   const [selectedImage, setSelectedImage] = useState(null);
-  const [currentImage] = useState(image); // Mantener la imagen original en un estado
+  const [currentImage] = useState(image); 
 
   const [modalVisible, setModalVisible] = useState(false);
 
-  // Función de eliminación solo después de la confirmación
+
   const handleDeleteProduct = async () => {
     try {
-      const success = await eliminarProducto(db, Producto_id);  // Llamar a la función para eliminar el producto
+      const success = await eliminarProducto(db, Producto_id);  
 
       if (success) {
         showToast('¡Operación exitosa!', 'Producto eliminado correctamente', 'success');
@@ -56,12 +56,11 @@ function ViewItem({ route }) {
         return;
       }
 
-      // Pasar la imagen actual si no hay una nueva seleccionada
       const success = await handleSave(db, formData, selectedImage, Producto_id, currentImage);
 
       if (success) {
         showToast('¡Operación exitosa!', 'Se ha guardado correctamente', 'success');
-        navigation.goBack(); // Regresa a la pantalla anterior
+        navigation.goBack(); 
 
       } else {
         showToast('¡Error!', 'Hubo un problema al guardar los cambios', 'warning');

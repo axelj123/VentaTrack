@@ -1,52 +1,98 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert, TouchableWithoutFeedback, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert, TouchableWithoutFeedback, Platform, PermissionsAndroid } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 
 const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) => {
+
+  const requestAndroidPermissions = async (useCamera) => {
+    try {
+      const permissions = useCamera 
+        ? [
+            PermissionsAndroid.PERMISSIONS.CAMERA,
+            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+          ]
+        : [PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE];
+
+      const results = await PermissionsAndroid.requestMultiple(permissions);
+      
+      // Verificar si todos los permisos fueron concedidos
+      const allGranted = Object.values(results).every(
+        result => result === PermissionsAndroid.RESULTS.GRANTED
+      );
+
+      if (!allGranted) {
+        throw new Error('Se requieren todos los permisos para continuar');
+      }
+
+      return true;
+    } catch (err) {
+      console.log('Error al solicitar permisos:', err);
+      return false;
+    }
+  };
+
   const pickImage = async (useCamera = false) => {
     try {
-      let permissionResult;
-      if (useCamera) {
-        permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+      if (Platform.OS === 'android') {
+        const hasPermissions = await requestAndroidPermissions(useCamera);
+        if (!hasPermissions) {
+          Alert.alert(
+            'Permisos Requeridos',
+            useCamera 
+              ? 'Se necesitan permisos de cámara y almacenamiento para continuar.'
+              : 'Se necesita permiso de almacenamiento para continuar.',
+            [
+              { 
+                text: 'Ir a Configuración', 
+                onPress: () => {
+                  // Aquí podrías agregar lógica para abrir la configuración
+                  // Ejemplo: Linking.openSettings();
+                }
+              },
+              { text: 'Cancelar' }
+            ]
+          );
+          return;
+        }
       } else {
-        permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        // Para iOS y otros sistemas
+        const permissionResult = useCamera
+          ? await ImagePicker.requestCameraPermissionsAsync()
+          : await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+        if (!permissionResult.granted) {
+          Alert.alert(
+            'Permiso Denegado',
+            useCamera
+              ? 'Se necesita acceso a la cámara para esta función.'
+              : 'Se necesita acceso a la galería para esta función.'
+          );
+          return;
+        }
       }
 
-      if (!permissionResult.granted) {
-        Alert.alert(
-          'Permiso requerido',
-          useCamera 
-            ? 'Se necesita permiso para usar la cámara.' 
-            : 'Se necesita permiso para acceder a las fotos.',
-          [{ text: 'OK' }]
-        );
-        return;
-      }
+      const options = {
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      };
 
-      const result = await (useCamera 
-        ? ImagePicker.launchCameraAsync({
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 1,
-          })
-        : ImagePicker.launchImageLibraryAsync({
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 1,
-          }));
+      const result = useCamera
+        ? await ImagePicker.launchCameraAsync(options)
+        : await ImagePicker.launchImageLibraryAsync(options);
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         setSelectedImage(result.assets[0].uri);
         setModalVisible(false);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error al seleccionar imagen:', error.message);
       Alert.alert(
         'Error',
-        useCamera 
-          ? 'No se pudo abrir la cámara' 
-          : 'No se pudo abrir la galería'
+        useCamera
+          ? 'No se pudo acceder a la cámara. Por favor, verifica los permisos.'
+          : 'No se pudo acceder a la galería. Por favor, verifica los permisos.'
       );
     }
   };
@@ -56,6 +102,8 @@ const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) =
       animationType="slide"
       transparent={true}
       visible={modalVisible}
+      statusBarTranslucent
+
       onRequestClose={() => setModalVisible(false)}
     >
       <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>

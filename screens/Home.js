@@ -299,9 +299,7 @@ const Home = ({ navigation }) => {
       {/* Encabezado de bienvenida con icono de notificación */}
       <View style={styles.headerSection}>
         <Text style={styles.greetingText}>¡Hola, {userName}!</Text>
-        <TouchableOpacity style={styles.notificationIcon} onPress={() => navigation.navigate('Notificaciones')}>
-          <Feather name="bell" size={24} color="#333" />
-        </TouchableOpacity>
+      
       </View>
 
       {/* Sección de Ganancias Totales */}
