@@ -28,9 +28,29 @@ const CardsItems = ({
       });
     }
   };
-
+  const formatStockNumber = (stockNumber) => {
+    if (stockNumber >= 1000000) {
+      return `${(stockNumber / 1000000).toFixed(1)}M`;
+    } else if (stockNumber >= 1000) {
+      return `${(stockNumber / 1000).toFixed(1)}K`;
+    } else {
+      return stockNumber.toString();
+    }
+  };
+  const formatPriceNumber = (priceNumber) => {
+    if (priceNumber >= 1000000) {
+      return `S/. ${(priceNumber / 1000000).toFixed(1)}M`;
+    } else if (priceNumber >= 1000) {
+      return `S/. ${(priceNumber / 1000).toFixed(1)}K`;
+    } else {
+      return `S/. ${priceNumber.toFixed(2)}`;
+    }
+  };
   // Enhanced stock status logic with more detailed ranges
+
   const getStockStatus = () => {
+    const formattedStock = formatStockNumber(stock);
+
     if (stock <= 0) {
       return {
         text: 'Sin stock',
@@ -41,7 +61,7 @@ const CardsItems = ({
     }
     if (stock <= 3) {
       return {
-        text: `¡Últimas ${stock} unidades!`,
+        text: `¡Últimas ${formattedStock} unid.!`,
         color: '#DC2626',
         backgroundColor: '#FEF2F2',
         borderColor: '#FEE2E2'
@@ -49,7 +69,7 @@ const CardsItems = ({
     }
     if (stock <= 5) {
       return {
-        text: `Stock bajo: ${stock}`,
+        text: `Stock bajo: ${formattedStock}`,
         color: '#F59E0B',
         backgroundColor: '#FEF3C7',
         borderColor: '#FDE68A'
@@ -57,14 +77,14 @@ const CardsItems = ({
     }
     if (stock <= 10) {
       return {
-        text: `Stock: ${stock} unid.`,
+        text: `Stock: ${formattedStock} unid.`,
         color: '#059669',
         backgroundColor: '#D1FAE5',
         borderColor: '#A7F3D0'
       };
     }
     return {
-      text: `Stock: ${stock}`,
+      text: `Stock: ${formattedStock}`,
       color: '#059669',
       backgroundColor: '#ECFDF5',
       borderColor: '#D1FAE5'
@@ -111,23 +131,10 @@ const CardsItems = ({
 
         <View style={styles.footer}>
           <View style={styles.priceSection}>
-            <Text style={styles.priceSymbol}>S/.</Text>
-            <Text style={styles.priceAmount}>{price}</Text>
+            <Text style={styles.priceAmount}>{formatPriceNumber(price)}</Text>
           </View>
 
-          <TouchableOpacity 
-            style={[
-              styles.buttonContainer,
-              stock <= 0 && styles.buttonDisabled
-            ]}
-            onPress={handlePress}
-            activeOpacity={0.8}
-            disabled={stock <= 0}
-          >
-            <Text style={styles.buttonText}>
-              {stock <= 0 ? 'Agotado' : (buttonText || 'Ver más')}
-            </Text>
-          </TouchableOpacity>
+     
         </View>
       </View>
     </Pressable>

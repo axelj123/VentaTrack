@@ -99,10 +99,10 @@ const VentaCard = ({ venta, onReimprimir }) => {
 
         <TouchableOpacity
           style={styles.reimprimirButton}
-          onPress={() => onReimprimir(venta.Venta_id)}
-        >
+          onPress={() => onReimprimir(venta)}
+          >
           <Icon name="print" size={18} color="#FFF" />
-          <Text style={styles.reimprimirButtonText}>Reimprimir Boleta</Text>
+          <Text style={styles.reimprimirButtonText}>Ver Boleta</Text>
         </TouchableOpacity>
       </Animated.View>
     </View>

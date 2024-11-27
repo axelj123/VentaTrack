@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   totalEarningsValue: {
-    fontSize: 42,
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#fff',
   },

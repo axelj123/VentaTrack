@@ -2,18 +2,23 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { FontAwesome5, Feather,MaterialCommunityIcons  } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
-import { StatusBar } from 'expo-status-bar';
 import { generarBoleta } from '../components/GenerarBoleta';
+import { getEmpresa } from '../database';
 
 const TicketView = ({ route, navigation }) => {
-  const { total, descuento = 0, items = [], clienteId } = route.params;
+  const { total, descuento, items, clienteId, ventaId, timestamp } = route.params; // Desestructuración de los parámetros
   const db = useSQLiteContext();
 
   const [cliente, setCliente] = useState(null);
   const [productos, setProductos] = useState([]);
-
+  const [companyData, setCompanyData] = useState({
+    nombre: '',
+    location: '',
+    phone: '',
+    correo:'',
+  });
   useEffect(() => {
-    // Llamadas para obtener datos del cliente y productos
+    fetchEmpresa();
     if (clienteId) {
       fetchCliente(clienteId);
     }
@@ -74,22 +79,7 @@ const TicketView = ({ route, navigation }) => {
   };
 
 
-  const handleAction = (action) => {
-    switch (action) {
-      case 'pdf':
-        handleGeneratePDF();
-        break;
-      case 'email':
-        // Implementar envío por email
-        break;
-      case 'print':
-        // Implementar impresión
-        break;
-      case 'share':
-        // Implementar compartir
-        break;
-    }
-  };
+
   const handleGeneratePDF = async () => {
     // Asegurarnos de que el descuento sea un número
     const descuentoNumerico = parseFloat(descuento || 0);
@@ -122,6 +112,28 @@ const TicketView = ({ route, navigation }) => {
     }
   };
 
+  const fetchEmpresa = async () => {
+    try {
+      const result = await getEmpresa(db);
+  
+      console.log("Resultado de fetchEmpresa:", result);
+  
+      if (result && result.length > 0) {
+        const empresa = result[0];
+  
+        setCompanyData({
+          nombre: empresa.nombre || 'Nombre no registrado',
+          location: empresa.direccion || 'Ubicación no registrada',
+          correo: empresa.correo_contacto || 'Correo no registrado',
+
+        });
+      } else {
+        console.error("No se encontraron datos para la empresa.");
+      }
+    } catch (error) {
+      console.error("Error al obtener los datos de la empresa:", error);
+    }
+  };
   return (
     <View style={styles.container}>
     <View style={styles.header}>
@@ -139,11 +151,12 @@ const TicketView = ({ route, navigation }) => {
         <View style={styles.businessHeader}>
             <MaterialCommunityIcons name="cart" size={40} color="#211132" style={styles.logo} />
             <View style={styles.businessInfoContainer}>
-              <Text style={styles.businessName}>TIENDAS S.A.C</Text>
-              <Text style={styles.receiptNumber}>RECIBO#1</Text>
+              <Text style={styles.businessName}>{companyData.nombre}</Text>
+              <Text style={styles.receiptNumber}>RECIBO# {ventaId}</Text>
             </View>
           </View>
-          <Text style={styles.businessAddress}>Mz G LOTE 1 • +51 (910) 241-651</Text>
+          <Text style={styles.businessAddress}>{companyData.location}</Text>
+          <Text style={styles.businessAddress}>{companyData.correo} </Text>
 
           <View style={styles.separator} />
 
@@ -165,8 +178,8 @@ const TicketView = ({ route, navigation }) => {
             <View style={styles.itemRow} key={index}>
               <Text style={styles.itemQuantity}>{producto.cantidad}x</Text>
               <Text style={styles.itemName}>{producto.nombre || 'Producto sin nombre'}</Text>
-              <Text style={styles.itemUnitPrice}>${producto.precio_venta.toFixed(2)}</Text>
-              <Text style={styles.itemTotalPrice}>${(producto.cantidad * producto.precio_venta).toFixed(2)}</Text>
+              <Text style={styles.itemUnitPrice}>S/{producto.precio_venta.toFixed(2)}</Text>
+              <Text style={styles.itemTotalPrice}>S/{(producto.cantidad * producto.precio_venta).toFixed(2)}</Text>
             </View>
           ))} 
 
@@ -176,21 +189,21 @@ const TicketView = ({ route, navigation }) => {
           <View style={styles.totalsSection}>
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Subtotal:</Text>
-              <Text style={styles.totalAmount}>    ${descuento > 0 ? (total + parseFloat(descuento)).toFixed(2) : total.toFixed(2)}
+              <Text style={styles.totalAmount}>    S/{descuento > 0 ? (total + parseFloat(descuento)).toFixed(2) : total.toFixed(2)}
               </Text>
             </View>
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Descuento:</Text>
-              <Text style={styles.totalAmount}>   -${descuento > 0 ? parseFloat(descuento).toFixed(2) : '0.00'}</Text>
+              <Text style={styles.totalAmount}>   -S/{descuento > 0 ? parseFloat(descuento).toFixed(2) : '0.00'}</Text>
             </View>
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Total:</Text>
-              <Text style={styles.totalAmountFinal}>${total.toFixed(2)}</Text>
+              <Text style={styles.totalAmountFinal}>S/{total.toFixed(2)}</Text>
             </View>
           </View>
 
-          <Text style={styles.timestamp}>20 de noviembre de 2024 1:35</Text>
-        </View>
+          <Text style={styles.timestamp}>{timestamp}</Text>
+          </View>
       </ScrollView>
 
       {/* Action Buttons */}

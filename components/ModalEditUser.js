@@ -5,8 +5,8 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { getUsuario } from '../database';
 import { useToast } from './ToastContext';
 const COLORS = {
-    primary: '#007AFF',
-    background: '#F2F2F7',
+    primary: '#4338CA',
+    background: '#F2F2F7', 
     surface: '#FFFFFF',
     text: '#000000',
     textSecondary: '#8E8E93',
@@ -90,12 +90,14 @@ const toggleChangePassword = () => {
     const validateInputs = async () => {
         // Validate basic fields
         if (!userName.trim()) {
-            Alert.alert('Error', 'El nombre no puede estar vacío');
+            showToast('warning', 'El nombre no puede estar vacío','warning');
+
             return false;
         }
 
         if (!userEmail.trim()) {
-            Alert.alert('Error', 'El correo electrónico no puede estar vacío');
+            showToast('warning', 'El correo electrónico no puede estar vacío','warning');
+
             return false;
         }
 
@@ -103,7 +105,8 @@ const toggleChangePassword = () => {
         if (newPassword || confirmNewPassword) {
             // Check current password
             if (!currentPassword.trim()) {
-                Alert.alert('Error', 'Debe ingresar su contraseña actual');
+                showToast('warning', 'Debe ingresar su contraseña actual','warning');
+
                 return false;
             }
 
@@ -115,22 +118,26 @@ const toggleChangePassword = () => {
                 );
 
                 if (!result) {
-                    Alert.alert('Error', 'La contraseña actual es incorrecta');
+                    showToast('warning', 'La contraseña actual es incorrecta','warning');
+
                     return false;
                 }
             } catch (error) {
-                Alert.alert('Error', 'No se pudo verificar la contraseña');
+                showToast('error', 'No se pudo verificar la contraseña','error');
+
                 return false;
             }
 
             // Validate new password
             if (newPassword !== confirmNewPassword) {
-                Alert.alert('Error', 'Las nuevas contraseñas no coinciden');
+                showToast('error', 'Las nuevas contraseñas no coinciden','error');
+
                 return false;
             }
 
             if (newPassword.length < 6) {
-                Alert.alert('Error', 'La nueva contraseña debe tener al menos 6 caracteres');
+                showToast('warning', 'La nueva contraseña debe tener al menos 6 caracteres','warning');
+
                 return false;
             }
         }
@@ -140,19 +147,19 @@ const toggleChangePassword = () => {
 
     const saveUserData = async () => {
         try {
-            // Validar los campos básicos (nombre y correo)
-            if (!userName.trim() || !userEmail.trim()) {
-                Alert.alert('Error', 'El nombre y correo electrónico no pueden estar vacíos');
-                return;
-            }
 
-            // Prepara los datos a actualizar
-            const updatedData = {
+            const isValid = await validateInputs();
+        if (!isValid) {
+            return; 
+        }
+
+
+        const updatedData = {
                 nombre_completo: userName.trim(),
                 email: userEmail.trim(),
             };
 
-            // Si la nueva contraseña está proporcionada, añádela a la actualización
+
             const updateQuery = newPassword.trim()
                 ? 'UPDATE Usuario SET nombre_completo = ?, email = ?, contraseña = ?'
                 : 'UPDATE Usuario SET nombre_completo = ?, email = ?';
@@ -161,14 +168,14 @@ const toggleChangePassword = () => {
                 ? [updatedData.nombre_completo, updatedData.email, newPassword.trim()]
                 : [updatedData.nombre_completo, updatedData.email];
 
-            // Ejecutar la consulta de actualización
-            await db.runAsync(updateQuery, ...queryParams);
 
-            // Mostrar mensaje de éxito
-            showToast('success', 'Datos de usuario actualizados correctamente','success');
+                await db.runAsync(updateQuery, ...queryParams);
 
-            // Cerrar el modal y disparar la función de éxito
-            onUpdateSuccess();
+
+                showToast('success', 'Datos de usuario actualizados correctamente','success');
+
+
+                onUpdateSuccess();
             setModalVisible(false);
 
         } catch (error) {

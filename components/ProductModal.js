@@ -41,6 +41,7 @@ const ProductModal = ({
       transparent={true}
       visible={visible}
       onRequestClose={onClose}
+      statusBarTranslucent
     >
       <View style={styles.centeredView}>
         <View style={styles.modalView}>

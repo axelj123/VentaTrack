@@ -56,10 +56,14 @@ const VentaExitosa = ({ route, navigation }) => {
       descuento: route.params.descuento, // Incluye el descuento
 
       items: route.params.items.map(item => ({
-        Producto_id: item.id, // Asegúrate de usar el ID correcto del producto
-        cantidad: item.quantity, // La cantidad del producto
+        Producto_id: item.id, 
+        
+        cantidad: item.quantity, 
+        
       })),
-      clienteId: route.params.cliente.Cliente_id, // ID del cliente
+      clienteId: route.params.cliente.Cliente_id, 
+      ventaId: route.params.ventaId,     
+      timestamp: route.params.timestamp       
     })
   
   

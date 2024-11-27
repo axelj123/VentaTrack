@@ -7,7 +7,8 @@ import VentaCard from '../components/VentaCard';
 import EmptyState from '../components/EmptyState';
 import FilterTabs from '../components/FilterTabs';
 import { obtenerDetallesVenta, obtenerProductoPorId } from '../database';
-const Reportes = () => {
+
+const Reportes = ({navigation}) => {
   const { showToast } = useToast();
   const [ventas, setVentas] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -109,10 +110,20 @@ const Reportes = () => {
     }, [filterInterval])
   );
 
-  const handleReimprimirBoleta = (ventaId) => {
-    showToast(`Boleta de la venta ${ventaId} reimpresa`, 'success');
+  const handleVerBoleta = (venta) => {
+    navigation.navigate('TicketView', {
+      total: venta.Total,
+      descuento: venta.descuento,
+      items: venta.detalles.map(detalle => ({
+        Producto_id: detalle.Producto_id,
+        cantidad: detalle.cantidad,
+        precio_venta: detalle.precio_unitario
+      })),
+      clienteId: venta.Cliente_id,
+      ventaId: venta.Venta_id,
+      timestamp: venta.Fecha_venta
+    });
   };
-
   return (
     <View style={styles.container}>
       <Text style={styles.headerText}>Reportes de Ventas</Text>
@@ -151,7 +162,7 @@ const Reportes = () => {
             <VentaCard
               key={venta.Venta_id}
               venta={venta}
-              onReimprimir={handleReimprimirBoleta}
+              onReimprimir={handleVerBoleta}
             />
           ))}
         </ScrollView>

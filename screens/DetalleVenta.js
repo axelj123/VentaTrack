@@ -51,7 +51,7 @@ const DetalleVenta = ({ navigation }) => {
             console.error("Error al obtener couriers:", error);
         }
     };
-
+ 
     const fetchTipos = async () => {
         try {
             const result = await db.getAllAsync(`SELECT * FROM Tipo_Venta`);
@@ -152,21 +152,17 @@ const handleRegistrarVenta = async () => {
     console.log('Datos de la venta:', ventaData);
     console.log('Detalles de la venta:', detallesVenta);
   
-    const success = await registrarVenta(db, ventaData, detallesVenta);
-  
-    if (success) {
-  
-      
-      // Solo pasamos los datos necesarios
-      navigation.navigate('VentaExitosa', {
-        total: total,
-        descuento: descuento, // Incluye el descuento
+    const result = await registrarVenta(db, ventaData, detallesVenta);
 
-        items: cartItems, // Pasa los ítems vendidos
-        cliente: selectedClient, // Pasa el cliente seleccionado
-        descuento:descuento,
-      });
-
+    if (result.success) {
+        navigation.navigate('VentaExitosa', {
+          total: total,
+          descuento: descuento, 
+          items: cartItems, 
+          cliente: selectedClient,
+          ventaId: result.ventaId,     // Añade el ID de la venta
+          timestamp: result.timestamp  // Añade la marca de tiempo
+        });
 
             cartItems.forEach(item => removeFromCart(item.id));
     } else {

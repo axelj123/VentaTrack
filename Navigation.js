@@ -47,8 +47,8 @@ const AddButton = ({ children, onPress }) => (
   >
     <View
       style={{
-        width: 60,
-        height: 60,
+        width: 50,
+        height: 50,
         borderRadius: 35,
         backgroundColor: '#EFB810',
       }}
@@ -82,11 +82,9 @@ const TabNavigator = () => {
           right: 20,
           elevation: 0,
           backgroundColor: '#211132',
-          borderRadius: 15,
 
           borderTopWidth: 0,
-          margin: 10,
-          height: 60,
+          height: 50,
         },
         tabBarActiveTintColor: 'white',
       })}
@@ -100,7 +98,7 @@ const TabNavigator = () => {
         options={{
           headerShown: false, tabBarButton: (props) => <AddButton {...props} />,
           tabBarStyle: { display: 'none' }, tabBarIcon: ({ focused }) => (
-            <Ionicons name="cart" size={40} color="#fff" />
+            <Ionicons name="cart" size={30} color="#fff" />
           ),
         }}
       />

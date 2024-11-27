@@ -739,10 +739,14 @@ export const registrarVenta = async (db, ventaData, detallesVenta) => {
     }
 
     console.log("Venta registrada exitosamente con hora local.");
-    return true; // Indicar éxito
+    return { 
+      success: true, 
+      ventaId: Venta_id, 
+      timestamp: Fecha_venta 
+    };
   } catch (error) {
     console.error("Error al registrar la venta:", error);
-    return false; // Indicar fallo
+    return { success: false }; 
   }
 };
 

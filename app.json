@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "herfer-app",
-    "slug": "herfer-app",
+    "name": "VentaTrack",
+    "slug": "VentaTrack",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
