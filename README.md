@@ -26,3 +26,6 @@ Para instalar y ejecutar el proyecto de manera local, sigue estos pasos:
 
 ```bash
 git clone https://github.com/axelj123/VentaTrack.git
+
+
+### 1. Clona este repositorio
