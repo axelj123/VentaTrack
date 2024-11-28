@@ -132,15 +132,6 @@ const Navigation = () => {
   }, []);
 
 
-  const handleLogout = async () => {
-      await AsyncStorage.removeItem('authToken'); 
-      await AsyncStorage.removeItem('hasCompletedOnboarding'); 
-      setIsLoggedIn(false); 
-  
-      navigation.reset({
-        index: 0,
-      });
-    };
 
   if (loading) {
     return <SplashScreen />;
@@ -157,7 +148,7 @@ const Navigation = () => {
             <Stack.Screen name="GetStarted" component={GetStarted} />
             <Stack.Screen name="OnboardingFlow" component={OnboardingFlow} />
             <Stack.Screen name="Register" component={Register} />
-            {/* Agregamos las rutas del TabNavigator aquí también */}
+
             <Stack.Screen name="TabNavigator" component={TabNavigator} />
             <Stack.Screen name="LOGIN" component={Login} />
             <Stack.Screen name="RegistrarProducto" component={NuevoProducto} />

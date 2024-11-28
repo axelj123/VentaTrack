@@ -81,6 +81,7 @@ const OnboardingFlow = () => {
       };
       const handleFinalizar = async () => {
         try {
+            
           await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
           console.log('Onboarding completado');
           navigation.navigate('TabNavigator');  

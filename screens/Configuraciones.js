@@ -20,7 +20,7 @@ const COLORS = {
   error: '#DC2626',       
 };
 
-const Configuraciones = ({ handleLogout  }) => {
+const Configuraciones = ({navigation}) => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -114,9 +114,8 @@ const Configuraciones = ({ handleLogout  }) => {
   }, []);
 
 
-
-
-
+  
+  
   const MenuItem = ({ icon, title, subtitle }) => (
     <View
       style={styles.menuItem}
@@ -251,9 +250,11 @@ const Configuraciones = ({ handleLogout  }) => {
           </View>
 
         </View>
-
-        {/* Account Settings */}
-        <View style={styles.section}>
+       
+         {/* Account Settings */}
+         { /* 
+         
+          <View style={styles.section}>
           <View style={styles.sectionHeader}>
 
             <Text style={styles.sectionTitle}>Configuraciones de Cuenta</Text>
@@ -278,7 +279,12 @@ const Configuraciones = ({ handleLogout  }) => {
           />
 
         </View>
-        {/*  types */}
+         */}
+
+
+       
+       
+        {/*  types */} 
 
         <ModalEditEmpresa
           modalVisible={isEditingCompany}
@@ -298,10 +304,7 @@ const Configuraciones = ({ handleLogout  }) => {
         />
 
         {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton} onPress={() => navigation.navigate('LOGIN')}>
-          <FontAwesome name="sign-out" size={20} color={COLORS.surface} />
-          <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
-        </TouchableOpacity>
+       
       </ScrollView>
     </View>
   );

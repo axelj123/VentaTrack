@@ -596,7 +596,7 @@ export const getProductoMasVendido = async (db) => {
 
       return result[0]; 
     } else {
-      console.log('No se encontraron productos vendidos');
+
       return null; 
     }
   } catch (error) {
