@@ -137,32 +137,27 @@ export const generarBoleta = async (venta, detallesVenta) => {
           </html>
         `;
 
-        // Generar el PDF
         const { uri } = await Print.printToFileAsync({
             html: htmlContent,
             base64: false
         });
 
-        // Crear un nombre de archivo único con timestamp
         const timestamp = new Date().getTime();
         const fileName = `recibo-${timestamp}.pdf`;
         const newPath = `${FileSystem.documentDirectory}${fileName}`;
 
-        // Mover el archivo al directorio de documentos
         await FileSystem.moveAsync({
             from: uri,
             to: newPath
         });
 
-        // Verificar si el dispositivo puede compartir
         const isAvailable = await Sharing.isAvailableAsync();
         
         if (isAvailable) {
-            // Usar Sharing para abrir el PDF con el visor predeterminado
             await Sharing.shareAsync(newPath, {
                 mimeType: 'application/pdf',
                 dialogTitle: 'Abrir boleta',
-                UTI: 'com.adobe.pdf' // Para iOS
+                UTI: 'com.adobe.pdf' 
             });
         } else {
             throw new Error('Sharing no está disponible en este dispositivo');

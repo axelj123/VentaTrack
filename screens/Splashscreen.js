@@ -106,7 +106,7 @@ const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#6B21A8', // Color morado base
+    backgroundColor: '#6B21A8', 
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 50,
@@ -121,13 +121,13 @@ const styles = StyleSheet.create({
     width: width * 0.8,
     height: width * 0.8,
     borderRadius: width * 0.4,
-    backgroundColor: '#805AD5', // Color morado más claro
+    backgroundColor: '#805AD5', 
     opacity: 0.3,
   },
   circle2: {
     top: height * 0.5,
     left: -width * 0.3,
-    backgroundColor: '#553C9A', // Color morado más oscuro
+    backgroundColor: '#553C9A', 
   },
   logoContainer: {
     alignItems: 'center',
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 18,
-    color: '#E9D8FD', // Color lavanda claro
+    color: '#E9D8FD', 
     textAlign: 'center',
     paddingHorizontal: 20,
   },

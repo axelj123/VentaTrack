@@ -109,6 +109,7 @@ const TabNavigator = () => {
   );
 };
 
+
 const Navigation = () => {
   const [isOnboardingComplete, setIsOnboardingComplete] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -130,15 +131,29 @@ const Navigation = () => {
     checkOnboardingStatus();
   }, []);
 
+
+  const handleLogout = async () => {
+      await AsyncStorage.removeItem('authToken'); 
+      await AsyncStorage.removeItem('hasCompletedOnboarding'); 
+      setIsLoggedIn(false); 
+  
+      navigation.reset({
+        index: 0,
+      });
+    };
+
   if (loading) {
     return <SplashScreen />;
   }
+
 
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!isOnboardingComplete ? (
           <>
+                      <Stack.Screen name="Splash" component={SplashScreen} />
+
             <Stack.Screen name="GetStarted" component={GetStarted} />
             <Stack.Screen name="OnboardingFlow" component={OnboardingFlow} />
             <Stack.Screen name="Register" component={Register} />
@@ -158,6 +173,7 @@ const Navigation = () => {
           </>
         ) : (
           <>
+          
             <Stack.Screen name="TabNavigator" component={TabNavigator} />
             <Stack.Screen name="LOGIN" component={Login} />
             <Stack.Screen name="RegistrarProducto" component={NuevoProducto} />

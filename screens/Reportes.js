@@ -50,13 +50,11 @@ const Reportes = ({navigation}) => {
         ? new Date(rangoPersonalizado.endDate)
         : new Date();
 
-      // Filtrar ventas dentro del rango de fechas
       const ventasFiltradas = ventasObtenidas.filter(venta => {
         const fechaVenta = new Date(venta.Fecha_venta);
         return fechaVenta >= fechaInicio && fechaVenta <= fechaFin;
       });
 
-      // Calcular el total de ventas y ganancias
       let totalVentas = 0;
       let totalGanancias = 0;
 
@@ -65,7 +63,7 @@ const Reportes = ({navigation}) => {
         let gananciaVenta = 0;
 
         for (let detalle of detallesVenta) {
-          const producto = await obtenerProductoPorId(detalle.Producto_id); // Obtener información del producto
+          const producto = await obtenerProductoPorId(detalle.Producto_id); 
           const precioCompra = parseFloat(producto.precio_compra) || 0;
           const precioVenta = parseFloat(detalle.precio_unitario) || 0;
           const cantidad = parseInt(detalle.cantidad) || 0;
@@ -74,18 +72,16 @@ const Reportes = ({navigation}) => {
           gananciaVenta += gananciaProducto;
         }
 
-        // Sumar total y ganancias por cada venta
         totalVentas += parseFloat(venta.Total) || 0;
         totalGanancias += gananciaVenta;
       }
 
       ventasFiltradas.sort((a, b) => new Date(b.Fecha_venta) - new Date(a.Fecha_venta));
 
-      // Actualizar los estados con las ventas filtradas, total y ganancias
       setVentas(ventasFiltradas);
       setFilteredVentas(ventasFiltradas);
       setTotalSalesAmount(totalVentas);
-      setTotalProfits(totalGanancias); // Nuevo estado para ganancias
+      setTotalProfits(totalGanancias); 
     } catch (error) {
       console.error('Error al cargar ventas:', error);
       showToast('Error al cargar las ventas', 'error');
@@ -130,7 +126,7 @@ const Reportes = ({navigation}) => {
 
       <FilterTabs
         onFilterChange={handleFilterChange}
-        filteredSalesCount={filteredVentas.length}  // Pasar el conteo de ventas filtradas
+        filteredSalesCount={filteredVentas.length}  
 
       />
 

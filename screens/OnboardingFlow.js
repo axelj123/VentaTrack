@@ -1,25 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, SafeAreaView, Dimensions } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
-import FormRegisterCuenta from '../components/FormRegisterCuenta'; // El componente FormRegisterCuenta
+import FormRegisterCuenta from '../components/FormRegisterCuenta';  
 import { useSQLiteContext } from 'expo-sqlite';
 const { width, height } = Dimensions.get('window');
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { createUsuario,createEmpresa,getAllUsuarios,getAllEmpresa } from '../database';
+import { createUsuario,createEmpresa,getUsuario, getEmpresa } from '../database';
 const OnboardingFlow = () => {
     const db = useSQLiteContext();
     const navigation = useNavigation();
 
-    const [step, setStep] = useState(0); // Comienza en el paso 0
+    const [step, setStep] = useState(0); 
+    
     const [formData, setFormData] = useState({
-        // Datos del Usuario
         nombre_completo: '',
         email: '',
         contraseña: '',
         confirmar_contraseña: '',
-        // Datos de la Empresa
+
         nombre_empresa: '',
         direccion_empresa: '',
         telefono_empresa: '',
@@ -28,8 +28,8 @@ const OnboardingFlow = () => {
     });
     const inspectDatabase = async () => {
         try {
-          const usuarios = await getAllUsuarios(db);
-          const empresa=await getAllEmpresa(db); 
+          const usuarios = await getUsuario(db);
+          const empresa=await getEmpresa(db); 
           console.log('Contenido actual de la tabla Usuario:', usuarios);
           console.log('Contenido actual de la tabla Empresa:', empresa);
 
@@ -43,22 +43,18 @@ const OnboardingFlow = () => {
       }, []);
 
     const handleSaveData = async (userData) => {
-        // Actualizamos el formulario con los nuevos datos
         setFormData((prev) => ({
           ...prev,
           ...userData,
         }));
       
-        // Paso 1: Guardamos los datos y avanzamos al paso siguiente
         if (step === 1) {
-          setStep(2); // Avanza al segundo paso
+          setStep(2);
         } else if (step === 2) {
-          setStep(3); // Avanza al formulario de la empresa
+          setStep(3); 
         } else {
-          // Paso 3: Último paso, registrar todos los datos en la base de datos
           try {
       
-            // Registrar el usuario
             const usuarioId = await createUsuario(db, {
               nombre_completo: formData.nombre_completo,
               email: formData.email,
@@ -67,7 +63,6 @@ const OnboardingFlow = () => {
       
             console.log('Usuario creado con ID:', usuarioId);
       
-            // Registrar la empresa
             const empresaId = await createEmpresa(db, {
               nombre: formData.nombre_empresa,
               direccion: formData.direccion_empresa,
@@ -88,7 +83,7 @@ const OnboardingFlow = () => {
         try {
           await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
           console.log('Onboarding completado');
-          navigation.navigate('TabNavigator');  // Reemplaza la pantalla actual con MAIN
+          navigation.navigate('TabNavigator');  
         } catch (error) {
           console.error('Error al guardar el estado de onboarding:', error);
         }
@@ -103,7 +98,6 @@ const OnboardingFlow = () => {
     };
 
     const screens = [
-        // Primera presentación
         {
             title: "Gestiona tu Inventario",
             content: (
@@ -123,14 +117,13 @@ const OnboardingFlow = () => {
                     </Text>
                     <TouchableOpacity
                         style={styles.primaryButton}
-                        onPress={() => setStep(1)} // Comienza con el primer formulario
+                        onPress={() => setStep(1)} 
                     >
                         <Text style={styles.primaryButtonText}>Comenzar</Text>
                     </TouchableOpacity>
                 </View>
             )
         },
-        // Primer formulario (Datos del Usuario)
         {
             title: "Datos del Usuario",
             content: (
@@ -138,12 +131,12 @@ const OnboardingFlow = () => {
                     formData={formData}
                     handleInputChange={handleInputChange}
                     onSubmit={handleSaveData}
-                    step={step} // Pasamos el paso actual como prop
-                    setStep={setStep} // Pasamos la función setStep como prop
+                    step={step} 
+                    setStep={setStep} 
                 />
             )
         },
-        // Segunda presentación (Configura tu Empresa)
+
         {
             title: "Configura tu Empresa",
             content: (
@@ -164,13 +157,13 @@ const OnboardingFlow = () => {
                     <View style={styles.rowButton}>
                         <TouchableOpacity
                             style={styles.primaryButtonBack}
-                            onPress={() => setStep(1)} // Retrocede al formulario
+                            onPress={() => setStep(1)} 
                         >
                             <Text style={styles.primaryButtonBackText}>Regresar</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={styles.primaryButton}
-                            onPress={() => setStep(3)} // Avanza al formulario de la empresa
+                            onPress={() => setStep(3)} 
                         >
                             <Text style={styles.primaryButtonText}>Configurar</Text>
                         </TouchableOpacity>
@@ -179,7 +172,6 @@ const OnboardingFlow = () => {
                 </View>
             )
         },
-        // Segundo formulario (Datos de la Empresa)
         {
             title: "Datos de la Empresa",
             content: (
@@ -187,8 +179,8 @@ const OnboardingFlow = () => {
                     formData={formData}
                     handleInputChange={handleInputChange}
                     onSubmit={handleSaveData}
-                    step={step} // Pasamos el paso actual como prop
-                    setStep={setStep} // Pasamos la función setStep como prop
+                    step={step} 
+                    setStep={setStep} 
                 />
             )
         }

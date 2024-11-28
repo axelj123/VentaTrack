@@ -20,7 +20,7 @@ const Toast = ({ title, message, type, onHide, onAction }) => {
           useNativeDriver: true,
         }),
       ]),
-      Animated.delay(3000), // Aumentado el tiempo de visualización
+      Animated.delay(3000),
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: -100,
@@ -104,8 +104,8 @@ const Toast = ({ title, message, type, onHide, onAction }) => {
           <TouchableOpacity 
             style={styles.actionButton}
             onPress={() => {
-              if (onAction) onAction(); // Llamar a la función personalizada
-              onHide(); // Ocultar el Toast después de ejecutar la acción
+              if (onAction) onAction(); 
+              onHide(); 
             }}
           >
             <Text style={styles.actionButtonText}>{getActionButton()}</Text>
@@ -122,7 +122,7 @@ const Toast = ({ title, message, type, onHide, onAction }) => {
   );
 };
 
-// Hook personalizado para usar el Toast (sin cambios)
+
 export const useToast = () => {
   const [toastConfig, setToastConfig] = useState(null);
 
@@ -197,21 +197,21 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     padding: 4,
   },
-  // Estilos para diferentes tipos de toast
+
   successToast: {
-    backgroundColor: '#2E7D32', // Verde
+    backgroundColor: '#2E7D32', 
   },
   warningToast: {
-    backgroundColor: '#ED6C02', // Naranja
+    backgroundColor: '#ED6C02', 
   },
   errorToast: {
-    backgroundColor: '#D32F2F', // Rojo
+    backgroundColor: '#D32F2F', 
   },
   infoToast: {
-    backgroundColor: '#0288D1', // Azul
+    backgroundColor: '#0288D1',
   },
   defaultToast: {
-    backgroundColor: '#424242', // Gris oscuro
+    backgroundColor: '#424242', 
   },
 });
 

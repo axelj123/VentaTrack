@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import CountrySelector from '../components/CountrySelector';
-import { useToast } from '../components/ToastContext'; // Importar el contexto
+import { useToast } from '../components/ToastContext';
 import { useSQLiteContext } from 'expo-sqlite';
 import { registrarCliente } from '../database';
 import eventEmitter from '../components/eventEmitter';
@@ -42,7 +42,7 @@ const NuevoCliente = ({ navigation, route }) => {
     const [newClientEmail, setNewClientEmail] = useState('');
     const [newClientPhone, setNewClientPhone] = useState('');
     const [newClientAddress, setNewClientAddress] = useState('');
-    const { showToast } = useToast(); // Usamos el hook para acceder al showToast
+    const { showToast } = useToast(); 
 
     const db=useSQLiteContext();
     useEffect(() => {
@@ -51,8 +51,8 @@ const NuevoCliente = ({ navigation, route }) => {
         }
     }, [route.params?.dni]);
 
-  // Función para registrar el cliente
-const handleRegistrarCliente = async () => {
+
+    const handleRegistrarCliente = async () => {
     if (!newClientDNI || !newClientName || !newClientCountry || !newClientEmail || !newClientPhone || !newClientAddress) {
         let missingFields = [];
 
@@ -78,16 +78,15 @@ const handleRegistrarCliente = async () => {
     };
 
     try {
-        // Registrar el cliente y obtener el ID generado
+
         const clienteId = await registrarCliente(db, cliente);
         
         if (clienteId) {
-            cliente.Cliente_id = clienteId; // Asignar el ID al objeto cliente
-            eventEmitter.emit('clientAdded', cliente); // Emitir el cliente con el ID
+            cliente.Cliente_id = clienteId; 
+            eventEmitter.emit('clientAdded', cliente); 
 
             console.log("Cliente registrado con ID:", clienteId);
 
-            // Limpia los campos después de registrar
             setNewClientDNI('');
             setNewClientName('');
             setNewClientCountry(null);
@@ -96,7 +95,7 @@ const handleRegistrarCliente = async () => {
             setNewClientAddress('');
 
             showToast('Éxito', 'Cliente registrado correctamente.', 'success');
-            navigation.goBack(); // Navegar de regreso
+            navigation.goBack(); 
         }
     } catch (error) {
         if (error.message.includes('UNIQUE constraint failed')) {

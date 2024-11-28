@@ -6,9 +6,8 @@ import { generarBoleta } from '../components/GenerarBoleta';
 import { getEmpresa } from '../database';
 
 const TicketView = ({ route, navigation }) => {
-  const { total, descuento, items, clienteId, ventaId, timestamp } = route.params; // Desestructuración de los parámetros
-  const db = useSQLiteContext();
-
+  const { total, descuento, items, clienteId, ventaId, timestamp } = route.params; 
+const db=useSQLiteContext();
   const [cliente, setCliente] = useState(null);
   const [productos, setProductos] = useState([]);
   const [companyData, setCompanyData] = useState({
@@ -47,7 +46,6 @@ const TicketView = ({ route, navigation }) => {
         return;
       }
 
-      // Extraer IDs de los productos
       const ids = productos.map((item) => item.Producto_id);
 
       if (ids.length === 0) {
@@ -55,16 +53,13 @@ const TicketView = ({ route, navigation }) => {
         return;
       }
 
-      // Construir marcadores dinámicos para la consulta SQL
       const placeholders = ids.map(() => '?').join(',');
 
-      // Consultar los nombres y precios de los productos
       const result = await db.getAllAsync(
         `SELECT Producto_id, nombre, precio_venta FROM Productos WHERE Producto_id IN (${placeholders})`,
         ids
       );
 
-      // Mapear los datos con las cantidades de `items`
       const productosMapeados = productos.map((item) => ({
         ...item,
         nombre: result.find((prod) => prod.Producto_id === item.Producto_id)?.nombre || 'N/A',
@@ -81,18 +76,15 @@ const TicketView = ({ route, navigation }) => {
 
 
   const handleGeneratePDF = async () => {
-    // Asegurarnos de que el descuento sea un número
     const descuentoNumerico = parseFloat(descuento || 0);
     const totalNumerico = parseFloat(total || 0);
 
-    // Preparar el objeto venta con valores por defecto seguros
     const venta = {
       Cliente_id: cliente?.nombre || 'Consumidor Final',
       Total: totalNumerico,
-      descuento: descuentoNumerico // Aseguramos que sea número
+      descuento: descuentoNumerico 
     };
 
-    // Preparar los detalles de venta asegurándonos que todos los valores sean números
     const detallesVenta = productos.map(producto => ({
       cantidad: parseInt(producto.cantidad) || 0,
       descripcion: producto.nombre || 'Producto sin nombre',
@@ -100,11 +92,9 @@ const TicketView = ({ route, navigation }) => {
     }));
 
     try {
-      // Llamar a la función generarBoleta
       await generarBoleta(venta, detallesVenta);
     } catch (error) {
       console.error('Error específico al generar la boleta:', error);
-      // Opcionalmente, puedes mostrar un mensaje al usuario
       Alert.alert(
         'Error',
         'No se pudo generar la boleta. Por favor, intente nuevamente.'
@@ -116,8 +106,8 @@ const TicketView = ({ route, navigation }) => {
     try {
       const result = await getEmpresa(db);
   
-      console.log("Resultado de fetchEmpresa:", result);
-  
+
+      
       if (result && result.length > 0) {
         const empresa = result[0];
   

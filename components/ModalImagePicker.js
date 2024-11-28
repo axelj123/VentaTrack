@@ -16,7 +16,6 @@ const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) =
 
       const results = await PermissionsAndroid.requestMultiple(permissions);
       
-      // Verificar si todos los permisos fueron concedidos
       const allGranted = Object.values(results).every(
         result => result === PermissionsAndroid.RESULTS.GRANTED
       );
@@ -46,8 +45,6 @@ const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) =
               { 
                 text: 'Ir a Configuración', 
                 onPress: () => {
-                  // Aquí podrías agregar lógica para abrir la configuración
-                  // Ejemplo: Linking.openSettings();
                 }
               },
               { text: 'Cancelar' }
@@ -56,7 +53,6 @@ const ModalImagePicker = ({ modalVisible, setModalVisible, setSelectedImage }) =
           return;
         }
       } else {
-        // Para iOS y otros sistemas
         const permissionResult = useCamera
           ? await ImagePicker.requestCameraPermissionsAsync()
           : await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -132,7 +128,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo oscuro para toda la pantalla
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
     backgroundColor: '#FFFFFF',

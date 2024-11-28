@@ -21,7 +21,7 @@ const getCountryByName = (name) => countries.find((country) => country.name === 
 const EditClientScreen = ({ navigation, route }) => {
     const { cliente } = route.params;
     const db = useSQLiteContext();
-    const { showToast } = useToast(); // Usamos el hook para acceder al showToast
+    const { showToast } = useToast(); 
 
     const [dni, setDni] = useState(cliente?.dni || '');
     const [country, setCountry] = useState(getCountryByName(cliente?.pais) || null);
@@ -63,18 +63,16 @@ const EditClientScreen = ({ navigation, route }) => {
                 direccion: address,
             };
     
-            // Aseguramos que Cliente_id está presente
             if (!cliente?.id) {
                 console.error('Cliente_id no válido');
                 return;
             }
     
-            // Llamamos a la función para actualizar el cliente
             const isUpdated = await handleSaveCliente(db, updatedClient, cliente.id);
     
             if (isUpdated) {
                 showToast('¡Operación exitosa!', 'Datos del cliente actualizados correctamente', 'success');
-                navigation.goBack(); // Regresa a la pantalla anterior
+                navigation.goBack(); 
             } else {
                 console.log('No se pudo actualizar el cliente');
             }
@@ -213,7 +211,6 @@ const EditClientScreen = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-    // ... Los mismos estilos que el NewClientModal
     container: {
         flex: 1,
         backgroundColor: '#FFF',

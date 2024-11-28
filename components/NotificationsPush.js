@@ -1,8 +1,6 @@
-//NotificationsPush.js
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 
-// Configurar el comportamiento de las notificaciones
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -25,7 +23,7 @@ export const sendNotificationToBackend = async (token, title, message) => {
       }),
     });
 
-    const responseText = await response.text(); // Obtener texto de respuesta en lugar de JSON
+    const responseText = await response.text();
 
     console.log('Respuesta del backend (texto):', responseText);
     console.log('Estatus de la respuesta:', response.status);
@@ -41,13 +39,13 @@ export const sendNotificationToBackend = async (token, title, message) => {
 
 export const registerForPushNotificationsAsync = async () => {
   if (Device.isDevice) {
-    const { status } = await Notifications.requestPermissionsAsync(); // Solicitar permisos
+    const { status } = await Notifications.requestPermissionsAsync();
     if (status !== 'granted') {
       alert('Se necesitan permisos para recibir notificaciones.');
-      return null; // Retorna null si no se concede el permiso
+      return null; 
     }
-    const token = await Notifications.getExpoPushTokenAsync(); // Obtener el token
-    return token.data; // Devolver el token
+    const token = await Notifications.getExpoPushTokenAsync(); 
+    return token.data; 
   } else {
     alert('Debe usar un dispositivo físico para recibir notificaciones push.');
     return null;

@@ -125,7 +125,7 @@ const ProductModal = ({
 const styles = StyleSheet.create({
   centeredView: {
     flex: 1,
-    justifyContent: 'flex-end', // Modal desde abajo
+    justifyContent: 'flex-end', 
     backgroundColor: 'rgba(0, 0, 0, 0.5)'
   },
   modalView: {

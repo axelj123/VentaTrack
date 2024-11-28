@@ -1,4 +1,3 @@
-// Toast.js
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,7 +7,6 @@ const ToastPrueba = ({ message, type, onHide }) => {
   const slideAnim = new Animated.Value(-100);
 
   useEffect(() => {
-    // Animación de aparición
     Animated.sequence([
       Animated.parallel([
         Animated.timing(slideAnim, {

@@ -24,7 +24,6 @@ const Login = () => {
   const { showToast } = useToast();
   const navigation = useNavigation();
 
-  // Estado
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
@@ -33,11 +32,9 @@ const Login = () => {
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Animaciones
   const fadeAnim = new Animated.Value(1);
   const translateY = new Animated.Value(0);
 
-  // Validaciones
   const validateForm = () => {
     const newErrors = {};
 
@@ -57,18 +54,14 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Manejo del login
   const handleLogin = async () => {
 
     try {
       setIsLoading(true);
 
-      // Simular delay de red
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      // Aquí iría la lógica real de autenticación
 
-      // Animación de éxito
       Animated.sequence([
         Animated.timing(fadeAnim, {
           toValue: 0.3,
@@ -93,7 +86,6 @@ const Login = () => {
     navigation.navigate('Register');
   };
 
-  // Efecto de scroll cuando el teclado aparece
   const handleFocus = () => {
     Animated.timing(translateY, {
       toValue: -100,
@@ -368,7 +360,6 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 5,
     gap: 16,
-    // Eliminamos marginHorizontal y ajustamos el ancho
     width: '100%',
   },
 
@@ -433,7 +424,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
-  // Modificar el CustomInput para que se vea mejor en el fondo blanco
   inputContainer: {
     backgroundColor: '#F8F9FA',
     borderRadius: 12,

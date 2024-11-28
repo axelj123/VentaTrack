@@ -13,7 +13,7 @@ const CustomInput = ({
   value,
   reset,
   isTextArea = false,
-  showError = false, // Nueva propiedad para controlar el mensaje de error
+  showError = false, 
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);

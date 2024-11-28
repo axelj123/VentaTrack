@@ -5,9 +5,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 const VentaFooter = ({ total, onCancelarVenta, onRegistrarVenta, subtotal, igv }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const [animatedHeight] = useState(new Animated.Value(90)); // Cambiamos a useState para el valor inicial
+    const [animatedHeight] = useState(new Animated.Value(90)); 
 
-    // Altura del footer cuando está expandido (ajusta según necesites)
     const EXPANDED_HEIGHT = 580;
     const COLLAPSED_HEIGHT = 80;
 

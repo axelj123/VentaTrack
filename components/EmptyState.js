@@ -3,7 +3,6 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const EmptyState = ({ 
-  // Props con valores por defecto
   title = 'No hay productos disponibles',
   description = 'Por el momento no hay productos que mostrar. Por favor, intenta buscar con otros filtros o vuelve más tarde.',
   buttonText = 'Actualizar página',
@@ -11,10 +10,8 @@ const EmptyState = ({
   iconSize = 40,
   iconColor = '#6200EE',
   buttonColor = '#6B21A8',
-  // Acciones del botón
   onRefresh,
   onPress,
-  // Props para personalizar los estilos
   containerStyle,
   iconContainerStyle,
   titleStyle,
@@ -22,7 +19,6 @@ const EmptyState = ({
   buttonStyle,
   buttonTextStyle,
 }) => {
-  // Determinar qué acción usar
   const handlePress = onPress || onRefresh;
 
   return (

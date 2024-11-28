@@ -173,13 +173,7 @@ function ViewItem({ route }) {
 
       {/* Botones de Acción */}
       <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={() => setConfirmModalVisible(true)}
-        >
-          <MaterialIcons name="delete-outline" size={24} color="#5B21B6" />
-          <Text style={styles.deleteButtonText}>Eliminar</Text>
-        </TouchableOpacity>
+
 
         <TouchableOpacity
           style={styles.saveButton}

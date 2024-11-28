@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, FlatList, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { getDBConnection } from '../database';
-import { useToast } from './ToastContext';
 import { useNavigation } from '@react-navigation/native';
 import { useSQLiteContext } from 'expo-sqlite';
 import eventEmitter from './eventEmitter';
@@ -10,17 +8,11 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [clients, setClients] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const navigation = useNavigation(); // Hook de navegación
+  const navigation = useNavigation(); 
 
   const db=useSQLiteContext();
-  const { showToast } = useToast();
 
-  const [newClientDNI, setNewClientDNI] = useState('');
-  const [newClientCountry, setNewClientCountry] = useState('');
-  const [newClientName, setNewClientName] = useState('');
-  const [newClientEmail, setNewClientEmail] = useState('');
-  const [newClientPhone, setNewClientPhone] = useState('');
-  const [newClientAddress, setNewClientAddress] = useState('');
+ 
 
   const [selectedClient, setSelectedClient] = useState(null);
   useEffect(() => {
@@ -60,7 +52,7 @@ const ClientSearchInput = ({ onClientSelect, style }) => {
 
   const handleAddNewClient = () => {
     navigation.navigate('NuevoCliente', {
-        dni: searchTerm, // Solo pasa el DNI
+        dni: searchTerm, 
     });
 };
 useEffect(() => {
@@ -69,15 +61,15 @@ useEffect(() => {
       console.error("El cliente agregado no tiene un Cliente_id:", newClient);
       return;
     }
-    setSelectedClient(newClient); // Actualiza el cliente seleccionado
-    setSearchTerm(newClient.dni.toString()); // Muestra el DNI del cliente en el campo
-    onClientSelect(newClient); // Notifica al componente padre
+    setSelectedClient(newClient); 
+    setSearchTerm(newClient.dni.toString()); 
+    onClientSelect(newClient); 
   };
 
-  eventEmitter.on('clientAdded', handleClientAdded); // Suscribirse al evento
+  eventEmitter.on('clientAdded', handleClientAdded); 
 
   return () => {
-    eventEmitter.off('clientAdded', handleClientAdded); // Limpieza al desmontar
+    eventEmitter.off('clientAdded', handleClientAdded);
   };
 }, [onClientSelect]);
 

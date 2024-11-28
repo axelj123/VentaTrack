@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal } from 'reac
 import { FontAwesome } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { handleSaveEmpresa } from '../database';
-import { useToast } from '../components/ToastContext'; // Importar el contexto
+import { useToast } from '../components/ToastContext'; 
 
 const COLORS = {
     primary: '#4338CA',
@@ -30,7 +30,7 @@ const ModalEditEmpresa = ({
     const [companyRuc, setCompanyRuc] = useState('');
     const [companyCorreo, setCompanyCorreo] = useState('');
     const db = useSQLiteContext();
-    const { showToast } = useToast(); // Usamos el hook para acceder al showToast
+    const { showToast } = useToast(); 
 
     useEffect(() => {
         if (modalVisible && companyData) {

@@ -46,7 +46,6 @@ const CardsItems = ({
       return `S/. ${priceNumber.toFixed(2)}`;
     }
   };
-  // Enhanced stock status logic with more detailed ranges
 
   const getStockStatus = () => {
     const formattedStock = formatStockNumber(stock);

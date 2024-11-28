@@ -21,7 +21,6 @@ const ModernBarChart = ({
     mejorDia: { valor: 0, fecha: '' }
   });
 
-  // Memoizar la configuración del gráfico
   const chartConfig = useMemo(() => ({
     backgroundColor: '#ffffff',
     backgroundGradientFrom: '#ffffff',
@@ -44,7 +43,6 @@ const ModernBarChart = ({
     formatXLabel: (label) => label.length > 5 ? label.substring(0, 5) + '...' : label,
   }), []);
 
-  // Memoizar el procesamiento de datos del gráfico
   const chartData = useMemo(() => {
     if (!ventas?.datasets?.[0]?.data?.length) return null;
 
@@ -64,7 +62,6 @@ const ModernBarChart = ({
     };
   }, [ventas, chartFilter]);
 
-  // Memoizar el cálculo de métricas
   const calculateMetrics = useCallback(() => {
     if (!ventas?.datasets?.[0]?.data?.length) return;
 
@@ -89,12 +86,10 @@ const ModernBarChart = ({
     });
   }, [ventas]);
 
-  // Actualizar métricas solo cuando cambian los datos relevantes
   useEffect(() => {
     calculateMetrics();
   }, [calculateMetrics]);
 
-  // Componente de métrica memoizado
   const MetricCard = React.memo(({ title, value, subtitle, icon, color = "#3c0475" }) => (
     <View style={styles.metricCard}>
       <View style={styles.metricHeader}>
@@ -106,7 +101,6 @@ const ModernBarChart = ({
     </View>
   ));
 
-  // Componentes renderizados condicionalmente
   const renderNoDataState = useCallback(() => (
     <View style={styles.noDataContainer}>
       <Feather name="bar-chart-2" size={48} color="#cccccc" />

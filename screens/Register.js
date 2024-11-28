@@ -25,8 +25,7 @@ const Register = () => {
     const { showToast } = useToast();
     const navigation = useNavigation();
 
-    // Estados para el formulario
-    const [step, setStep] = useState(1); // 1: registro, 2: verificación
+    const [step, setStep] = useState(1); 
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -37,11 +36,9 @@ const Register = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState({});
 
-    // Animaciones
     const fadeAnim = useRef(new Animated.Value(1)).current;
     const slideAnim = useRef(new Animated.Value(0)).current;
 
-    // Validaciones
     const validateForm = () => {
         const newErrors = {};
 
@@ -86,7 +83,6 @@ const Register = () => {
         return Object.keys(newErrors).length === 0;
     };
 
-    // Manejo del registro
     const handleRegister = async () => {
         if (!validateForm()) {
             showToast('Por favor, corrija los errores del formulario', 'error');
@@ -97,10 +93,8 @@ const Register = () => {
             setIsLoading(true);
             Keyboard.dismiss();
 
-            // Simulación de envío de código de verificación
             await new Promise(resolve => setTimeout(resolve, 1500));
 
-            // Animación de transición
             Animated.parallel([
                 Animated.timing(fadeAnim, {
                     toValue: 0,
@@ -126,7 +120,6 @@ const Register = () => {
         }
     };
 
-    // Manejo de la verificación
     const handleVerification = async () => {
         if (!validateVerificationCode()) {
             showToast('Por favor, ingrese el código válido', 'error');
@@ -137,10 +130,8 @@ const Register = () => {
             setIsLoading(true);
             Keyboard.dismiss();
 
-            // Simulación de verificación
             await new Promise(resolve => setTimeout(resolve, 1500));
 
-            // Aquí iría la lógica real de verificación
 
             showToast('¡Registro exitoso!', 'success');
             navigation.navigate('Login');
@@ -151,12 +142,10 @@ const Register = () => {
         }
     };
 
-    // Reenviar código
     const handleResendCode = async () => {
         try {
             setIsLoading(true);
 
-            // Simulación de reenvío
             await new Promise(resolve => setTimeout(resolve, 1500));
 
             showToast('Nuevo código enviado a su correo', 'success');
@@ -206,7 +195,6 @@ const Register = () => {
 
                         <View style={styles.formContainer}>
                             {step === 1 ? (
-                                // Formulario de registro
                                 <>
                                     <CustomInput
                                         value={fullName}
@@ -260,7 +248,7 @@ const Register = () => {
                                             }
                                         }}
                                         secureTextEntry={!isPasswordVisible}
-                                        autoCapitalize="none" // Evita las mayúsculas automáticas
+                                        autoCapitalize="none" 
                                         leftIcon={
                                             <FontAwesome name="lock" size={20} color="#666" />
                                         }
@@ -292,7 +280,7 @@ const Register = () => {
                                             }
                                         }}
                                         secureTextEntry={!isConfirmPasswordVisible}
-                                        autoCapitalize="none" // Evita las mayúsculas automáticas
+                                        autoCapitalize="none" 
                                         leftIcon={
                                             <FontAwesome name="lock" size={20} color="#666" />
                                         }
@@ -328,7 +316,7 @@ const Register = () => {
                                     </TouchableOpacity>
                                 </>
                             ) : (
-                                // Formulario de verificación
+                         
                                 <>
                                     <Text style={styles.verificationText}>
                                         Hemos enviado un código de verificación a:

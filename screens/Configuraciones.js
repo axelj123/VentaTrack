@@ -7,35 +7,35 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getEmpresa, getUsuario } from '../database';
 import ModalEditEmpresa from '../components/ModalEditEmpresa';
 import ModalEditUser from '../components/ModalEditUser';
-// Paleta de colores moderna en tonos morados
+
 const COLORS = {
-  primary: '#5B21B6',      // Morado principal
-  secondary: '#7C3AED',    // Morado secundario
-  tertiary: '#A78BFA',     // Morado claro
-  background: '#f5f5f5',   // Fondo muy claro morado
-  surface: '#FFFFFF',      // Blanco para tarjetas
-  text: '#1F2937',        // Texto oscuro
-  textSecondary: '#6B7280', // Texto secundario
-  border: '#E5E7EB',      // Bordes
-  error: '#DC2626',       // Rojo para acciones críticas
+  primary: '#5B21B6',      
+  secondary: '#7C3AED',    
+  tertiary: '#A78BFA',     
+  background: '#f5f5f5',   
+  surface: '#FFFFFF',     
+  text: '#1F2937',        
+  textSecondary: '#6B7280', 
+  border: '#E5E7EB',      
+  error: '#DC2626',       
 };
 
-const Configuraciones = ({ navigation }) => {
+const Configuraciones = ({ handleLogout  }) => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [imageModalVisible, setImageModalVisible] = useState(false); // Modal para perfil
-  const [companyModalVisible, setCompanyModalVisible] = useState(false); // Modal para empresa
-  const [selectedImage, setSelectedImage] = useState(null); // Imagen del perfil
-  const [selectCompanyImage, setSelectCompanyImage] = useState(null); // Imagen de la empresa
+  const [imageModalVisible, setImageModalVisible] = useState(false); 
+  const [companyModalVisible, setCompanyModalVisible] = useState(false); 
+  const [selectedImage, setSelectedImage] = useState(null); 
+  const [selectCompanyImage, setSelectCompanyImage] = useState(null); 
 
   const [companyData, setCompanyData] = useState({
     nombre: '',
     location: '',
     phone: '',
-    correo:'',
+    correo: '',
     ruc: '',
     logo: 'https://via.placeholder.com/150',
   });
@@ -53,7 +53,7 @@ const Configuraciones = ({ navigation }) => {
     try {
       const savedImage = await AsyncStorage.getItem(key);
       if (savedImage) {
-        setImage(savedImage); // Actualiza el estado con la imagen cargada
+        setImage(savedImage); 
       }
     } catch (error) {
       console.error('Error cargando la imagen:', error);
@@ -62,11 +62,10 @@ const Configuraciones = ({ navigation }) => {
 
   const fetchUserName = async () => {
     try {
-      const result = await getUsuario(db); // Llamar a la función `getUsuario` para obtener el usuario
+      const result = await getUsuario(db); 
       if (result && result.length > 0) {
         const fullName = result[0]?.nombre_completo || "Usuario";
         const mail = result[0]?.email || "email";
-        // Obtener solo las dos primeras palabras del nombre
         const firstTwoWords = fullName.split(" ").slice(0, 2).join(" ");
         setName(firstTwoWords);
         setEmail(mail);
@@ -77,16 +76,16 @@ const Configuraciones = ({ navigation }) => {
       console.error("Error al obtener el nombre del usuario:", error);
     }
   };
-  
+
   const fetchEmpresa = async () => {
     try {
       const result = await getEmpresa(db);
-  
-      console.log("Resultado de fetchEmpresa:", result);
-  
+
+
+      
       if (result && result.length > 0) {
         const empresa = result[0];
-  
+
         setCompanyData({
           id: empresa.Empresa_id,
           nombre: empresa.nombre || 'Nombre no registrado',
@@ -104,11 +103,11 @@ const Configuraciones = ({ navigation }) => {
     }
   };
   const refreshEmpresaData = async () => {
-    await fetchEmpresa(); // This method is already defined in your component to fetch company data
+    await fetchEmpresa(); 
   };
 
   useEffect(() => {
-    fetchUserName(); // Carga el nombre del usuario desde la base de datos
+    fetchUserName(); 
     fetchEmpresa();
     loadImageFromStorage('profileImage', setSelectedImage);
     loadImageFromStorage('companyImage', setSelectCompanyImage);
@@ -139,7 +138,7 @@ const Configuraciones = ({ navigation }) => {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Configuración</Text>
         <View style={styles.headerRight}>
-    
+
         </View>
       </View>
 
@@ -161,11 +160,11 @@ const Configuraciones = ({ navigation }) => {
             modalVisible={imageModalVisible}
             setModalVisible={setImageModalVisible}
             setSelectedImage={(image) => {
-              setSelectedImage(image); 
-              saveImageToStorage('profileImage', image); 
+              setSelectedImage(image);
+              saveImageToStorage('profileImage', image);
             }}
           />
-          
+
         </View>
 
 
@@ -200,15 +199,15 @@ const Configuraciones = ({ navigation }) => {
               <Image
                 source={
                   selectCompanyImage
-                    ? { uri: selectCompanyImage } // Imagen seleccionada de la empresa
-                    : { uri: companyData.logo }  // Logo predeterminado de la empresa
+                    ? { uri: selectCompanyImage } 
+                    : { uri: companyData.logo } 
                 }
                 style={styles.companyLogo}
                 resizeMode="contain"
               />
               <TouchableOpacity
                 style={styles.companyLogoOverlay}
-                onPress={() => setCompanyModalVisible(true)} // Controla el modal de empresa
+                onPress={() => setCompanyModalVisible(true)} 
               >
                 <FontAwesome name="camera" size={16} color={COLORS.surface} />
               </TouchableOpacity>
@@ -225,40 +224,40 @@ const Configuraciones = ({ navigation }) => {
 
             <MenuItem
               icon="building"
-              title={companyData.nombre} // Muestra el nombre de la empresa
+              title={companyData.nombre} 
               subtitle="Nombre de la empresa"
             />
             <MenuItem
               icon="id-card"
-              title={companyData.ruc} // Muestra el RUC de la empresa
+              title={companyData.ruc} 
               subtitle="RUC"
             />
             <MenuItem
               icon="map-marker"
-              title={companyData.location} // Muestra la ubicación de la empresa
+              title={companyData.location} 
               subtitle="Ubicación"
             />
             <MenuItem
               icon="phone"
-              title={companyData.phone} // Muestra el número de teléfono de la empresa
+              title={companyData.phone} 
               subtitle="Teléfono"
             />
-              <MenuItem
+            <MenuItem
               icon="envelope"
-              title={companyData.correo} // Muestra el número de teléfono de la empresa
+              title={companyData.correo}
               subtitle="correo"
             />
 
           </View>
-         
+
         </View>
 
         {/* Account Settings */}
         <View style={styles.section}>
-        <View style={styles.sectionHeader}>
+          <View style={styles.sectionHeader}>
 
-          <Text style={styles.sectionTitle}>Configuraciones de Cuenta</Text>
-          <TouchableOpacity
+            <Text style={styles.sectionTitle}>Configuraciones de Cuenta</Text>
+            <TouchableOpacity
               style={styles.editButton}
               onPress={() => setIsEditingProfile(true)}
             >
@@ -269,36 +268,37 @@ const Configuraciones = ({ navigation }) => {
             icon="lock"
             title="Cambiar Contraseña"
           />
-             <MenuItem
+          <MenuItem
             icon="user"
             title="cambiar nombre de usuario"
           />
-           <MenuItem
+          <MenuItem
             icon="envelope"
             title="cambiar correo electrónico"
           />
-       
+
         </View>
-        
+        {/*  types */}
+
         <ModalEditEmpresa
-            modalVisible={isEditingCompany}
-            setModalVisible={setIsEditingCompany}
-            companyData={companyData}
-            setCompanyData={setCompanyData}
-            onUpdateSuccess={refreshEmpresaData} // Add this prop
+          modalVisible={isEditingCompany}
+          setModalVisible={setIsEditingCompany}
+          companyData={companyData}
+          setCompanyData={setCompanyData}
+          onUpdateSuccess={refreshEmpresaData} 
 
-          />
-          <ModalEditUser
+        />
+        <ModalEditUser
 
-modalVisible={isEditingProfile}
-setModalVisible={setIsEditingProfile}
-setCompanyData={setCompanyData}
-onUpdateSuccess={refreshEmpresaData} // Add this prop
+          modalVisible={isEditingProfile}
+          setModalVisible={setIsEditingProfile}
+          setCompanyData={setCompanyData}
+          onUpdateSuccess={refreshEmpresaData} 
 
-/>
+        />
 
         {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton}>
+        <TouchableOpacity style={styles.logoutButton} onPress={() => navigation.navigate('LOGIN')}>
           <FontAwesome name="sign-out" size={20} color={COLORS.surface} />
           <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
         </TouchableOpacity>
@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: COLORS.text,
-    marginBottom:12,
+    marginBottom: 12,
   },
   editButton: {
     backgroundColor: COLORS.secondary,
@@ -500,9 +500,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 16,
     borderRadius: 15,
-    marginTop:10,
+    marginTop: 10,
 
-    marginBottom:50,
+    marginBottom: 50,
   },
   logoutButtonText: {
     color: COLORS.surface,

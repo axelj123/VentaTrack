@@ -15,13 +15,12 @@ const FormInput = ({ label, error, ...props }) => (
 );
 
 const FormRegisterCuenta = ({ formData, handleInputChange, step,setStep, onSubmit }) => {
-    const [errors, setErrors] = useState({}); // Estado para manejar los errores
+    const [errors, setErrors] = useState({}); 
   
     const handleNext = () => {
       const newErrors = {};
   
       if (step === 1) {
-        // Validaciones para los datos del usuario
         if (!formData.nombre_completo) {
           newErrors.nombre_completo = 'El nombre es requerido';
         }
@@ -35,7 +34,6 @@ const FormRegisterCuenta = ({ formData, handleInputChange, step,setStep, onSubmi
           newErrors.confirmar_contraseña = 'Las contraseñas no coinciden';
         }
       } else if (step === 3) {
-        // Validaciones para los datos de la empresa
         if (!formData.nombre_empresa) {
           newErrors.nombre_empresa = 'El nombre de la empresa es requerido';
         }
@@ -58,7 +56,6 @@ const FormRegisterCuenta = ({ formData, handleInputChange, step,setStep, onSubmi
         return;
       }
   
-      // Si no hay errores, pasamos el control a handleSaveData
       onSubmit(formData);
     };
   
@@ -70,7 +67,7 @@ const FormRegisterCuenta = ({ formData, handleInputChange, step,setStep, onSubmi
           <TouchableOpacity 
             style={styles.backButton}
             onPress={() => setStep(prev => prev - 1)}
-            disabled={step === 0} // Deshabilitar botón de retroceso en el primer paso
+            disabled={step === 0} 
           >
             <AntDesign name="arrowleft" size={24} color="#1F2937" />
           </TouchableOpacity>

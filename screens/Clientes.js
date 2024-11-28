@@ -46,13 +46,12 @@ const Clientes = ({ navigation }) => {
   const [clientes,setClientes]=useState([]);
 
   const db= useSQLiteContext();
-  // Datos de ejemplo
 
   const fetchClientes = async () => {
     try {
       const clientesData = await listClientes(db);
       const sanitizedClientes = clientesData.map(cliente => ({
-        id: cliente.Cliente_id, // Mapeo de Cliente_id a id
+        id: cliente.Cliente_id, 
         dni: cliente.dni?.toString() || 'Sin dni', 
         nombre: cliente.nombre_completo || 'Sin Nombre',
         email: cliente.email || 'Sin Email',
@@ -73,7 +72,6 @@ useFocusEffect(
   }, [])
 );
 const handleEditCliente = (cliente) => {
-  // Navigate to EditClientScreen and pass the client data
   navigation.navigate('EditClientScreen', { cliente });
 };
 

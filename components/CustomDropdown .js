@@ -67,7 +67,7 @@ const CustomDropdown = ({
           <View style={[
             styles.dropdownListContainer,
             {
-              top: 0, // Ajusta esto según la posición de tu dropdown
+              top: 0, 
               width: '100%'
             }
           ]}>
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     backgroundColor: 'white',
     borderRadius: 8,
-    marginHorizontal: 16, // Ajusta esto según tus necesidades
+    marginHorizontal: 16, 
     shadowColor: "#000",
     shadowOffset: {
       width: 0,

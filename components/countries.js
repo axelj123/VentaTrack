@@ -1,4 +1,3 @@
-// countries.js
 export const countries = [
     { code: 'AR', name: 'Argentina', flag: '🇦🇷', callingCode: '+54' },
     { code: 'BO', name: 'Bolivia', flag: '🇧🇴', callingCode: '+591' },

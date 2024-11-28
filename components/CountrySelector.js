@@ -1,4 +1,3 @@
-// CountrySelector.js
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, FlatList, StyleSheet } from 'react-native';
 import { countries } from './countries';
@@ -9,14 +8,12 @@ const CountrySelector = ({ initialCountry,onSelectCountry }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
 
-      // Efecto para sincronizar el valor inicial con el estado local
       React.useEffect(() => {
         if (initialCountry) {
             setSelectedCountry(initialCountry);
         }
     }, [initialCountry]);
     
-  // Filtra los países según el término de búsqueda
   const filteredCountries = countries.filter((country) =>
     country.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -24,7 +21,7 @@ const CountrySelector = ({ initialCountry,onSelectCountry }) => {
   const handleCountrySelect = (country) => {
     setSelectedCountry(country);
     setIsModalVisible(false);
-    onSelectCountry(country); // Callback para pasar el país seleccionado al componente principal
+    onSelectCountry(country); 
   };
 
   return (

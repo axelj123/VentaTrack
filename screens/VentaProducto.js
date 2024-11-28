@@ -5,7 +5,7 @@ import Card from '../components/CardsItems';
 import ProductModal from '../components/ProductModal';
 import { getDBConnection, listaProducto } from '../database';
 import EmptyState from '../components/EmptyState';
-import { useCart } from '../components/CartContext'; // Usamos el contexto para el carrito
+import { useCart } from '../components/CartContext'; 
 import { useFocusEffect } from '@react-navigation/native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useToast } from '../components/ToastContext';
@@ -15,7 +15,7 @@ const VentaProducto = ({navigation }) => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [filteredItems, setFilteredItems] = useState([]);
   const [productos, setProductos] = useState([]);
-  const { cartItems, addToCart } = useCart(); // Obtener cartItems y la función addToCart
+  const { cartItems, addToCart } = useCart(); 
   const { showToast }=useToast();
   const db=useSQLiteContext();
 
@@ -65,11 +65,11 @@ const VentaProducto = ({navigation }) => {
     });
     setModalVisible(true);
   };
-  // Actualizar el manejo del carrito
+
   useEffect(() => {
     navigation.setOptions({
       onCartUpdate: (updatedCart) => {
-        setCartItems(updatedCart);  // Actualiza el carrito con el nuevo valor
+        setCartItems(updatedCart);  
       }
     });
   }, [navigation]);
@@ -83,7 +83,7 @@ const VentaProducto = ({navigation }) => {
     }
   };
   const handleAddToCart = (productToAdd) => {
-    addToCart(productToAdd);  // Usamos la función addToCart del contexto
+    addToCart(productToAdd); 
     showToast("success",`Producto agregado: ${productToAdd.title}`,"success",navigateToCart )
 
     setModalVisible(false);
@@ -235,13 +235,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 50, // Ajusta según sea necesario
+    marginTop: 50,
   },
   emptyText: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
-    marginTop: 20, // Espacio entre el icono y el texto
+    marginTop: 20, 
   },
 });
 

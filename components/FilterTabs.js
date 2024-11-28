@@ -48,7 +48,6 @@ const FilterTabs = ({ onFilterChange,filteredSalesCount,totalSalesAmount }) => {
         if (Platform.OS === 'android') {
           setIsStartDate(false);
           setShowAndroidPicker(false);
-          // Pequeño delay antes de mostrar el selector de fecha final
           setTimeout(() => setShowAndroidPicker(true), 300);
         }
       } else {

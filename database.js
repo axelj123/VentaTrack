@@ -4,14 +4,14 @@ import * as SQLite from 'expo-sqlite';
 const DATABASE_NAME = 'VentasDB.db';
 
 
-// Función para obtener la ruta de la base de datos
+
 const getDatabasePath = () => {
   if (!FileSystem || !FileSystem.documentDirectory) {
     throw new Error('FileSystem no está disponible');
   }
   return `${FileSystem.documentDirectory}SQLite/${DATABASE_NAME}`;
 };
-// Función para abrir la base de datos
+
 export const getDBConnection = async () => {
   try {
     const db = await SQLite.openDatabaseAsync(DATABASE_NAME);
@@ -22,7 +22,7 @@ export const getDBConnection = async () => {
   }
 };
 
-// Función para eliminar la base de datos
+
 export const deleteDatabase = async () => {
   try {
     const dbPath = getDatabasePath();
@@ -43,7 +43,7 @@ export const deleteDatabase = async () => {
 };
 
 
-// Función para crear las tablas
+
 export const createTables = async (db) => {
   const tables = [
     // Tabla Usuario
@@ -145,13 +145,12 @@ export const createTables = async (db) => {
 
   ];
   try {
-    // Crear tablas
     for (const table of tables) {
       await db.execAsync(table);
       console.log(`Tabla creada: ${table.split(' ')[2]}`);
     }
 
-    // Llama a la función para insertar datos iniciales si las tablas están vacías
+
     await insertarDatosIniciales(db);
 
   } catch (error) {
@@ -161,28 +160,28 @@ export const createTables = async (db) => {
 };
 const insertarDatosIniciales = async (db) => {
   try {
-    // Comprobar si ya existen datos en la tabla Tipo_Venta
+
     const tiposVenta = await db.getAllAsync('SELECT * FROM Tipo_Venta');
     if (tiposVenta.length === 0) {
       await db.runAsync(`INSERT INTO Tipo_Venta (nombre) VALUES ('Nacional'), ('Internacional')`);
       console.log("Datos insertados en Tipo_Venta");
     }
 
-    // Comprobar si ya existen datos en la tabla Categoria_Producto
+
     const categoriasProducto = await db.getAllAsync('SELECT * FROM Categoria_Producto');
     if (categoriasProducto.length === 0) {
       await db.runAsync(`INSERT INTO Categoria_Producto (nombre) VALUES ('Te'), ('Cafes'), ('Energizantes'), ('Proteinas'), ('Aseo Personal')`);
       console.log("Datos insertados en Categoria_Producto");
     }
 
-    // Comprobar si ya existen datos en la tabla Courier
+
     const couriers = await db.getAllAsync('SELECT * FROM Courier');
     if (couriers.length === 0) {
       await db.runAsync(`INSERT INTO Courier (nombre) VALUES ('Olva Courier'), ('In Drive'), ('Shalom'), ('Vifasa'), ('Frapessa'), ('Otros')`);
       console.log("Datos insertados en Courier");
     }
 
-    // Comprobar si ya existen datos en la tabla Cliente
+
     const clientes = await db.getAllAsync('SELECT * FROM Cliente');
     if (clientes.length === 0) {
       await db.runAsync(`INSERT INTO Cliente (dni, pais, nombre_completo, email, telefono, direccion)
@@ -213,7 +212,6 @@ export const handleSaveCliente = async (db, formData, Cliente_id) => {
       Cliente_id
     });
 
-    // Realizar la actualización en la base de datos
     const result = await db.runAsync(
       `UPDATE Cliente SET 
         dni = ?, 
@@ -234,7 +232,6 @@ export const handleSaveCliente = async (db, formData, Cliente_id) => {
       ]
     );
 
-    console.log("Resultado de la actualización:", result);
 
     if (result.changes === 0) {
       console.log("No se encontró el cliente con el id especificado");
@@ -250,29 +247,25 @@ export const handleSaveCliente = async (db, formData, Cliente_id) => {
 };
 export const handleSaveEmpresa = async (db, formData, Empresa_id) => {
   try {
-    console.log("Guardando empresa con los siguientes datos:", {
+   {
       formData,
-      Empresa_id,
-    });
+      Empresa_id
+    }
 
-    // Validar datos antes de enviarlos
     const dataToUpdate = {
-      nombre: formData.nombre || null, // Usa null si el valor está vacío
+      nombre: formData.nombre || null, 
       direccion: formData.direccion || null,
-      telefono: formData.telefono ? parseInt(formData.telefono) : null, // Convertir a número o null
-      ruc: formData.ruc ? parseInt(formData.ruc) : null, // Convertir a número o null
+      telefono: formData.telefono ? parseInt(formData.telefono) : null, 
+      ruc: formData.ruc ? parseInt(formData.ruc) : null,
       correo_contacto: formData.correo_contacto || null,
     };
 
-    // Asegurarse de que se pasa un ID válido
     if (!Empresa_id) {
       console.error("El ID de la empresa es inválido o no está definido.");
       return false;
     }
 
-    console.log("Datos procesados para la actualización:", dataToUpdate);
 
-    // Realizar la actualización en la base de datos
     const result = await db.runAsync(
       `UPDATE Empresa SET 
         nombre = ?, 
@@ -291,7 +284,6 @@ export const handleSaveEmpresa = async (db, formData, Empresa_id) => {
       ]
     );
 
-    console.log("Resultado de la actualización:", result);
 
     if (result.changes === 0) {
       console.log("No se encontró la empresa con el ID especificado.");
@@ -317,10 +309,10 @@ export const guardarNotificacion = async (db, formNotification) => {
       VALUES (?, ?, ?, ?);
       `,
       [
-        formNotification.Usuario_id, // ID del usuario relacionado con la notificación
-        formNotification.title, // Título de la notificación
-        formNotification.description, // Descripción de la notificación
-        new Date().toISOString() // Fecha y hora actual en formato ISO
+        formNotification.Usuario_id, 
+        formNotification.title, 
+        formNotification.description, 
+        new Date().toISOString() 
       ]
     );
 
@@ -341,33 +333,26 @@ export const guardarNotificacion = async (db, formNotification) => {
 
 export const handleSave = async (db, formData, selectedImage, Producto_id, currentImage) => {
   try {
-    console.log("Guardando producto con los siguientes datos:", {
-      formData,
+    {
+    formData,
       selectedImage,
       Producto_id,
       currentImage
-    });
+    };
 
 
-    // Determinar qué imagen usar
     let imageToSave;
     if (selectedImage) {
-      // Si hay una nueva imagen seleccionada, usar esa
       imageToSave = selectedImage;
     } else if (currentImage && typeof currentImage === 'object' && currentImage.uri) {
-      // Si currentImage es un objeto con uri (formato React Native Image source)
       imageToSave = currentImage.uri;
     } else if (currentImage) {
-      // Si currentImage es directamente un string con la URI
       imageToSave = currentImage;
     } else {
-      // Si no hay ninguna imagen
       imageToSave = '';
     }
 
-    console.log("Imagen que se guardará:", imageToSave);
 
-    // Realizar la actualización en la base de datos
     const result = await db.runAsync(
       `UPDATE Productos SET 
         nombre = ?, 
@@ -388,14 +373,12 @@ export const handleSave = async (db, formData, selectedImage, Producto_id, curre
       ]
     );
 
-    console.log("Resultado de la actualización:", result);
 
     if (result.changes === 0) {
       console.log("No se encontró el producto con el id especificado");
       return false;
     }
 
-    console.log("Producto guardado con éxito");
     return true;
   } catch (error) {
     console.error("Error al guardar el producto:", error);
@@ -413,21 +396,20 @@ export const eliminarProducto = async (db, Producto_id) => {
 
     if (result.changes === 0) {
       console.log("No se encontró el producto con el id especificado.");
-      return false; // No se encontró el producto o no hubo cambios
+      return false; 
     }
 
     console.log("Producto eliminado con éxito.");
-    return true; // Devuelve true si la operación fue exitosa
+    return true;
   } catch (error) {
     console.error("Error al eliminar el producto:", error);
-    return false; // Devuelve false si ocurrió un error
+    return false; 
   }
 };
-// Función para consultar datos
 export const consultarDatos = async (db, tableName) => {
   try {
     const result = await db.getAllAsync(`SELECT * FROM ${tableName}`);
-    const datos = result || []; // Manejo seguro de resultados
+    const datos = result || []; 
     console.log(`Datos en ${tableName}:`, datos);
     return datos;
   } catch (error) {
@@ -442,7 +424,7 @@ export const obtenerDetallesVenta = async (ventaId) => {
     const result = await db.getAllAsync(query, [ventaId]);
 
     if (result && result.length > 0) {
-      const detallesVenta = result.map((row) => row); // Acceder a los resultados
+      const detallesVenta = result.map((row) => row); 
       return detallesVenta;
     } else {
       console.log("No se encontraron detalles para la venta ID:", ventaId);
@@ -477,7 +459,6 @@ export const obtenerHoraYfecha = async () => {
     Alert.alert("Error", "No se pudo obtener la fecha y hora actual");
   }
 };
-// Función para obtener información de un producto por su ID
 export const obtenerProductoPorId = async (productoId) => {
   try {
     const db = await getDBConnection();
@@ -485,7 +466,7 @@ export const obtenerProductoPorId = async (productoId) => {
     const result = await db.getAllAsync(query, [productoId]);
 
     if (result && result.length > 0) {
-      const producto = result[0]; // Acceder al primer resultado
+      const producto = result[0]; 
       return producto;
     } else {
       console.log("No se encontró el producto con ID:", productoId);
@@ -503,12 +484,10 @@ export const obtenerCantidadYVerificarStock = async (productoId, limiteStock = 5
     const result = await db.getAllAsync(query, [productoId]);
 
     if (result && result.length > 0) {
-      const producto = result[0]; // Acceder al primer resultado
-
-      // Verifica si el stock está por debajo del límite establecido
+      const producto = result[0]; 
       if (producto.cantidad <= limiteStock) {
         console.log(`⚠️ El stock de "${producto.nombre}" es bajo (${producto.cantidad} unidades).`);
-        await enviarNotificacionStockBajo(producto); // Enviar notificación
+        await enviarNotificacionStockBajo(producto); 
       } else {
         console.log(`El stock de "${producto.nombre}" es suficiente (${producto.cantidad} unidades).`);
       }
@@ -523,25 +502,24 @@ export const obtenerCantidadYVerificarStock = async (productoId, limiteStock = 5
     throw error;
   }
 };
-// Función para enviar notificación de stock bajo
 const enviarNotificacionStockBajo = async (producto) => {
   await Notifications.scheduleNotificationAsync({
     content: {
       title: '⚠️ Stock Bajo',
       body: `El stock de "${producto.nombre}" es de ${producto.cantidad} unidades.`,
-      data: { productoId: producto.Producto_id }, // Información adicional opcional
+      data: { productoId: producto.Producto_id }, 
     },
-    trigger: null, // Notificación inmediata
+    trigger: null, 
   });
 };
-// Funciones CRUD para Usuario
+
 export const createUsuario = async (db, usuario) => {
   try {
     const result = await db.runAsync(
       'INSERT INTO Usuario (nombre_completo, email, contraseña) VALUES (?, ?, ?)',
       [usuario.nombre_completo, usuario.email, usuario.contraseña]
     );
-    return result.lastInsertRowId; // Obtiene el ID del último registro insertado
+    return result.lastInsertRowId; 
   } catch (error) {
     console.error("Error al crear usuario:", error);
     throw error;
@@ -554,7 +532,7 @@ export const createEmpresa = async (db, empresa) => {
       'INSERT INTO Empresa (nombre, direccion, telefono,correo_contacto,ruc) VALUES (?, ?, ?, ?, ?)',
       [empresa.nombre, empresa.direccion, empresa.telefono, empresa.correo_contacto, empresa.ruc]
     );
-    return result.lastInsertRowId; // Obtiene el ID del último registro insertado
+    return result.lastInsertRowId; 
   } catch (error) {
     console.error("Error al crear a la empresa:", error);
     throw error;
@@ -568,9 +546,8 @@ export const registrarCliente = async (db, cliente) => {
            VALUES (?, ?, ?, ?, ?, ?)`,
       [cliente.dni, cliente.nombre_completo, cliente.pais, cliente.email, cliente.telefono, cliente.direccion]
     );
-    // Asegúrate de obtener el ID del cliente recién creado
     if (result.lastInsertRowId) {
-      return result.lastInsertRowId; // Devuelve el ID del cliente
+      return result.lastInsertRowId; 
     } else {
       throw new Error("No se pudo obtener el ID del cliente recién creado.");
     }
@@ -584,7 +561,7 @@ export const registrarCliente = async (db, cliente) => {
 export const getUsuario = async (db) => {
   try {
     const result = await db.getAllAsync('SELECT * FROM Usuario');
-    console.log('Usuarios registrados:', result);
+
     return result;
   } catch (error) {
     console.error('Error al obtener usuarios:', error);
@@ -594,7 +571,7 @@ export const getUsuario = async (db) => {
 export const getEmpresa = async (db) => {
   try {
     const result = await db.getAllAsync('SELECT * FROM Empresa');
-    console.log('Empresa Registrada:', result);
+
     return result;
   } catch (error) {
     console.error('Error al obtener la empresa:', error);
@@ -602,8 +579,32 @@ export const getEmpresa = async (db) => {
   }
 };
 
-// Función para crear un producto
-// Función para crear un producto
+export const getProductoMasVendido = async (db) => {
+  try {
+    const query = `
+      SELECT d.Producto_id, p.Nombre, SUM(d.cantidad) AS total_vendido
+      FROM detalle_venta d
+      JOIN Productos p ON d.Producto_id = p.Producto_id
+      GROUP BY d.Producto_id
+      ORDER BY total_vendido DESC
+      LIMIT 1;
+    `;
+    
+    const result = await db.getAllAsync(query);
+    
+    if (result && result.length > 0) {
+
+      return result[0]; 
+    } else {
+      console.log('No se encontraron productos vendidos');
+      return null; 
+    }
+  } catch (error) {
+    console.error('Error al obtener el producto más vendido:', error);
+    throw error;
+  }
+};
+
 export const createProducto = async (db, producto) => {
   try {
     const result = await db.runAsync(
@@ -632,7 +633,6 @@ export const obtenerVentas = async () => {
   try {
     const db = await getDBConnection();
 
-    // Obtener todas las ventas
     const ventas = await db.getAllAsync(
       `SELECT v.*, c.nombre_completo as cliente_nombre, t.nombre as tipo_venta, co.nombre as courier_nombre
        FROM Venta v
@@ -641,7 +641,6 @@ export const obtenerVentas = async () => {
        JOIN Courier co ON v.Courier_id = co.Courier_id`
     );
 
-    // Obtener los detalles de cada venta
     for (let venta of ventas) {
       const detalles = await db.getAllAsync(
         `SELECT dv.*, p.nombre as producto_nombre
@@ -650,7 +649,7 @@ export const obtenerVentas = async () => {
          WHERE dv.Venta_id = ?`,
         [venta.Venta_id]
       );
-      venta.detalles = detalles; // Agregar detalles de cada venta
+      venta.detalles = detalles; 
     }
 
     return ventas;
@@ -679,22 +678,19 @@ export const listClientes = async (db) => {
   }
 }
 
-// database.js
 
 export const registrarVenta = async (db, ventaData, detallesVenta) => {
   try {
-    // Obtener la fecha y hora locales
     const fechaLocalQuery = await db.getAllAsync(
       "SELECT datetime('now', 'localtime') AS Fecha_actual"
     );
     const Fecha_venta = fechaLocalQuery[0].Fecha_actual;
 
-    // Inserta la venta en la tabla Venta con la fecha local
     const resultVenta = await db.runAsync(
       `INSERT INTO Venta (Cliente_id, Fecha_venta, Total, tipoVenta_id, Courier_id, descuento) VALUES (?, ?, ?, ?, ?, ?)`,
       [
         ventaData.Cliente_id,
-        Fecha_venta, // Usar la fecha y hora locales
+        Fecha_venta, 
         ventaData.Total,
         ventaData.tipoVenta_id,
         ventaData.Courier_id,
@@ -702,11 +698,9 @@ export const registrarVenta = async (db, ventaData, detallesVenta) => {
       ]
     );
 
-    const Venta_id = resultVenta.lastInsertRowId; // Obtiene el ID de la venta recién insertada
+    const Venta_id = resultVenta.lastInsertRowId; 
 
-    // Inserta cada producto en la tabla detalle_venta y actualiza el stock
     for (const detalle of detallesVenta) {
-      // Insertar detalle de la venta
       await db.runAsync(
         `INSERT INTO detalle_venta (Venta_id, Producto_id, cantidad, precio_unitario, subtotal) VALUES (?, ?, ?, ?, ?)`,
         [
@@ -718,19 +712,17 @@ export const registrarVenta = async (db, ventaData, detallesVenta) => {
         ]
       );
 
-      // Actualizar el stock del producto
       const updateStockResult = await db.runAsync(
         `UPDATE Productos
          SET cantidad = cantidad - ?
          WHERE Producto_id = ? AND cantidad >= ?`,
         [
-          detalle.cantidad, // Cantidad vendida
-          detalle.Producto_id, // ID del producto
-          detalle.cantidad, // Validación para evitar stock negativo
+          detalle.cantidad,
+          detalle.Producto_id, 
+          detalle.cantidad,
         ]
       );
 
-      // Si no se actualiza el stock, lanzar un error por falta de inventario
       if (updateStockResult.rowsAffected === 0) {
         throw new Error(
           `Stock insuficiente para el producto con ID ${detalle.Producto_id}`
@@ -755,7 +747,7 @@ export const getCriticalNotifications = async (db) => {
     const result = await db.getAllAsync(
       `SELECT p.Producto_id, p.nombre AS product_name, p.cantidad AS stock
        FROM Productos p
-       WHERE p.cantidad < 7` // Elimina la condición de fecha de vencimiento
+       WHERE p.cantidad < 7` 
     );
 
     return result || [];
@@ -781,13 +773,24 @@ export const getProductos = async (db) => {
     throw error;
   }
 };
-//database.js
-// Función para inicializar la base de datos
+export const getCourier =async (db) => {
+  try {
+    const result = await db.getAllAsync(
+      `SELECT * FROM Courier`
+    );
+    return result || [];
+  } catch (error) {
+    console.error("Error al obtener couriers:", error);
+    throw error;
+  }
+};
+
+
+
 export const initDatabase = async (db) => {
   try {
     console.log("Conexión a la base de datos establecida.");
 
-    // Configuración de PRAGMA
     await db.execAsync('PRAGMA journal_mode = WAL;');
 
     await createTables(db);
@@ -799,7 +802,6 @@ export const initDatabase = async (db) => {
   }
 };
 
-// Función para eliminar tablas
 export const dropTables = async (db) => {
   const tables = [
     'detalle_venta',
@@ -811,7 +813,7 @@ export const dropTables = async (db) => {
     'Empresa',
     'Usuario'
   ];
-
+ 
   try {
     for (const table of tables) {
       await db.runAsync(`DROP TABLE IF EXISTS ${table}`);

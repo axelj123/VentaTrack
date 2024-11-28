@@ -14,20 +14,19 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import { getDBConnection,createProducto } from '../database';
 import CustomInput from '../components/CustomInput';
 import CustomDatePicker from '../components/CustomDatePicker';
-import { useToast } from '../components/ToastContext'; // Importar el contexto
+import { useToast } from '../components/ToastContext'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useSQLiteContext } from 'expo-sqlite';
 
-const FORM_DATA_KEY = 'form_data_key';  // Clave de almacenamiento
+const FORM_DATA_KEY = 'form_data_key'; 
 
 const RegistrarProducto = () => {
   const navigation = useNavigation();
-  const db = useSQLiteContext(); // Usa el contexto de SQLite
-  const { showToast } = useToast(); // Usamos el hook para acceder al showToast
+  const db = useSQLiteContext(); 
+  const { showToast } = useToast(); 
   
-  // Definir estados para cada campo del formulario
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [precioCompra, setPrecioCompra] = useState('');
@@ -41,13 +40,11 @@ const RegistrarProducto = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
-  // Cargar los datos del formulario al montar el componente
   useEffect(() => {
     fetchCategorias();
     loadFormData();
   }, []);
 
-  // Función para obtener categorías de la base de datos
   const fetchCategorias = async () => {
     try {
       const result = await db.getAllAsync(`SELECT * FROM Categoria_Producto`);
@@ -65,7 +62,6 @@ const RegistrarProducto = () => {
     }
   };
 
-  // Función para cargar datos guardados en AsyncStorage
   const loadFormData = async () => {
     try {
       const savedData = await AsyncStorage.getItem(FORM_DATA_KEY);
@@ -86,7 +82,6 @@ const RegistrarProducto = () => {
     }
   };
 
-  // Guardar los datos del formulario en AsyncStorage cada vez que cambie algún campo
   const saveFormData = async () => {
     try {
       const formData = {
@@ -106,12 +101,10 @@ const RegistrarProducto = () => {
     }
   };
 
-  // Llamar a saveFormData cuando cambie cualquier campo del formulario
   useEffect(() => {
     saveFormData();
   }, [nombre, descripcion, precioCompra, precioVenta, cantidad, fechaIngreso, fechaVencimiento, selectedCategoria, selectedImage]);
 
-  // Función para formatear las fechas
   const formatDate = (date) => {
     const d = new Date(date);
     const year = d.getFullYear();
@@ -120,7 +113,6 @@ const RegistrarProducto = () => {
     return `${year}-${month}-${day}`;
   };
 
-  // Función para registrar el producto
   const handleRegistrarProducto = async () => {
     if (!nombre || !descripcion || !precioCompra || !precioVenta || !cantidad || !fechaIngreso || !fechaVencimiento || !selectedCategoria) {
       showToast('Error', 'Por favor, complete todos los campos.', 'warning');
@@ -145,7 +137,6 @@ const RegistrarProducto = () => {
     try {
       await createProducto(db,producto);
 
-      // Limpia los campos después de registrar y elimina el almacenamiento
       setNombre('');
       setDescripcion('');
       setPrecioCompra('');
@@ -157,7 +148,6 @@ const RegistrarProducto = () => {
       setSelectedImage(null);
       setOpenCategoria(false);
 
-      // Elimina el formulario guardado en AsyncStorage
       await AsyncStorage.removeItem(FORM_DATA_KEY);
     
       Keyboard.dismiss();

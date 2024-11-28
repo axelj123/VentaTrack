@@ -53,7 +53,7 @@ const VentaExitosa = ({ route, navigation }) => {
   onPress={() => 
     navigation.navigate('TicketView', {
       total: total,
-      descuento: route.params.descuento, // Incluye el descuento
+      descuento: route.params.descuento, 
 
       items: route.params.items.map(item => ({
         Producto_id: item.id, 
@@ -77,7 +77,7 @@ const VentaExitosa = ({ route, navigation }) => {
 
           <TouchableOpacity 
             style={styles.newSaleButton}
-            onPress={() => navigation.navigate('VentaProducto')} // Asegúrate de tener esta pantalla
+            onPress={() => navigation.navigate('VentaProducto')} 
           >
             <Feather name="shopping-bag" size={20} color="#ffffff" style={styles.buttonIcon} />
             <Text style={styles.newSaleButtonText}>Empezar nueva venta</Text>

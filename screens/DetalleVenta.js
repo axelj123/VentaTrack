@@ -4,18 +4,18 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import CustomInput from '../components/CustomInput';
 import { getDBConnection, registrarVenta } from '../database';
 import DropDownPicker from 'react-native-dropdown-picker';
-import ProductoCarritoCard from '../components/ProductoCarritoCard ';  // Importamos el nuevo componente
+import ProductoCarritoCard from '../components/ProductoCarritoCard '; 
 import EmptyState from '../components/EmptyState';
-import { useCart } from '../components/CartContext'; // Usamos el contexto para el carrito
+import { useCart } from '../components/CartContext'; 
 import ClientSearchInput from '../components/ClientSearchInput ';
-import { useToast } from '../components/ToastContext'; // Importar el contexto
+import { useToast } from '../components/ToastContext'; 
 import VentaFooter from '../components/VentaFooter';
 import { useSQLiteContext } from 'expo-sqlite';
 import { generarBoleta } from '../components/GenerarBoleta';
 import { useFocusEffect } from '@react-navigation/native';
 const DetalleVenta = ({ navigation }) => {
-    const { showToast } = useToast(); // Usamos el hook para acceder al showToast
-    const { cartItems, removeFromCart, updateQuantity } = useCart();  // Obtener cartItems y removeFromCart
+    const { showToast } = useToast(); 
+    const { cartItems, removeFromCart, updateQuantity } = useCart();   
     const [total, setTotal] = useState(0);
     const [selectedClient, setSelectedClient] = useState(null);
     const [subtotal, setSubtotal] = useState(0);
@@ -51,7 +51,7 @@ const DetalleVenta = ({ navigation }) => {
             console.error("Error al obtener couriers:", error);
         }
     };
- 
+  
     const fetchTipos = async () => {
         try {
             const result = await db.getAllAsync(`SELECT * FROM Tipo_Venta`);
@@ -72,28 +72,25 @@ const DetalleVenta = ({ navigation }) => {
         const descuentoNumerico = parseFloat(descuento) || 0;
         if (descuentoNumerico > subtotal) {
             showToast('Info', 'El descuento no puede ser mayor que el subtotal', 'info');
-            setDescuento(0); // Limpiar el descuento si es mayor que el subtotal
+            setDescuento(0); 
             return false;
         }
         return true;
     };
-      // Redirigir si el carrito está vacío al enfocar la pantalla
   useFocusEffect(
     React.useCallback(() => {
       if (cartItems.length === 0) {
-        navigation.navigate('VentaProducto'); // Redirige automáticamente
+        navigation.navigate('VentaProducto'); 
       }
     }, [cartItems, navigation])
   );
     useEffect(() => {
-        // Calcular subtotal del carrito
         const subtotalAmount = cartItems.reduce(
             (sum, producto) => sum + producto.price * producto.quantity,
             0
         );
         setSubtotal(subtotalAmount);
     
-        // Calcular el total basado en el descuento solo si es válido
         const descuentoNumerico = parseFloat(descuento) || 0;
         const totalFinal = Math.max(0, subtotalAmount - descuentoNumerico);
         setTotal(totalFinal);
@@ -107,21 +104,21 @@ const DetalleVenta = ({ navigation }) => {
 
     const incrementarCantidad = (index) => {
         const producto = cartItems[index];
-        updateQuantity(producto.id, producto.quantity + 1); // Usamos updateQuantity para incrementar la cantidad
+        updateQuantity(producto.id, producto.quantity + 1); 
     };
 
     const decrementarCantidad = (index) => {
         const producto = cartItems[index];
         if (producto.quantity > 1) {
-            updateQuantity(producto.id, producto.quantity - 1); // Usamos updateQuantity para decrementar la cantidad
+            updateQuantity(producto.id, producto.quantity - 1); 
         }
     };
     const eliminarProducto = (index) => {
-        removeFromCart(cartItems[index].id);  // Usamos la función removeFromCart del contexto
+        removeFromCart(cartItems[index].id);  
     };
 
     const handleClientSelect = (client) => {
-        setSelectedClient(client); // Asigna el cliente seleccionado
+        setSelectedClient(client); 
     };
 
 
@@ -149,8 +146,6 @@ const handleRegistrarVenta = async () => {
       subtotal: item.price * item.quantity,
     }));
   
-    console.log('Datos de la venta:', ventaData);
-    console.log('Detalles de la venta:', detallesVenta);
   
     const result = await registrarVenta(db, ventaData, detallesVenta);
 
@@ -160,8 +155,8 @@ const handleRegistrarVenta = async () => {
           descuento: descuento, 
           items: cartItems, 
           cliente: selectedClient,
-          ventaId: result.ventaId,     // Añade el ID de la venta
-          timestamp: result.timestamp  // Añade la marca de tiempo
+          ventaId: result.ventaId,    
+          timestamp: result.timestamp  
         });
 
             cartItems.forEach(item => removeFromCart(item.id));
@@ -199,10 +194,10 @@ const handleRegistrarVenta = async () => {
                             onOpen={() => setOpenTipo(false)}
                             zIndex={1000}
                             style={{
-                                borderColor: '#dddddd', // Color de borde
+                                borderColor: '#dddddd', 
                             }}
                             dropDownContainerStyle={{
-                                borderColor: '#dddddd', // Color de borde del contenedor desplegable
+                                borderColor: '#dddddd',
                             }}
                         />
                     </View>
@@ -219,10 +214,10 @@ const handleRegistrarVenta = async () => {
                             onOpen={() => setOpenCourier(false)}
                             zIndex={900}
                             style={{
-                                borderColor: '#dddddd', // Color de borde
+                                borderColor: '#dddddd', 
                             }}
                             dropDownContainerStyle={{
-                                borderColor: '#dddddd', // Color de borde del contenedor desplegable
+                                borderColor: '#dddddd', 
                             }}
                         />
                     </View>
@@ -231,8 +226,8 @@ const handleRegistrarVenta = async () => {
 
                     <CustomInput
                         placeholder="Descuento"
-                        value={descuento.toString()} // Pasa el valor actual de descuento como string
-                        onChangeText={(value) => setDescuento(value)} // Actualiza el estado descuento
+                        value={descuento.toString()} 
+                        onChangeText={(value) => setDescuento(value)} 
                         focusedBorderColor="#211132"
                         unfocusedBorderColor="#dddddd"
                         placeholderTextColor="#999"
@@ -334,7 +329,7 @@ const styles = StyleSheet.create({
 
     },
     halfWidth: {
-        width: '48%', // Cada dropdown ocupará el 48% del ancho para dejar espacio entre ellos
+        width: '48%', 
     },
     customDropdown: {
         backgroundColor: '#FFF',

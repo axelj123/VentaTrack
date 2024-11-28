@@ -5,11 +5,9 @@ import { BarChart } from 'react-native-chart-kit';
 import { Feather } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useToast } from '../components/ToastContext';
-import { obtenerVentas, obtenerDetallesVenta, obtenerProductoPorId } from '../database';
+import { obtenerVentas, obtenerDetallesVenta, obtenerProductoPorId, getProductoMasVendido } from '../database';
 import { useFocusEffect } from '@react-navigation/native';
 import ModernBarChart from '../components/ModernBarchart';
-
-const screenWidth = Dimensions.get('window').width;
 
 const formatearFecha = (fecha) => {
   const date = new Date(fecha);
@@ -18,6 +16,7 @@ const formatearFecha = (fecha) => {
     month: 'short'
   });
 };
+
 
 const procesarGananciasPorMes = async (ventas, selectedMonth) => {
   try {
@@ -29,16 +28,13 @@ const procesarGananciasPorMes = async (ventas, selectedMonth) => {
       };
     }
 
-    // Filtrar ventas del mes seleccionado
     const ventasDelMes = ventas.filter(venta => {
       const fechaVenta = new Date(venta.Fecha_venta);
       return fechaVenta.getMonth() + 1 === selectedMonth;
     });
 
-    // Obtener el año actual
     const año = new Date().getFullYear();
 
-    // Crear estructura para acumular ganancias por día
     const gananciasPorDia = {};
     const ultimoDiaMes = new Date(año, selectedMonth, 0).getDate();
     for (let dia = 1; dia <= ultimoDiaMes; dia++) {
@@ -46,7 +42,6 @@ const procesarGananciasPorMes = async (ventas, selectedMonth) => {
       gananciasPorDia[formatearFecha(fecha)] = 0;
     }
 
-    // Calcular las ganancias para cada día
     for (const venta of ventasDelMes) {
       const detallesVenta = await obtenerDetallesVenta(venta.Venta_id);
 
@@ -57,11 +52,9 @@ const procesarGananciasPorMes = async (ventas, selectedMonth) => {
         const precioVenta = parseFloat(detalle.precio_unitario) || 0;
         const cantidad = parseInt(detalle.cantidad) || 0;
 
-        // Calcular ganancia para cada producto
         gananciasVenta += (precioVenta - precioCompra) * cantidad;
       }
 
-      // Sumar ganancias al día correspondiente
       const fechaFormateada = formatearFecha(venta.Fecha_venta);
       gananciasPorDia[fechaFormateada] = (gananciasPorDia[fechaFormateada] || 0) + gananciasVenta;
     }
@@ -105,7 +98,6 @@ const procesarGananciasPorDia = async (ventas) => {
         const precioVenta = parseFloat(detalle.precio_unitario) || 0;
         const cantidad = parseInt(detalle.cantidad) || 0;
 
-        // Calcular ganancia para cada producto y sumarla al día correspondiente
         gananciasPorDia[dia] += (precioVenta - precioCompra) * cantidad;
       }
     }
@@ -137,6 +129,7 @@ const Home = ({ navigation }) => {
   const [chartFilter, setChartFilter] = useState('Semanal');
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [GananciaTotal, setGananciaTotal] = useState(0);
+  const [productoMasVendido, setProductoMasVendido] = useState(null);
 
   const [datosGrafica, setDatosGrafica] = useState({
     labels: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
@@ -149,6 +142,7 @@ const Home = ({ navigation }) => {
   useEffect(() => {
     fetchUserName();
     fetchClientes();
+    obtenerProductoMasVendido();
     cargarVentasHistoricas();
     fetchProductos();
     cargarVentas(dateFilter);
@@ -163,10 +157,25 @@ const Home = ({ navigation }) => {
       cargarVentas(dateFilter);
       cargarVentasHistoricas();
       fetchClientes();
+      obtenerProductoMasVendido();
       fetchProductos();
       obtenerDatosGrafica
     }, [dateFilter])
   );
+
+  const obtenerProductoMasVendido=async () => {
+    try {
+      const producto = await getProductoMasVendido(db);
+
+      
+      setProductoMasVendido(producto); 
+      
+
+    } catch (error) {
+      console.error('Error al obtener el producto más vendido:', error);
+      showToast('Error al cargar el producto más vendido', 'error');
+    }
+  }
 
   const obtenerDatosGrafica = async () => {
     try {
@@ -327,7 +336,8 @@ const Home = ({ navigation }) => {
         <MetricCard title={`Ganancias ${dateFilter}`} value={`S/. ${totalProfits.toFixed(2)}`} color="#5300a9" icon="trending-up" />
         <MetricCard title="Total Productos" value={totalProductos.toString()} color="#4e059a" icon="box" />
         <MetricCard title="Total Clientes" value={totalClientes.toString()} color="#3c1664" icon="users" />
-        <MetricCard title="Producto Más Vendido" value="0" color="#7228be" icon="star" />
+        <MetricCard title="Producto Más Vendido"   value={productoMasVendido ? productoMasVendido.nombre : "No disponible"}
+ color="#7228be" icon="star" />
       </View>
 
       {/* Botones de navegación */}
@@ -336,7 +346,8 @@ const Home = ({ navigation }) => {
         <NavButton title="Productos" icon="box" color="#3c0475" onPress={() => navigation.navigate('Inventario')} />
         <NavButton title="Clientes" icon="users" color="#ee9606" onPress={() => navigation.navigate('Clientes')}
         />
-        <NavButton title="Ventas" icon="dollar-sign" color="#1ABC9C" onPress={() => navigation.navigate('Reportes')} />
+        <NavButton title="Ventas" icon="dollar-sign" color="#56a71d" onPress={() => navigation.navigate('Reportes')} />
+
       </View>
 
       {/* Gráfico de barras de ganancias por día */}
@@ -352,7 +363,6 @@ const Home = ({ navigation }) => {
   );
 };
 
-// Componente para mostrar las métricas
 const MetricCard = ({ title, value, color, icon }) => (
   <View style={[styles.metricCardStyle, { backgroundColor: color }]}>
     <Feather name={icon} size={24} color="#fff" />
@@ -361,7 +371,6 @@ const MetricCard = ({ title, value, color, icon }) => (
   </View>
 );
 
-// Componente para los botones de navegación
 const NavButton = ({ title, icon, color, onPress }) => (
   <TouchableOpacity onPress={onPress} style={[styles.navButtonStyle, { backgroundColor: color }]}>
     <Feather name={icon} size={24} color="#fff" />
@@ -401,7 +410,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderRadius: 20,
     alignItems: 'center',
-    backgroundColor: '#6200EE', // Color oscuro para destacar
+    backgroundColor: '#6200EE', 
     marginBottom: 30,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },

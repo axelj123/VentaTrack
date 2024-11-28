@@ -10,7 +10,6 @@ const Notificaciones = () => {
   const [notifications, setNotifications] = useState([]);
   const db = useSQLiteContext();
   const [deviceToken, setDeviceToken] = useState(null);
-  const notificationInterval = 1 * 60 * 1000; // 5 minutos
 
 
 

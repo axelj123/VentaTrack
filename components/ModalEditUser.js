@@ -26,9 +26,8 @@ const ModalEditUser = ({
     const [newPassword, setNewPassword] = useState('');
     const [confirmNewPassword, setConfirmNewPassword] = useState('');
     const [showChangePassword, setShowChangePassword] = useState(false);
-    const { showToast } = useToast(); // Usamos el hook para acceder al showToast
+    const { showToast } = useToast(); 
 
-    // Animated values for password section
     const passwordOpacity = useState(new Animated.Value(0))[0];
 
     const db = useSQLiteContext();
@@ -36,20 +35,17 @@ const ModalEditUser = ({
 
 const toggleChangePassword = () => {
         if (showChangePassword) {
-            // Animate opacity out
             Animated.timing(passwordOpacity, {
                 toValue: 0,
                 duration: 300,
                 useNativeDriver: true
             }).start(() => {
                 setShowChangePassword(false);
-                // Reset password fields when hiding
                 setCurrentPassword('');
                 setNewPassword('');
                 setConfirmNewPassword('');
             });
         } else {
-            // Show password section
             setShowChangePassword(true);
             Animated.timing(passwordOpacity, {
                 toValue: 1,
@@ -65,19 +61,16 @@ const toggleChangePassword = () => {
     }, [showChangePassword]);
 
 
-    // Function to fetch user data and update inputs
     const fetchUserName = async () => {
         try {
-            const result = await getUsuario(db); // Calling getUsuario function to fetch user
+            const result = await getUsuario(db); 
             if (result && result.length > 0) {
                 const fullName = result[0]?.nombre_completo || "Usuario";
                 const mail = result[0]?.email || "email";
                 
-                // Update the input states directly
                 setUserName(fullName);
                 setUserEmail(mail);
             } else {
-                // Set default values if no user found
                 setUserName("Usuario");
                 setUserEmail("");
             }
@@ -88,7 +81,6 @@ const toggleChangePassword = () => {
     };
 
     const validateInputs = async () => {
-        // Validate basic fields
         if (!userName.trim()) {
             showToast('warning', 'El nombre no puede estar vacío','warning');
 
@@ -101,16 +93,13 @@ const toggleChangePassword = () => {
             return false;
         }
 
-        // If trying to change password, validate password fields
         if (newPassword || confirmNewPassword) {
-            // Check current password
             if (!currentPassword.trim()) {
                 showToast('warning', 'Debe ingresar su contraseña actual','warning');
 
                 return false;
             }
 
-            // Verify current password
             try {
                 const result = await db.getFirstAsync(
                     'SELECT * FROM Usuario WHERE contraseña = ?',
@@ -128,7 +117,6 @@ const toggleChangePassword = () => {
                 return false;
             }
 
-            // Validate new password
             if (newPassword !== confirmNewPassword) {
                 showToast('error', 'Las nuevas contraseñas no coinciden','error');
 

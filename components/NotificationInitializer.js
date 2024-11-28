@@ -1,4 +1,3 @@
-// NotificationInitializer.js
 import React, { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -22,7 +21,6 @@ const NotificationInitializer = () => {
         appState.current.match(/inactive|background/) && 
         nextAppState === 'active'
       ) {
-        // La app vuelve al primer plano
         console.log('App regresó al primer plano - verificando stock');
         await checkLowStock(db);
       }
@@ -31,10 +29,8 @@ const NotificationInitializer = () => {
 
     setupNotifications();
     
-    // Suscribirse a cambios de estado de la app
     const subscription = AppState.addEventListener('change', handleAppStateChange);
 
-    // Verificar stock cada 10 segundos mientras la app está activa
     const interval = setInterval(() => {
       if (appState.current === 'active') {
         checkLowStock(db);

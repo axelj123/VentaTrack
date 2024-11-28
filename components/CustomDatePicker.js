@@ -19,11 +19,11 @@ const CustomDatePicker = ({
 
   useEffect(() => {
     if (value) {
-      // Si `value` es una cadena (por ejemplo, al cargar de AsyncStorage), conviértelo a un objeto `Date`
+      
       if (typeof value === 'string' || !(value instanceof Date)) {
-        onDateChange(new Date(value)); // Actualiza `value` para que sea un objeto `Date`
+        onDateChange(new Date(value)); 
       } else {
-        animatedLabel(1); // Mueve la etiqueta hacia arriba si hay un valor inicial
+        animatedLabel(1); 
       }
     } else {
       animatedLabel(0);
@@ -93,7 +93,7 @@ const CustomDatePicker = ({
           },
         ]}
       >
-        {!value && !isFocused && ( // Muestra el placeholder solo si no hay fecha y no está enfocado
+        {!value && !isFocused && ( 
           <Text style={[styles.placeholderText, { color: placeholderTextColor }]}>
             {placeholder}
           </Text>
