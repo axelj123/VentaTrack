@@ -1,24 +1,24 @@
 # VentaTrack
 
-VentaTrack es una aplicación móvil para la gestión y seguimiento de ventas, que permite a los usuarios registrar transacciones, analizar datos de ventas e interactuar con un sistema de inventario en tiempo real.
+VentaTrack is a mobile application for managing and tracking sales, allowing users to register transactions, analyze sales data, and interact with an inventory system in real time.
 
 
 https://github.com/user-attachments/assets/c82e2270-5a6b-4483-97ab-9175879594ba
 
 
-## Características
+## Project Overview
 
-- **Registro de ventas**: Permite ingresar detalles de cada venta, como producto, precio, cliente, fecha y más.
-- **Análisis de ventas**: Visualiza las estadísticas de ventas con gráficos interactivos y resúmenes.
-- **Gestión de inventario**: Controla el stock de productos y actualiza automáticamente el inventario con cada transacción.
-- **Exportación de datos**: Genera reportes de ventas en formato PDF para un análisis más detallado.
+- **Sales registration**: Allows users to input details of each sale, such as product, price, customer, date, and more.
+- **Sales analysis**: View sales statistics with interactive graphs and summaries.
+- **Inventory management**: Keep track of product stock and automatically update inventory with each transaction.
+- **Data export**: Generate sales reports in PDF format for more detailed analysis.
 
-## Tecnologías
+## Technologies
 
-VentaTrack utiliza las siguientes tecnologías:
+VentaTrack uses the following technologies:
 
-- **React Native**: Para la construcción de la interfaz de usuario.
-- **SqLite**: Para la gestión de la base de datos.
+- **React Native**: For building the user interface.
+- **SqLite**: For database management.
 
 ## Prerequisites
 
@@ -31,17 +31,17 @@ Make sure you have the following installed:
 
 Install and run the project in local, use this steps: 
 
-### 1. Clona este repositorio
+### 1. Clone este repositorio
 
 ```bash
 git clone https://github.com/axelj123/VentaTrack.git
 
 ```
-### 2. Instala dependencias
+### 2. Install dependencies
 ```bash
 npm install
 ```
-### 3. Ejecuta el proyecto
+### 3. Run the project
 ```bash
 npm start
 ```
