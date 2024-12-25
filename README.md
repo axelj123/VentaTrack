@@ -12,18 +12,14 @@ https://github.com/user-attachments/assets/c82e2270-5a6b-4483-97ab-9175879594ba
   - Product details and pricing
   - Customer information
   - Transaction date and time
-  - Payment methods
-  - Sales representative details
 
 ### Analytics Dashboard
 - **Real-time Statistics**: Monitor your business performance
   - Daily, weekly, and monthly sales reports
   - Revenue trends and projections
   - Top-selling products
-  - Customer purchase patterns
 - **Interactive Visualizations**: Understand your data better
   - Sales performance graphs
-  - Inventory level charts
   - Revenue distribution diagrams
 
 ### Inventory Control
@@ -33,9 +29,7 @@ https://github.com/user-attachments/assets/c82e2270-5a6b-4483-97ab-9175879594ba
   - Low stock alerts
   - Product categorization
 - **Product Management**
-  - Add, edit, and remove products
-  - Set minimum stock levels
-  - Track product performance
+  - Add and edit products
 
 ### Reporting System
 - **Export Capabilities**
